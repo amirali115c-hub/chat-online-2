@@ -6,11 +6,14 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install gunicorn with eventlet for WebSocket support
+RUN pip install --no-cache-dir gunicorn eventlet
+
 # Copy application files
 COPY . .
 
 # Expose port
-EXPOSE 5000
+EXPOSE $PORT
 
-# Run the app
-CMD ["python", "app.py"]
+# Run with gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]

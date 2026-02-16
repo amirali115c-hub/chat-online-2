@@ -1095,4 +1095,10 @@ def bad_request(error):
     return render_template('error.html', error_code=400, error_message='Bad Request', error_description='The request could not be understood by the server.'), 400
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False, port=5001, host='0.0.0.0')
+    # For production, use eventlet
+    try:
+        import eventlet
+        eventlet.monkey_patch()
+        socketio.run(app, debug=False, port=int(os.environ.get('PORT', 5001)), host='0.0.0.0')
+    except ImportError:
+        socketio.run(app, debug=False, port=int(os.environ.get('PORT', 5001)), host='0.0.0.0')
