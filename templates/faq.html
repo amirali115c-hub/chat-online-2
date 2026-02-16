@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ - Chat Online{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
+        <p>Find answers to common questions</p>
+    </div>
+    <div class="accordion">
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-question-circle"></i> Is Chat Online free?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Yes! Chat Online is completely free to use. No registration required for guest users.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-comment"></i> How do I start chatting?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Simply enter a username, select your gender and age, choose your country, and click "Start Chatting" to begin.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-shield-alt"></i> Is this site safe?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>We take safety seriously with content moderation and anti-bot protection to ensure a safe environment.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-venus-mars"></i> Can I chat with specific gender?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Yes! Use the gender filter to find users of a specific gender.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-dice"></i> How does Random Chat work?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Random Chat connects you with a random stranger for instant conversations.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-user-plus"></i> Do I need to register?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Registration is optional. Guest users can chat immediately, while registered users get additional features like friend lists.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-flag"></i> Can I report inappropriate behavior?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>Yes, use the report button to flag users who violate our community guidelines.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas fa-lock"></i> Is my data private?</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>We don't share your personal information. Chat anonymously without providing email or phone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', function() {
+        const item = this.parentElement;
+        const isActive = item.classList.contains('active');
+
+        // Close all other items
+        document.querySelectorAll('.accordion-item').forEach(otherItem => {
+            otherItem.classList.remove('active');
+        });
+
+        // Toggle current item
+        if (!isActive) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}

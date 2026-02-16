@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-container">
+    <div class="profile-card gradient-border-card">
+        <div class="profile-header">
+            <div class="profile-avatar-large">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-details">
+                <h2 id="profile-username">Username</h2>
+                <p id="profile-info"><span id="profile-age">18</span> | <span id="profile-gender">Male</span> | <span id="profile-country">United States</span></p>
+                <div class="profile-badges">
+                    <span class="badge badge-online"><i class="fas fa-circle"></i> Online</span>
+                    <span class="badge badge-guest"><i class="fas fa-user"></i> Guest</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat-box">
+                <span class="stat-num" id="friends-count">0</span>
+                <span class="stat-label"><i class="fas fa-heart"></i> Friends</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num" id="messages-count">0</span>
+                <span class="stat-label"><i class="fas fa-comment"></i> Messages</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num" id="chats-count">0</span>
+                <span class="stat-label"><i class="fas fa-comments"></i> Chats</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button class="btn btn-secondary"><i class="fas fa-cog"></i> Settings</button>
+            <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Friends</button>
+        </div>
+    </div>
+
+    <!-- Profile Sections -->
+    <div class="profile-sections">
+        <div class="profile-section-card gradient-border-card">
+            <h3><i class="fas fa-user-friends"></i> Friends</h3>
+            <p class="empty-state">No friends yet. Start chatting to make new friends!</p>
+        </div>
+
+        <div class="profile-section-card gradient-border-card">
+            <h3><i class="fas fa-history"></i> Recent Chats</h3>
+            <p class="empty-state">No recent chats. Start a new conversation!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load profile data from sessionStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const username = sessionStorage.getItem('guest_username');
+    const gender = sessionStorage.getItem('guest_gender');
+    const age = sessionStorage.getItem('guest_age');
+    const country = sessionStorage.getItem('guest_country');
+
+    if (username) {
+        document.getElementById('profile-username').textContent = username;
+    }
+    if (age) {
+        document.getElementById('profile-age').textContent = age;
+    }
+    if (gender) {
+        const genderIcon = gender === 'male' ? '<i class="fas fa-male"></i>' :
+                           gender === 'female' ? '<i class="fas fa-female"></i>' : '<i class="fas fa-user"></i>';
+        document.getElementById('profile-gender').innerHTML = genderIcon + ' ' + gender.charAt(0).toUpperCase() + gender.slice(1);
+    }
+    if (country) {
+        document.getElementById('profile-country').textContent = country;
+    }
+});
+</script>
+{% endblock %}

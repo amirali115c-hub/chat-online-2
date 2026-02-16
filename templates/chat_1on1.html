@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+
+{% block title %}1-on-1 Chat - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-1on1-page {
+    display: flex;
+    height: calc(100vh - 70px - 60px);
+}
+
+.chat-1on1-sidebar {
+    width: 320px;
+    background: var(--white);
+    border-right: 1px solid var(--bg-200);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-1on1-sidebar-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.chat-1on1-sidebar-header h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+}
+
+.chat-1on1-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.sidebar-tab {
+    flex: 1;
+    padding: var(--space-3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--bg-500);
+    transition: all var(--transition-base);
+    border-bottom: 2px solid transparent;
+}
+
+.sidebar-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.sidebar-tab:hover {
+    color: var(--primary);
+}
+
+.chat-1on1-user-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-2);
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    margin-bottom: var(--space-1);
+}
+
+.user-card:hover, .user-card.active {
+    background: var(--primary-lightest);
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.user-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.user-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.user-avatar i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    font-size: var(--text-sm);
+}
+
+.user-status {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+.chat-1on1-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.chat-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.chat-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-user-avatar i {
+    color: var(--white);
+    font-size: var(--text-xl);
+}
+
+.chat-user-details h4 {
+    font-size: var(--text-base);
+    color: var(--bg-800);
+}
+
+.chat-user-details span {
+    font-size: var(--text-xs);
+    color: var(--success);
+}
+
+.chat-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.chat-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-50);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    color: var(--bg-600);
+}
+
+.chat-action-btn:hover {
+    background: var(--primary-lightest);
+    color: var(--primary);
+}
+
+.chat-action-btn.heart.active {
+    background: #FFF1F2;
+    color: #EC4899;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.message {
+    display: flex;
+    gap: var(--space-2);
+    max-width: 70%;
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.message-avatar i {
+    color: var(--white);
+    font-size: var(--text-sm);
+}
+
+.message.sent .message-avatar {
+    background: var(--primary);
+}
+
+.message-content {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+    background: var(--bg-50);
+    color: var(--bg-800);
+}
+
+.message.sent .message-content {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.message-time {
+    font-size: var(--text-xs);
+    color: var(--bg-400);
+    margin-top: var(--space-1);
+}
+
+.message.sent .message-time {
+    text-align: right;
+}
+
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.message-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--bg-50);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2) var(--space-3);
+    transition: all var(--transition-base);
+}
+
+.message-input-wrapper:focus-within {
+    border-color: var(--primary);
+}
+
+.message-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: var(--space-2);
+    font-size: var(--text-base);
+    outline: none;
+}
+
+.input-actions {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.input-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    color: var(--bg-500);
+    font-size: var(--text-lg);
+}
+
+.input-action-btn:hover {
+    color: var(--primary);
+    background: var(--primary-lightest);
+}
+
+.send-btn {
+    padding: var(--space-3) var(--space-5);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-1on1-page">
+    <!-- Sidebar -->
+    <aside class="chat-1on1-sidebar">
+        <div class="chat-1on1-sidebar-header">
+            <h3>Messages</h3>
+        </div>
+        <div class="chat-1on1-sidebar-tabs">
+            <button class="sidebar-tab active">All</button>
+            <button class="sidebar-tab">Online</button>
+            <button class="sidebar-tab">Friends</button>
+        </div>
+        <div class="chat-1on1-user-list" id="user-list">
+            <!-- Users populated by JS -->
+        </div>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="chat-1on1-main">
+        <div class="chat-header">
+            <div class="chat-user-info">
+                <div class="chat-user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="chat-user-details">
+                    <h4 id="chat-partner-name">Select a user</h4>
+                    <span><span class="online-dot"></span> Online</span>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn heart" id="heart-btn" title="Like">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button class="chat-action-btn" title="More">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="system-message" style="text-align: center; color: var(--bg-500); padding: var(--space-8);">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: var(--space-4); color: var(--primary);"></i>
+                <p>Select a user from the left to start chatting</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="message-input-wrapper">
+                <input type="text" id="message-input" placeholder="Type a message..." maxlength="1000">
+                <div class="input-actions">
+                    <button class="input-action-btn" title="Emoji"><i class="far fa-smile"></i></button>
+                    <button class="input-action-btn" title="GIF">GIF</button>
+                    <button class="input-action-btn" title="Image"><i class="far fa-image"></i></button>
+                </div>
+            </div>
+            <button class="send-btn" id="send-btn">
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const users = [
+    { id: 1, username: 'Sarah_99', gender: 'female', age: 24, country: 'US', online: true, lastMessage: 'Hey! How are you?' },
+    { id: 2, username: 'John_Cool', gender: 'male', age: 28, country: 'GB', online: true, lastMessage: 'Hello there!' },
+    { id: 3, username: 'Maria_G', gender: 'female', age: 22, country: 'ES', online: true, lastMessage: 'Nice to meet you' },
+    { id: 4, username: 'Alex_123', gender: 'male', age: 25, country: 'DE', online: false, lastMessage: 'See you later' },
+    { id: 5, username: 'Emma_W', gender: 'female', age: 26, country: 'FR', online: true, lastMessage: 'Haha thats funny' }
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+
+    // Heart button toggle
+    document.getElementById('heart-btn').addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+
+    // Send message
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+});
+
+function loadUsers() {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+
+    users.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.onclick = () => selectUser(user);
+        card.innerHTML = `
+            <div class="user-avatar ${user.gender}">
+                <i class="fas fa-user"></i>
+                ${user.online ? '<span class="online-indicator"></span>' : ''}
+            </div>
+            <div class="user-info">
+                <div class="user-name">${user.username}</div>
+                <div class="user-status">${user.lastMessage}</div>
+            </div>
+        `;
+        userList.appendChild(card);
+    });
+}
+
+function selectUser(user) {
+    document.querySelectorAll('.user-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    document.getElementById('chat-partner-name').textContent = user.username;
+
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = `
+        <div class="message received">
+            <div class="message-avatar"><i class="fas fa-user"></i></div>
+            <div class="message-content">
+                Hello! How are you doing today?
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            </div>
+        </div>
+    `;
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    const messagesContainer = document.getElementById('chat-messages');
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    messagesContainer.innerHTML += `
+        <div class="message sent">
+            <div class="message-avatar"><i class="fas fa-user"></i></div>
+            <div class="message-content">
+                ${escapeHtml(message)}
+                <div class="message-time">${time}</div>
+            </div>
+        </div>
+    `;
+
+    input.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

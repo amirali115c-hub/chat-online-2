@@ -1,0 +1,521 @@
+{% extends "base.html" %}
+
+{% block title %}Random Chat - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.random-chat-container {
+    min-height: calc(100vh - 70px - 60px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8);
+}
+
+.random-chat-landing {
+    max-width: 600px;
+    text-align: center;
+}
+
+.random-icon {
+    width: 150px;
+    height: 150px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-8);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.random-icon i {
+    font-size: 64px;
+    color: var(--white);
+}
+
+.random-chat-landing h1 {
+    font-size: var(--text-3xl);
+    color: var(--white);
+    margin-bottom: var(--space-4);
+}
+
+.random-chat-landing p {
+    font-size: var(--text-lg);
+    color: rgba(255,255,255,0.7);
+    margin-bottom: var(--space-8);
+}
+
+.gender-preference {
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.gender-preference h3 {
+    color: var(--white);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-lg);
+}
+
+.preference-options {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.preference-btn {
+    padding: var(--space-4) var(--space-6);
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius-xl);
+    color: var(--white);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.preference-btn:hover, .preference-btn.active {
+    background: var(--gradient);
+    border-color: transparent;
+}
+
+.preference-btn i {
+    font-size: var(--text-xl);
+}
+
+.start-random-btn {
+    padding: var(--space-4) var(--space-10);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.start-random-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Chat Interface */
+.random-chat-interface {
+    display: none;
+    width: 100%;
+    max-width: 1000px;
+    height: calc(100vh - 70px - 100px);
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+.chat-main-area {
+    display: flex;
+    height: 100%;
+}
+
+.partner-info-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.partner-details {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.partner-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.partner-avatar i {
+    font-size: var(--text-xl);
+}
+
+.partner-name {
+    font-weight: var(--font-semibold);
+}
+
+.partner-location {
+    font-size: var(--text-sm);
+    opacity: 0.8;
+}
+
+.chat-actions-bar {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.chat-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+}
+
+.chat-action-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.chat-action-btn.stop {
+    background: var(--error);
+}
+
+.random-messages {
+    flex: 1;
+    padding: var(--space-4);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.message {
+    max-width: 70%;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+}
+
+.message.received {
+    background: var(--bg-100);
+    align-self: flex-start;
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.message.sent {
+    background: var(--gradient);
+    color: var(--white);
+    align-self: flex-end;
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+.message-content {
+    margin-bottom: var(--space-1);
+}
+
+.message-time {
+    font-size: var(--text-xs);
+    opacity: 0.7;
+}
+
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-top: 1px solid var(--bg-200);
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    font-size: var(--text-base);
+    outline: none;
+}
+
+.chat-input-area input:focus {
+    border-color: var(--primary);
+}
+
+.chat-input-area button {
+    padding: var(--space-3) var(--space-6);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+}
+
+/* Looking for partner state */
+.looking-state {
+    text-align: center;
+    padding: var(--space-8);
+}
+
+.looking-spinner {
+    width: 80px;
+    height: 80px;
+    border: 4px solid var(--bg-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-6);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.looking-state h2 {
+    color: var(--white);
+    margin-bottom: var(--space-2);
+}
+
+.looking-state p {
+    color: rgba(255,255,255,0.7);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="random-chat-container">
+    <!-- Landing Page -->
+    <div class="random-chat-landing" id="landing-page">
+        <div class="random-icon">
+            <i class="fas fa-random"></i>
+        </div>
+        <h1>Random Chat</h1>
+        <p>Connect with strangers from around the world. Chat with random people anonymously!</p>
+
+        <div class="gender-preference">
+            <h3>I want to chat with:</h3>
+            <div class="preference-options">
+                <button class="preference-btn active" data-preference="anyone" onclick="setPreference('anyone')">
+                    <i class="fas fa-random"></i> Anyone
+                </button>
+                <button class="preference-btn" data-preference="male" onclick="setPreference('male')">
+                    <i class="fas fa-male"></i> Male
+                </button>
+                <button class="preference-btn" data-preference="female" onclick="setPreference('female')">
+                    <i class="fas fa-female"></i> Female
+                </button>
+            </div>
+        </div>
+
+        <button class="start-random-btn" onclick="startRandomChat()">
+            <i class="fas fa-dice"></i> Start Random Chat
+        </button>
+    </div>
+
+    <!-- Looking for Partner -->
+    <div class="looking-state" id="looking-page" style="display: none;">
+        <div class="looking-spinner"></div>
+        <h2>Finding a chat partner...</h2>
+        <p>Please wait while we connect you with someone</p>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="random-chat-interface" id="chat-interface">
+        <div class="partner-info-bar">
+            <div class="partner-details">
+                <div class="partner-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="partner-name" id="partner-name">Stranger</div>
+                    <div class="partner-location" id="partner-location">Online</div>
+                </div>
+            </div>
+            <div class="chat-actions-bar">
+                <button class="chat-action-btn" title="Next Partner" onclick="nextPartner()">
+                    <i class="fas fa-forward"></i>
+                </button>
+                <button class="chat-action-btn stop" title="Stop Chat" onclick="stopChat()">
+                    <i class="fas fa-stop"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-main-area">
+            <div class="random-messages" id="random-messages">
+                <div class="message received">
+                    <div class="message-content">Hello! How are you?</div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="random-message-input" placeholder="Type a message..." onkeypress="handleRandomChat(event)">
+            <button onclick="sendRandomMessage()">Send</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPreference = 'anyone';
+let currentPartner = null;
+
+function setPreference(pref) {
+    currentPreference = pref;
+    document.querySelectorAll('.preference-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.preference === pref) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function startRandomChat() {
+    // Check if user is logged in
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (!isGuest) {
+        alert('Please login first!');
+        window.location.href = '/';
+        return;
+    }
+
+    // Show looking page
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('looking-page').style.display = 'block';
+
+    // Simulate finding a partner (in real app, this would use socket.io)
+    setTimeout(() => {
+        foundPartner();
+    }, 2000);
+}
+
+function foundPartner() {
+    const myGender = sessionStorage.getItem('guest_gender');
+
+    // Generate random partner based on preference
+    let partnerName, partnerGender;
+
+    if (currentPreference === 'male') {
+        partnerGender = 'male';
+        partnerName = getRandomName('male');
+    } else if (currentPreference === 'female') {
+        partnerGender = 'female';
+        partnerName = getRandomName('female');
+    } else {
+        partnerGender = Math.random() > 0.5 ? 'male' : 'female';
+        partnerName = getRandomName(partnerGender);
+    }
+
+    currentPartner = {
+        name: partnerName,
+        gender: partnerGender,
+        country: getRandomCountry()
+    };
+
+    // Show chat interface
+    document.getElementById('looking-page').style.display = 'none';
+    document.getElementById('chat-interface').style.display = 'block';
+
+    // Update partner info
+    document.getElementById('partner-name').textContent = partnerName;
+    document.getElementById('partner-location').textContent = currentPartner.country;
+
+    // Add system message
+    addRandomMessage('system', 'You are now connected with ' + partnerName + '. Say hello!');
+}
+
+function getRandomName(gender) {
+    const maleNames = ['Alex', 'John', 'Mike', 'David', 'Chris', 'James', 'Daniel', 'Ryan', 'Kevin', 'Brian'];
+    const femaleNames = ['Sarah', 'Emma', 'Jessica', 'Ashley', 'Emily', 'Amanda', 'Stephanie', 'Jennifer', 'Nicole', 'Laura'];
+
+    const names = gender === 'male' ? maleNames : femaleNames;
+    const randomNum = Math.floor(Math.random() * 100);
+    return names[Math.floor(Math.random() * names.length)] + randomNum;
+}
+
+function getRandomCountry() {
+    const countries = ['USA', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Brazil', 'India'];
+    return countries[Math.floor(Math.random() * countries.length)];
+}
+
+function sendRandomMessage() {
+    const input = document.getElementById('random-message-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    addRandomMessage('sent', message);
+    input.value = '';
+
+    // Simulate partner response
+    setTimeout(() => {
+        const responses = [
+            'That\'s interesting!',
+            'Haha, really?',
+            'I see!',
+            'Nice to hear that!',
+            'Tell me more!',
+            'Wow, amazing!',
+            'Cool!',
+            'LOL'
+        ];
+        const response = responses[Math.floor(Math.random() * responses.length)];
+        addRandomMessage('received', response);
+    }, 1500);
+}
+
+function handleRandomChat(e) {
+    if (e.key === 'Enter') {
+        sendRandomMessage();
+    }
+}
+
+function addRandomMessage(type, content) {
+    const container = document.getElementById('random-messages');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ' + type;
+    messageDiv.innerHTML = `
+        <div class="message-content">${escapeHtml(content)}</div>
+        <div class="message-time">${time}</div>
+    `;
+
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function nextPartner() {
+    // Clear messages
+    document.getElementById('random-messages').innerHTML = '';
+    document.getElementById('chat-interface').style.display = 'none';
+    document.getElementById('looking-page').style.display = 'block';
+
+    // Find new partner
+    setTimeout(() => {
+        foundPartner();
+    }, 1500);
+}
+
+function stopChat() {
+    document.getElementById('chat-interface').style.display = 'none';
+    document.getElementById('landing-page').style.display = 'block';
+    document.getElementById('random-messages').innerHTML = '';
+    currentPartner = null;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

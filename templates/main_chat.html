@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.main-page-container {
+    display: flex;
+    height: calc(100vh - 70px - 60px);
+    overflow: hidden;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Chat Page -->
+<div class="main-page-container">
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="1on1">
+                <i class="fas fa-user"></i>
+                <span>1on1</span>
+            </button>
+            <button class="tab-btn" data-tab="rooms">
+                <i class="fas fa-users"></i>
+                <span>Rooms</span>
+            </button>
+        </div>
+
+        <!-- Action Icons Row -->
+        <div class="action-icons-row">
+            <button class="action-icon-btn active" data-filter="online" title="Online">
+                <i class="fas fa-circle"></i>
+            </button>
+            <button class="action-icon-btn" data-filter="gender" title="Gender">
+                <i class="fas fa-venus-mars"></i>
+            </button>
+            <button class="action-icon-btn" data-filter="history" title="History">
+                <i class="fas fa-history"></i>
+            </button>
+            <button class="action-icon-btn" data-filter="inbox" title="Inbox">
+                <i class="fas fa-envelope"></i>
+            </button>
+            <button class="action-icon-btn" data-filter="friends" title="Friends">
+                <i class="fas fa-heart"></i>
+            </button>
+            <button class="action-icon-btn" data-filter="random" title="Random Chat">
+                <i class="fas fa-dice"></i>
+            </button>
+        </div>
+
+        <!-- Gender Filter -->
+        <div class="gender-filter-row" id="gender-filter" style="display: none;">
+            <button class="filter-btn active" data-gender="all">All</button>
+            <button class="filter-btn" data-gender="male"><i class="fas fa-male"></i></button>
+            <button class="filter-btn" data-gender="female"><i class="fas fa-female"></i></button>
+        </div>
+
+        <!-- User List -->
+        <div class="user-list-container" id="user-list-container">
+            <!-- Users will be populated here -->
+        </div>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="right-panel">
+        <!-- Welcome Mode -->
+        <div id="welcome-mode" class="right-panel-content">
+            <div class="welcome-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h2>Welcome to Chat Online!</h2>
+            <p class="desktop-only">Select a user from the left to start chatting<br>or click "Random Chat" to meet new people</p>
+            <p class="mobile-only" style="color: #6b7280; margin-bottom: 20px;">Click below to start chatting</p>
+
+            <!-- Mobile Action Buttons -->
+            <div class="mobile-action-buttons mobile-only">
+                <a href="/random-chat" class="mobile-action-btn">
+                    <i class="fas fa-bolt"></i>
+                    <span>Start Chat</span>
+                </a>
+                <a href="/inbox" class="mobile-action-btn">
+                    <i class="fas fa-envelope"></i>
+                    <span>Inbox</span>
+                </a>
+                <a href="/friends" class="mobile-action-btn">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Friends</span>
+                </a>
+                <a href="/dating-channels" class="mobile-action-btn">
+                    <i class="fas fa-heart"></i>
+                    <span>Dating</span>
+                </a>
+            </div>
+
+            <button id="start-random-btn" class="btn btn-primary btn-large desktop-only">
+                <i class="fas fa-dice"></i> Start Random Chat
+            </button>
+            <div class="welcome-features desktop-only">
+                <div class="welcome-feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safe & Moderated</span>
+                </div>
+                <div class="welcome-feature">
+                    <i class="fas fa-globe"></i>
+                    <span>Global Community</span>
+                </div>
+                <div class="welcome-feature">
+                    <i class="fas fa-clock"></i>
+                    <span>24/7 Available</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Private Chat Mode -->
+        <div id="private-chat-mode" class="right-panel-content hidden">
+            <!-- Safety Warning Bar (Desktop) -->
+            <div class="safety-warning-bar desktop-only">
+                <i class="fas fa-shield-alt"></i>
+                <span>Remember: In Online Chat With Strangers Never Share Personal Information!</span>
+            </div>
+
+            <!-- Mobile Chat Header -->
+            <div class="chat-header mobile-only">
+                <div class="back-arrow" onclick="endChat()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="chat-user-info" onclick="showPartnerProfile()" style="flex:1;display:flex;align-items:center;cursor:pointer;">
+                    <div class="chat-avatar" id="partner-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <span class="chat-user-name" id="partner-name">Chat</span>
+                        <span class="chat-user-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="partner-location">Online</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="header-actions" onclick="addFriendFromChat()">
+                    <button class="header-action-btn" title="Add Friend">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="menu-dots" onclick="showChatMenu()" title="More Options">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="system-message">
+                    <i class="fas fa-info-circle"></i>
+                    Start a conversation!
+                </div>
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Mobile Chat Input -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Type a message..." maxlength="500">
+                    <div class="input-icons">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                </div>
+                <button class="send-btn" id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Room Chat Mode -->
+        <div id="room-chat-mode" class="right-panel-content hidden">
+            <!-- Mobile Chat Header -->
+            <div class="chat-header mobile-only">
+                <div class="back-arrow" onclick="leaveRoom()">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="chat-avatar">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="chat-user-info">
+                    <span class="chat-user-name" id="room-name">Room</span>
+                    <span class="chat-user-location">
+                        <span id="room-users-count">0 users</span>
+                    </span>
+                </div>
+                <div class="menu-dots">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </div>
+            <div class="chat-messages" id="room-messages"></div>
+            <!-- Mobile Chat Input -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="room-message-input" placeholder="Type in room..." maxlength="500">
+                    <div class="input-icons">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                </div>
+                <button class="send-btn" id="room-send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chat functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Get stored user data
+    const username = sessionStorage.getItem('guest_username');
+    const gender = sessionStorage.getItem('guest_gender');
+    const age = sessionStorage.getItem('guest_age');
+    const country = sessionStorage.getItem('guest_country');
+    const isGuest = sessionStorage.getItem('is_guest');
+    
+    if (!username || !isGuest) {
+        window.location.href = '{{ url_for("index") }}';
+        return;
+    }
+    
+    // Connect to socket
+    const socket = io();
+    
+    // Store socket reference globally
+    window.socket = socket;
+    window.username = username;
+    window.gender = gender;
+    window.age = age;
+    window.country = country;
+    
+    // Socket event handlers
+    socket.on('connect', function() {
+        console.log('Connected to server');
+    });
+    
+    socket.on('disconnect', function() {
+        console.log('Disconnected from server');
+    });
+    
+    socket.on('connected', function(data) {
+        console.log('User connected:', data.user_id);
+    });
+    
+    socket.on('partner_found', function(data) {
+        console.log('Partner found:', data);
+        document.getElementById('welcome-mode').classList.add('hidden');
+        document.getElementById('private-chat-mode').classList.remove('hidden');
+        document.getElementById('partner-name').textContent = data.partner_name || 'Stranger';
+    });
+
+    socket.on('new_message', function(data) {
+        addMessage(data.message, data.sender, data.timestamp);
+
+        // Show notification for new message
+        if (typeof showNotification === 'function') {
+            showNotification('New Message', data.sender + ': ' + data.message.substring(0, 50), 'fa-comment');
+        }
+    });
+
+    socket.on('partner_disconnected', function() {
+        document.getElementById('chat-messages').innerHTML += 
+            '<div class="system-message"><i class="fas fa-info-circle"></i> Partner disconnected. Click "Next" to find a new partner.</div>';
+    });
+    
+    // Random chat button
+    document.getElementById('start-random-btn').addEventListener('click', function() {
+        socket.emit('find_partner', {
+            username: username,
+            gender: gender,
+            age: age,
+            country: country,
+            partner_pref: 'any',
+            is_guest: isGuest === 'true'
+        });
+    });
+
+    // Action buttons handler
+    document.querySelectorAll('.action-icon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            handleActionFilter(filter);
+        });
+    });
+
+    function handleActionFilter(filter) {
+        switch(filter) {
+            case 'online':
+                // Show online users - refresh page
+                location.reload();
+                break;
+            case 'gender':
+                // Toggle gender filter
+                const genderFilter = document.getElementById('gender-filter');
+                if (genderFilter) {
+                    genderFilter.style.display = genderFilter.style.display === 'none' ? 'flex' : 'none';
+                }
+                break;
+            case 'history':
+                // Go to chat history
+                window.location.href = '/history';
+                break;
+            case 'inbox':
+                // Go to inbox
+                window.location.href = '/inbox';
+                break;
+            case 'friends':
+                // Go to friends page
+                window.location.href = '/friends';
+                break;
+            case 'random':
+                // Start random chat
+                startRandomChat();
+                break;
+        }
+    }
+
+    // Start random chat function
+    function startRandomChat() {
+        socket.emit('find_partner', {
+            username: username,
+            gender: gender,
+            age: age,
+            country: country,
+            partner_pref: 'any',
+            is_guest: isGuest === 'true'
+        });
+    }
+
+    // Send message
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+    
+    function sendMessage() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        if (message) {
+            socket.emit('send_message', { message: message });
+            input.value = '';
+        }
+    }
+    
+    function addMessage(message, sender, timestamp) {
+        const container = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender === 'you' ? 'sent' : 'received'}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(message)}</div>
+            <div class="message-time">${formatTime(timestamp)}</div>
+        `;
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Show partner profile modal
+    window.showPartnerProfile = function() {
+        const partnerName = document.getElementById('partner-name')?.textContent || 'Stranger';
+        const partnerLocation = document.getElementById('partner-location')?.textContent || 'Unknown';
+
+        const modal = document.createElement('div');
+        modal.className = 'profile-modal-overlay';
+        modal.id = 'partner-profile-modal';
+        modal.innerHTML = `
+            <div class="profile-modal">
+                <div class="profile-modal-header">
+                    <button onclick="closePartnerProfile()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="profile-modal-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>${partnerName}</h2>
+                <p class="profile-location"><i class="fas fa-map-marker-alt"></i> ${partnerLocation}</p>
+                <div class="profile-actions">
+                    <button class="profile-action-btn" onclick="addFriendFromChat('${partnerName}')">
+                        <i class="fas fa-user-plus"></i> Add Friend
+                    </button>
+                    <button class="profile-action-btn danger" onclick="reportUser()">
+                        <i class="fas fa-flag"></i> Report
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closePartnerProfile();
+        });
+    };
+
+    window.closePartnerProfile = function() {
+        const modal = document.getElementById('partner-profile-modal');
+        if (modal) modal.remove();
+    };
+
+    // Show chat menu (3 dots)
+    window.showChatMenu = function() {
+        const menu = document.createElement('div');
+        menu.className = 'chat-menu-overlay';
+        menu.id = 'chat-menu';
+        menu.innerHTML = `
+            <div class="chat-menu">
+                <button onclick="showPartnerProfile(); closeChatMenu();">
+                    <i class="fas fa-user"></i> View Profile
+                </button>
+                <button onclick="addFriendFromChat(); closeChatMenu();">
+                    <i class="fas fa-user-plus"></i> Add Friend
+                </button>
+                <button onclick="reportUser(); closeChatMenu();">
+                    <i class="fas fa-flag"></i> Report User
+                </button>
+                <button onclick="blockUser(); closeChatMenu();">
+                    <i class="fas fa-ban"></i> Block User
+                </button>
+                <button onclick="closeChatMenu()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        `;
+        document.body.appendChild(menu);
+        menu.addEventListener('click', function(e) {
+            if (e.target === menu) closeChatMenu();
+        });
+    };
+
+    window.closeChatMenu = function() {
+        const menu = document.getElementById('chat-menu');
+        if (menu) menu.remove();
+    };
+
+    // Add friend from chat
+    window.addFriendFromChat = function(partnerName) {
+        const name = partnerName || document.getElementById('partner-name')?.textContent || '';
+        if (name) {
+            socket.emit('add_friend', { username: name });
+            showToast('Friend request sent to ' + name, 'success');
+        }
+        closePartnerProfile();
+    };
+
+    // Report user
+    window.reportUser = function() {
+        const reason = prompt('Why are you reporting this user?');
+        if (reason) {
+            socket.emit('report_partner', { reason: reason });
+            showToast('User reported. You will be connected to a new partner.', 'info');
+        }
+        closePartnerProfile();
+    };
+
+    // Block user
+    window.blockUser = function() {
+        if (confirm('Are you sure you want to block this user? You will not be matched with them again.')) {
+            showToast('User blocked. You will be connected to a new partner.', 'success');
+            socket.emit('next_person');
+        }
+        closeChatMenu();
+    };
+
+    // Toast notification function
+    window.showToast = function(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+        toast.innerHTML = '<span>' + message + '</span>';
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+
+    // End chat
+    window.endChat = function() {
+        socket.emit('stop_chat');
+        document.getElementById('private-chat-mode').classList.add('hidden');
+        document.getElementById('welcome-mode').classList.remove('hidden');
+    };
+
+    // Leave room
+    window.leaveRoom = function() {
+        socket.emit('leave_room');
+        document.getElementById('room-chat-mode').classList.add('hidden');
+        document.getElementById('welcome-mode').classList.remove('hidden');
+    };
+
+    // Show Partner Profile Modal
+    window.showPartnerProfile = function() {
+        const partnerName = document.getElementById('partner-name')?.textContent || 'Unknown';
+        const partnerLocation = document.getElementById('partner-location')?.textContent || 'Unknown';
+
+        const modal = document.createElement('div');
+        modal.className = 'profile-modal-overlay';
+        modal.onclick = function(e) {
+            if (e.target === modal) closeModal();
+        };
+
+        modal.innerHTML = `
+            <div class="profile-modal">
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="profile-avatar-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>${partnerName}</h2>
+                <p class="profile-location">
+                    <i class="fas fa-map-marker-alt"></i> ${partnerLocation}
+                </p>
+                <div class="profile-actions">
+                    <button class="profile-action-btn" onclick="addFriendFromChat()">
+                        <i class="fas fa-user-plus"></i>
+                        Add Friend
+                    </button>
+                    <button class="profile-action-btn" onclick="reportUser()">
+                        <i class="fas fa-flag"></i>
+                        Report
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+    };
+
+    // Close Modal
+    window.closeModal = function() {
+        const modal = document.querySelector('.profile-modal-overlay');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = '';
+        }
+    };
+
+    // Add Friend from Chat
+    window.addFriendFromChat = function() {
+        const partnerName = document.getElementById('partner-name')?.textContent;
+        if (partnerName) {
+            socket.emit('add_friend', { username: partnerName });
+            showToast(`Friend request sent to ${partnerName}`, 'success');
+            closeModal();
+        }
+    };
+
+    // Report User
+    window.reportUser = function() {
+        const partnerName = document.getElementById('partner-name')?.textContent || 'Unknown';
+        const reasons = ['Spam', 'Inappropriate behavior', 'Harassment', 'Scam', 'Other'];
+        const reason = prompt(`Report ${partnerName} for:\n${reasons.join('\n')}\n\nEnter reason:`);
+
+        if (reason) {
+            socket.emit('report_partner', { reason: reason });
+            showToast('User reported. You will be connected to a new partner.', 'info');
+            closeModal();
+            socket.emit('next_person');
+        }
+    };
+
+    // Show Chat Menu (3 dots)
+    window.showChatMenu = function() {
+        const modal = document.createElement('div');
+        modal.className = 'menu-modal-overlay';
+        modal.onclick = function(e) {
+            if (e.target === modal) closeModal();
+        };
+
+        modal.innerHTML = `
+            <div class="menu-modal">
+                <button class="menu-item" onclick="addFriendFromChat(); closeModal();">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add Friend</span>
+                </button>
+                <button class="menu-item" onclick="reportUser(); closeModal();">
+                    <i class="fas fa-flag"></i>
+                    <span>Report User</span>
+                </button>
+                <button class="menu-item" onclick="blockUser(); closeModal();">
+                    <i class="fas fa-ban"></i>
+                    <span>Block User</span>
+                </button>
+                <button class="menu-item" onclick="nextPartner(); closeModal();">
+                    <i class="fas fa-step-forward"></i>
+                    <span>Next Partner</span>
+                </button>
+                <button class="menu-item" onclick="stopChat(); closeModal();">
+                    <i class="fas fa-stop"></i>
+                    <span>End Chat</span>
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+    };
+
+    // Block User
+    window.blockUser = function() {
+        const partnerName = document.getElementById('partner-name')?.textContent || 'Unknown';
+        if (confirm(`Block ${partnerName}? You won't be matched with them again.`)) {
+            showToast(`${partnerName} has been blocked`, 'info');
+            socket.emit('next_person');
+        }
+    };
+
+    // Next Partner
+    window.nextPartner = function() {
+        socket.emit('next_person');
+        document.getElementById('chat-messages').innerHTML = '<div class="system-message"><i class="fas fa-info-circle"></i> Looking for a new partner...</div>';
+    };
+
+    // Stop Chat
+    window.stopChat = function() {
+        socket.emit('stop_chat');
+        document.getElementById('private-chat-mode').classList.add('hidden');
+        document.getElementById('welcome-mode').classList.remove('hidden');
+    };
+
+    // End Chat (for mobile back button)
+    window.endChat = function() {
+        if (confirm('End this chat?')) {
+            socket.emit('stop_chat');
+            document.getElementById('private-chat-mode').classList.add('hidden');
+            document.getElementById('welcome-mode').classList.remove('hidden');
+        }
+    };
+
+    // Leave Room
+    window.leaveRoom = function() {
+        socket.emit('leave_room');
+        document.getElementById('room-chat-mode').classList.add('hidden');
+        document.getElementById('welcome-mode').classList.remove('hidden');
+    };
+
+    // Show Toast notification
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}
+
+{% block content %}
+<!-- Three Column Layout -->
+<div class="entry-three-columns">
+    <!-- LEFT: Content Box -->
+    <div class="entry-left-content">
+        <div class="content-box gradient-border-card">
+            <h3><i class="fas fa-info-circle"></i> About Chat Online</h3>
+            <p>Welcome to Chat Online - the best platform to meet new people from around the world!</p>
+            <ul>
+                <li><i class="fas fa-check"></i> 100% Free to use</li>
+                <li><i class="fas fa-check"></i> Chat with strangers instantly</li>
+                <li><i class="fas fa-check"></i> Make new friends worldwide</li>
+                <li><i class="fas fa-check"></i> Random chat feature</li>
+                <li><i class="fas fa-check"></i> Join chat rooms</li>
+                <li><i class="fas fa-check"></i> Private messaging</li>
+            </ul>
+            <div class="content-features">
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safe & Secure</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Friendly</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Global Community</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER: Welcome Box with Form -->
+    <div class="entry-center">
+        <div class="welcome-box">
+            <div class="welcome-logo">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h1>Welcome to Chat Online</h1>
+            <p class="welcome-subtitle">18+ Free Chat Rooms</p>
+
+            <form id="entry-form" class="entry-form">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="guest-username" placeholder="Choose a username" maxlength="20" required>
+                    <span class="username-hint">Letters, numbers, underscores only</span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-venus-mars"></i> I am</label>
+                    <div class="gender-selector gender-selector-three">
+                        <label class="gender-box male">
+                            <input type="radio" name="guest_gender" value="male">
+                            <div class="gender-content">
+                                <i class="fas fa-male"></i>
+                                <span>Male</span>
+                            </div>
+                        </label>
+                        <label class="gender-box female">
+                            <input type="radio" name="guest_gender" value="female">
+                            <div class="gender-content">
+                                <i class="fas fa-female"></i>
+                                <span>Female</span>
+                            </div>
+                        </label>
+                        <label class="gender-box">
+                            <input type="radio" name="guest_gender" value="other">
+                            <div class="gender-content">
+                                <i class="fas fa-user"></i>
+                                <span>Other</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-birthday-cake"></i> Age</label>
+                        <select id="guest-age" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Country</label>
+                        <select id="guest-country" required></select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="state-group" style="display: none;">
+                    <label><i class="fas fa-map-marker-alt"></i> State</label>
+                    <select id="guest-state"></select>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-large" id="startBtn">
+                    <i class="fas fa-sign-in-alt"></i> Start Chatting
+                </button>
+            </form>
+
+            <div class="entry-footer-links">
+                <a href="{{ url_for('login_page') }}" class="nav-link">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Published Blogs -->
+    <div class="entry-right-blogs">
+        <div class="blogs-section">
+            <h3><i class="fas fa-blog"></i> Latest Blogs</h3>
+            <div class="blog-list">
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>How to Stay Safe Online</h4>
+                        <span class="blog-date">Feb 15, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Making Friends Through Chat</h4>
+                        <span class="blog-date">Feb 12, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Chat Room Etiquette</h4>
+                        <span class="blog-date">Feb 10, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Best Topics to Discuss</h4>
+                        <span class="blog-date">Feb 8, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Random Chat Tips</h4>
+                        <span class="blog-date">Feb 5, 2026</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Age dropdown generation
+const ageSelect = document.getElementById('guest-age');
+for (let i = 18; i <= 100; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    if (i === 18) option.selected = true;
+    ageSelect.appendChild(option);
+}
+
+// Country dropdown
+const countrySelect = document.getElementById('guest-country');
+const stateSelect = document.getElementById('guest-state');
+const stateGroup = document.getElementById('state-group');
+
+const countries = [
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'PE', name: 'Peru' },
+    { code: 'VE', name: 'Venezuela' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'EG', name: 'Egypt' },
+    { code: 'NG', name: 'Nigeria' },
+    { code: 'KE', name: 'Kenya' },
+    { code: 'IN', name: 'India' },
+    { code: 'PK', name: 'Pakistan' },
+    { code: 'BD', name: 'Bangladesh' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'CN', name: 'China' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'TW', name: 'Taiwan' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'AT', name: 'Austria' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'RU', name: 'Russia' },
+    { code: 'UA', name: 'Ukraine' },
+    { code: 'TR', name: 'Turkey' },
+    { code: 'IL', name: 'Israel' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'AE', name: 'UAE' },
+    { code: 'QA', name: 'Qatar' },
+    { code: 'Other', name: 'Other' }
+];
+
+// US States
+const usStates = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
+    { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
+    { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
+    { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
+    { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
+    { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
+    { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
+    { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
+    { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
+    { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
+    { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
+    { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
+    { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
+    { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' },
+    { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+];
+
+// Show/hide state dropdown based on country
+countrySelect.addEventListener('change', function() {
+    if (this.value === 'US' || this.value === 'CA' || this.value === 'AU') {
+        stateGroup.style.display = 'block';
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+
+        let states;
+        if (this.value === 'US') states = usStates;
+        else if (this.value === 'CA') states = [
+            { code: 'ON', name: 'Ontario' }, { code: 'QC', name: 'Quebec' },
+            { code: 'BC', name: 'British Columbia' }, { code: 'AB', name: 'Alberta' },
+            { code: 'MB', name: 'Manitoba' }, { code: 'SK', name: 'Saskatchewan' },
+            { code: 'NS', name: 'Nova Scotia' }, { code: 'NB', name: 'New Brunswick' }
+        ];
+        else if (this.value === 'AU') states = [
+            { code: 'NSW', name: 'New South Wales' }, { code: 'VIC', name: 'Victoria' },
+            { code: 'QLD', name: 'Queensland' }, { code: 'WA', name: 'Western Australia' },
+            { code: 'SA', name: 'South Australia' }, { code: 'TAS', name: 'Tasmania' }
+        ];
+
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state.code;
+            option.textContent = state.name;
+            stateSelect.appendChild(option);
+        });
+    } else {
+        stateGroup.style.display = 'none';
+        stateSelect.value = '';
+    }
+});
+
+// Initialize US states on load
+stateSelect.innerHTML = '<option value="">Select State</option>';
+usStates.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state.code;
+    option.textContent = state.name;
+    stateSelect.appendChild(option);
+});
+
+countries.forEach(country => {
+    const option = document.createElement('option');
+    option.value = country.code;
+    option.textContent = country.name;
+    if (country.code === 'US') option.selected = true;
+    countrySelect.appendChild(option);
+});
+
+// State dropdown logic
+const usStates = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
+    { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
+    { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
+    { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
+    { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
+    { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
+    { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
+    { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
+    { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
+    { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
+    { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
+    { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
+    { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
+    { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' },
+    { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+];
+
+// Populate US states
+usStates.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state.code;
+    option.textContent = state.name;
+    stateSelect.appendChild(option);
+});
+
+// Show/hide state dropdown based on country
+countrySelect.addEventListener('change', function() {
+    if (this.value === 'US' || this.value === 'CA') {
+        stateGroup.style.display = 'block';
+    } else {
+        stateGroup.style.display = 'none';
+    }
+});
+
+// Form submission
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('guest-username').value.trim();
+    const gender = document.querySelector('input[name="guest_gender"]:checked')?.value;
+    const age = document.getElementById('guest-age').value;
+    const country = document.getElementById('guest-country').value;
+    const state = document.getElementById('guest-state').value;
+
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    // Store in sessionStorage for chat.js to use
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('is_guest', 'true');
+
+    // Show age verification modal
+});
+</script>
+
+<script>
+document.getElementById('startBtn').addEventListener('click', function() {
+    var username = document.getElementById('guest-username').value.trim();
+    var gender = document.querySelector('input[name="guest_gender"]:checked');
+    var age = document.getElementById('guest-age').value;
+    var country = document.getElementById('guest-country').value;
+    var state = document.getElementById('guest-state').value;
+
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender.value);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('is_guest', 'true');
+
+    window.location.href = '/welcome';
+});
+</script>
+{% endblock %}

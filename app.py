@@ -1,0 +1,1098 @@
+from flask import Flask, render_template, request, session, jsonify
+from flask_socketio import SocketIO, emit, join_room, leave_room
+import uuid
+import time
+import hashlib
+import re
+from collections import defaultdict
+from config import Config
+from database import init_database
+from api_routes import api
+from csrf import generate_csrf_token, validate_csrf_token
+
+app = Flask(__name__)
+app.config.from_object(Config)
+app.config['SECRET_KEY'] = 'chat-online-secret-key-change-in-production'
+
+# Add CSRF token generator to Jinja context
+app.jinja_env.globals['csrf_token'] = generate_csrf_token
+
+# Initialize database
+init_database()
+
+# Register API blueprint
+app.register_blueprint(api)
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+
+# ==================== ANTI-BOT SECURITY SYSTEM ====================
+
+# Track connection attempts per IP
+ip_connections = defaultdict(list)
+ip_message_counts = defaultdict(list)
+ip_request_counts = defaultdict(list)
+
+# Maximum connections per IP
+MAX_CONNECTIONS_PER_IP = 3
+MAX_MESSAGES_PER_MINUTE = 20
+MAX_REQUESTS_PER_MINUTE = 30
+
+# Bot detection patterns
+BOT_USER_AGENTS = [
+    'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
+    'python', 'java', 'node', 'ruby', 'go', 'rust',
+    'headless', 'puppeteer', 'selenium', 'phantom',
+    'httpclient', 'requests', 'urllib', 'httpx'
+]
+
+# Known proxy/ VPN IP ranges (simplified - in production use a service)
+SUSPICIOUS_HEADERS = [
+    'x-forwarded-for', 'x-real-ip', 'cf-connecting-ip',
+    'true-client-ip', 'x-cluster-client-ip'
+]
+
+# Rate limiting decorator
+def check_rate_limit(ip, action='message'):
+    """Check if IP has exceeded rate limits"""
+    current_time = time.time()
+
+    if action == 'message':
+        # Clean old entries
+        ip_message_counts[ip] = [t for t in ip_message_counts[ip] if current_time - t < 60]
+        if len(ip_message_counts[ip]) >= MAX_MESSAGES_PER_MINUTE:
+            return False
+        ip_message_counts[ip].append(current_time)
+    elif action == 'request':
+        ip_request_counts[ip] = [t for t in ip_request_counts[ip] if current_time - t < 60]
+        if len(ip_request_counts[ip]) >= MAX_REQUESTS_PER_MINUTE:
+            return False
+        ip_request_counts[ip].append(current_time)
+
+    return True
+
+def get_client_ip():
+    """Get real client IP address"""
+    # Check common proxy headers
+    for header in SUSPICIOUS_HEADERS:
+        if request.headers.get(header):
+            return request.headers.get(header).split(',')[0].strip()
+
+    return request.remote_addr
+
+def is_bot_request():
+    """Check if request appears to be from a bot"""
+    user_agent = request.headers.get('User-Agent', '').lower()
+
+    # Check for bot user agents
+    for bot_ua in BOT_USER_AGENTS:
+        if bot_ua in user_agent:
+            return True
+
+    # Check for missing user agent
+    if not user_agent or user_agent == '':
+        return True
+
+    return False
+
+def validate_session():
+    """Validate user session for authenticity"""
+    # Check if session exists and has required data
+    if 'session_start' not in session:
+        return False
+
+    # Session should be at least 2 seconds old (prevents instant bot registration)
+    session_age = time.time() - session.get('session_start', 0)
+    if session_age < 2:
+        return False
+
+    # Check for valid session fingerprint
+    if 'fingerprint' not in session:
+        return False
+
+    return True
+
+def generate_honeypot_token():
+    """Generate a honeypot token"""
+    return hashlib.sha256(str(time.time()).encode()).hexdigest()[:16]
+
+# Store active users and queues
+users = {}
+registered_users = {}
+used_usernames = set()
+
+# Friends system - {user_id: [friend_id1, friend_id2, ...]}
+friends = {}
+
+# Friend requests - {user_id: [request_from_user_id1, request_from_user_id2, ...]}
+friend_requests = {}
+
+# Honeypot tokens storage
+honeypot_tokens = set()
+
+# Waiting queues by gender preference
+waiting_queues = {
+    'male': {'any': [], 'opposite': [], 'same': []},
+    'female': {'any': [], 'opposite': [], 'same': []}
+}
+
+def generate_user_id():
+    return str(uuid.uuid4())
+
+def get_partner_gender(user_gender, preference):
+    if preference == 'any':
+        return None
+    elif preference == 'opposite':
+        return 'female' if user_gender == 'male' else 'male'
+    elif preference == 'same':
+        return user_gender
+    return None
+
+def find_partner(user_id, user_gender, partner_pref):
+    partner_gender = get_partner_gender(user_gender, partner_pref)
+
+    if partner_pref == 'any':
+        for pref in ['any', 'same', 'opposite']:
+            queue = waiting_queues[user_gender][pref]
+            if queue:
+                return queue.pop(0)
+    elif partner_pref == 'opposite':
+        opposite_gender = 'female' if user_gender == 'male' else 'male'
+        for pref in ['any', 'opposite']:
+            queue = waiting_queues[opposite_gender][pref]
+            if queue:
+                return queue.pop(0)
+    elif partner_pref == 'same':
+        for pref in ['any', 'same']:
+            queue = waiting_queues[user_gender][pref]
+            if queue:
+                return queue.pop(0)
+
+    return None
+
+def add_to_queue(user_id, gender, preference):
+    waiting_queues[gender][preference].append(user_id)
+
+def remove_from_queue(user_id):
+    for gender in waiting_queues:
+        for pref in waiting_queues[gender]:
+            if user_id in waiting_queues[gender][pref]:
+                waiting_queues[gender][pref].remove(user_id)
+
+def create_chat_room(user1_id, user2_id):
+    room_id = str(uuid.uuid4())
+    return room_id
+
+# ==================== ROUTES ====================
+
+@app.route('/')
+def index():
+    # Generate honeypot token for this session
+    honeypot_token = generate_honeypot_token()
+    session['honeypot_token'] = honeypot_token
+    session['session_start'] = time.time()
+    honeypot_tokens.add(honeypot_token)
+
+    return render_template('index.html')
+
+@app.route('/home')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/verify-human', methods=['POST'])
+def verify_human():
+    """Verify human verification challenge"""
+    client_ip = get_client_ip()
+
+    # Rate limit
+    if not check_rate_limit(client_ip, 'request'):
+        return jsonify({'success': False, 'error': 'Too many requests'})
+
+    data = request.get_json()
+    token = data.get('token', '')
+    challenge = data.get('challenge', '')
+
+    # Validate honeypot
+    if token in honeypot_tokens:
+        honeypot_tokens.discard(token)
+        session['human_verified'] = True
+        session['fingerprint'] = hashlib.md5(client_ip.encode()).hexdigest()
+        return jsonify({'success': True})
+
+    return jsonify({'success': False, 'error': 'Verification failed'})
+
+@app.route('/api/check-rate-limit', methods=['GET'])
+def check_rate():
+    """Check if IP is rate limited"""
+    client_ip = get_client_ip()
+
+    if not check_rate_limit(client_ip, 'request'):
+        return jsonify({'limited': True, 'retry_after': 60})
+
+    return jsonify({'limited': False})
+
+# ==================== SOCKET HANDLERS ====================
+
+@socketio.on('connect')
+def handle_connect():
+    client_ip = get_client_ip()
+
+    # Check if bot
+    if is_bot_request():
+        emit('error', {'message': 'Access denied'})
+        return False
+
+    # Rate limit connections
+    current_time = time.time()
+    ip_connections[client_ip] = [t for t in ip_connections[client_ip] if current_time - t < 60]
+
+    if len(ip_connections[client_ip]) >= MAX_CONNECTIONS_PER_IP:
+        emit('error', {'message': 'Too many connections from your IP'})
+        return False
+
+    ip_connections[client_ip].append(current_time)
+
+    # Validate session
+    if not validate_session():
+        emit('error', {'message': 'Invalid session. Please refresh the page.'})
+        return False
+
+    user_id = generate_user_id()
+    users[user_id] = {
+        'gender': None,
+        'partner_pref': None,
+        'partner_id': None,
+        'room': None,
+        'connected_at': time.time(),
+        'ip': client_ip,
+        'messages_sent': 0,
+        'last_message_time': 0
+    }
+    session['user_id'] = user_id
+    emit('connected', {'user_id': user_id})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    user_id = session.get('user_id')
+    if user_id and user_id in users:
+        user = users[user_id]
+
+        if user.get('partner_id'):
+            partner_id = user['partner_id']
+            if partner_id in users:
+                emit('partner_disconnected', room=user['room'], broadcast=True)
+
+            if partner_id in users:
+                users[partner_id]['partner_id'] = None
+                users[partner_id]['room'] = None
+
+        remove_from_queue(user_id)
+        del users[user_id]
+
+    print(f'User {user_id} disconnected')
+
+@socketio.on('verify_human')
+def handle_verify_human(data):
+    """Handle human verification"""
+    token = data.get('token', '')
+
+    if token in honeypot_tokens:
+        honeypot_tokens.discard(token)
+        session['human_verified'] = True
+        emit('verification_success')
+    else:
+        emit('verification_failed')
+
+@socketio.on('check_username')
+def handle_check_username(data):
+    username = data.get('username', '').strip().lower()
+
+    # Basic validation
+    if not username or len(username) < 3 or len(username) > 20:
+        emit('username_error', {'message': 'Username must be 3-20 characters'})
+        return
+
+    # Check for bot-like usernames
+    if re.match(r'^[0-9]+$', username):
+        emit('username_error', {'message': 'Username must contain letters'})
+        return
+
+    if username in [u['username'].lower() for u in registered_users.values()]:
+        emit('username_taken', {'username': username})
+        return
+
+    if username in used_usernames:
+        emit('username_taken', {'username': username})
+        return
+
+    emit('username_available', {'username': username})
+
+@socketio.on('login')
+def handle_login(data):
+    client_ip = get_client_ip()
+
+    # Rate limit
+    if not check_rate_limit(client_ip, 'request'):
+        emit('login_error', {'message': 'Too many attempts. Please wait.'})
+        return
+
+    username = data.get('username', '').strip()
+
+    if not username:
+        emit('login_error', {'message': 'Please enter username'})
+        return
+
+    user_found = None
+    for uid, user_data in registered_users.items():
+        if user_data['username'].lower() == username.lower():
+            user_found = user_data
+            user_found['id'] = uid
+            break
+
+    if not user_found:
+        emit('login_error', {'message': 'User not found. Please register first.'})
+        return
+
+    session['user_id'] = user_found['id']
+    users[user_found['id']].update({
+        'username': user_found['username'],
+        'gender': user_found['gender'],
+        'age': user_found.get('age'),
+        'country': user_found.get('country'),
+        'state': user_found.get('state'),
+        'is_registered': True
+    })
+
+    emit('login_success', {
+        'user': {
+            'username': user_found['username'],
+            'gender': user_found['gender'],
+            'age': user_found.get('age'),
+            'country': user_found.get('country'),
+            'state': user_found.get('state')
+        }
+    })
+
+@socketio.on('register')
+def handle_register(data):
+    client_ip = get_client_ip()
+
+    # Rate limit
+    if not check_rate_limit(client_ip, 'request'):
+        emit('register_error', {'message': 'Too many attempts. Please wait.'})
+        return
+
+    username = data.get('username', '').strip()
+    gender = data.get('gender')
+    age = data.get('age')
+    country = data.get('country')
+    state = data.get('state', '')
+
+    # Validate all fields
+    if not username or not gender or not age or not country:
+        emit('validation_error', {'message': 'All fields are required'})
+        return
+
+    # Validate username
+    if len(username) < 3 or len(username) > 20:
+        emit('register_error', {'message': 'Username must be 3-20 characters'})
+        return
+
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        emit('register_error', {'message': 'Username can only contain letters, numbers, and underscores'})
+        return
+
+    # Check if username exists
+    if username.lower() in [u['username'].lower() for u in registered_users.values()]:
+        emit('register_error', {'message': 'Username already exists'})
+        return
+
+    user_id = generate_user_id()
+    registered_users[user_id] = {
+        'username': username,
+        'gender': gender,
+        'age': age,
+        'country': country,
+        'state': state,
+        'created_at': time.time(),
+        'ip': client_ip
+    }
+
+    session['user_id'] = user_id
+    users[user_id].update({
+        'username': username,
+        'gender': gender,
+        'age': age,
+        'country': country,
+        'state': state,
+        'is_registered': True
+    })
+
+    emit('register_success', {
+        'user': {
+            'username': username,
+            'gender': gender,
+            'age': age,
+            'country': country,
+            'state': state
+        }
+    })
+
+@socketio.on('find_partner')
+def handle_find_partner(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        emit('error', {'message': 'Not connected properly'})
+        return
+
+    username = data.get('username')
+    gender = data.get('gender')
+    partner_pref = data.get('partner_pref')
+    age = data.get('age')
+    country = data.get('country')
+    state = data.get('state', '')
+    is_guest = data.get('is_guest', True)
+
+    if not gender or not partner_pref:
+        emit('error', {'message': 'Please select gender and preference'})
+        return
+
+    users[user_id]['username'] = username
+    users[user_id]['gender'] = gender
+    users[user_id]['partner_pref'] = partner_pref
+    users[user_id]['age'] = age
+    users[user_id]['country'] = country
+    users[user_id]['state'] = state
+
+    if is_guest:
+        used_usernames.add(username.lower())
+
+    remove_from_queue(user_id)
+
+    partner_id = find_partner(user_id, gender, partner_pref)
+
+    if partner_id and partner_id in users:
+        room_id = create_chat_room(user_id, partner_id)
+
+        users[user_id]['partner_id'] = partner_id
+        users[user_id]['room'] = room_id
+
+        users[partner_id]['partner_id'] = user_id
+        users[partner_id]['room'] = room_id
+
+        join_room(room_id)
+
+        partner = users[partner_id]
+        partner_name = partner.get('username', 'Stranger')
+        partner_info = ''
+        if partner.get('country'):
+            country_name = Config.COUNTRIES.get(partner['country'], partner['country'])
+            partner_info = f"{partner.get('age', '')} | {country_name}"
+            if partner.get('state'):
+                partner_info += f", {partner['state']}"
+
+        user_info = f"{age} | {Config.COUNTRIES.get(country, country)}"
+        if state:
+            user_info += f", {state}"
+
+        emit('partner_found', {
+            'room': room_id,
+            'partner_gender': users[partner_id]['gender'],
+            'partner_name': partner_name,
+            'partner_info': partner_info
+        })
+
+        emit('partner_found', {
+            'room': room_id,
+            'partner_gender': gender,
+            'partner_name': username,
+            'partner_info': user_info
+        }, room=room_id)
+
+    else:
+        add_to_queue(user_id, gender, partner_pref)
+        emit('waiting', {'message': 'Looking for a stranger to chat with...'})
+
+@socketio.on('send_message')
+def handle_message(data):
+    user_id = session.get('user_id')
+    client_ip = get_client_ip()
+
+    if not user_id or user_id not in users:
+        emit('error', {'message': 'Not connected properly'})
+        return
+
+    # Rate limit messages
+    if not check_rate_limit(client_ip, 'message'):
+        emit('error', {'message': 'You are sending messages too fast. Please slow down.'})
+        return
+
+    user = users[user_id]
+    if not user.get('room') or not user.get('partner_id'):
+        emit('error', {'message': 'No active chat'})
+        return
+
+    message = data.get('message', '').strip()
+    if not message:
+        return
+
+    # Message length limit
+    if len(message) > Config.MAX_MESSAGE_LENGTH:
+        message = message[:Config.MAX_MESSAGE_LENGTH]
+
+    # Track message count
+    user['messages_sent'] += 1
+    user['last_message_time'] = time.time()
+
+    # Block if too many messages
+    if user['messages_sent'] > 100:
+        emit('error', {'message': 'Message limit reached. Please start a new chat.'})
+        return
+
+    emit('new_message', {
+        'message': message,
+        'sender': 'you',
+        'timestamp': time.time()
+    }, room=user['room'])
+
+    emit('new_message', {
+        'message': message,
+        'sender': 'partner',
+        'timestamp': time.time()
+    }, room=user['room'])
+
+@socketio.on('typing')
+def handle_typing(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        return
+
+    user = users[user_id]
+    if user.get('room'):
+        emit('partner_typing', {'is_typing': data.get('is_typing', False)}, room=user['room'])
+
+@socketio.on('next_person')
+def handle_next_person():
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        emit('error', {'message': 'Not connected properly'})
+        return
+
+    user = users[user_id]
+
+    if user.get('room'):
+        leave_room(user['room'])
+        emit('chat_ended', {'message': 'You left the chat'}, room=user['room'])
+
+        if user.get('partner_id') and user['partner_id'] in users:
+            partner = users[user['partner_id']]
+            if partner.get('room') == user['room']:
+                emit('partner_left', room=user['room'])
+
+    user['partner_id'] = None
+    user['room'] = None
+    user['messages_sent'] = 0
+
+    gender = user.get('gender')
+    partner_pref = user.get('partner_pref')
+
+    if gender and partner_pref:
+        partner_id = find_partner(user_id, gender, partner_pref)
+
+        if partner_id and partner_id in users:
+            room_id = create_chat_room(user_id, partner_id)
+
+            users[user_id]['partner_id'] = partner_id
+            users[user_id]['room'] = room_id
+
+            users[partner_id]['partner_id'] = user_id
+            users[partner_id]['room'] = room_id
+
+            join_room(room_id)
+
+            emit('partner_found', {
+                'room': room_id,
+                'partner_gender': users[partner_id]['gender'],
+                'partner_name': users[partner_id].get('username', 'Stranger')
+            }, room=room_id)
+        else:
+            add_to_queue(user_id, gender, partner_pref)
+            emit('waiting', {'message': 'Looking for a stranger to chat with...'})
+
+@socketio.on('stop_chat')
+def handle_stop_chat():
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        return
+
+    user = users[user_id]
+
+    if user.get('room'):
+        leave_room(user['room'])
+        emit('chat_ended', {'message': 'Chat ended'}, room=user['room'])
+
+        if user.get('partner_id') and user['partner_id'] in users:
+            partner = users[user['partner_id']]
+            emit('partner_left', room=partner.get('room'))
+
+    user['partner_id'] = None
+    user['room'] = None
+    user['messages_sent'] = 0
+    remove_from_queue(user_id)
+
+    emit('chat_stopped', {'message': 'You have left the chat'})
+
+@socketio.on('report_partner')
+def handle_report(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        return
+
+    reason = data.get('reason', 'No reason provided')
+    print(f'Report: User {user_id} reported partner {users[user_id].get("partner_id")} for: {reason}')
+
+    handle_next_partner_internal(user_id)
+
+# ============ FRIEND SYSTEM ============
+
+@socketio.on('add_friend')
+def handle_add_friend(data):
+    """Send a friend request to another user"""
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        emit('friend_error', {'message': 'Please login first'})
+        return
+
+    target_username = data.get('username', '').strip()
+    if not target_username:
+        emit('friend_error', {'message': 'Username required'})
+        return
+
+    # Find target user
+    target_user_id = None
+    for uid, user_data in users.items():
+        if user_data.get('username', '').lower() == target_username.lower():
+            target_user_id = uid
+            break
+
+    # Also check registered users
+    if not target_user_id:
+        for uid, user_data in registered_users.items():
+            if user_data.get('username', '').lower() == target_username.lower():
+                target_user_id = uid
+                break
+
+    if not target_user_id:
+        emit('friend_error', {'message': 'User not found'})
+        return
+
+    if target_user_id == user_id:
+        emit('friend_error', {'message': 'Cannot add yourself'})
+        return
+
+    # Check if already friends
+    if user_id in friends and target_user_id in friends[user_id]:
+        emit('friend_error', {'message': 'Already friends'})
+        return
+
+    # Send friend request
+    if target_user_id not in friend_requests:
+        friend_requests[target_user_id] = []
+    friend_requests[target_user_id].append(user_id)
+
+    # Notify the request sender
+    emit('friend_request_sent', {'message': f'Friend request sent to {target_username}'})
+
+    # Notify the target user if online
+    if target_user_id in users:
+        emit('new_friend_request', {
+            'from_user': users[user_id].get('username', 'Unknown'),
+            'from_gender': users[user_id].get('gender', 'unknown')
+        }, room=target_user_id)
+
+@socketio.on('accept_friend')
+def handle_accept_friend(data):
+    """Accept a friend request"""
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        emit('friend_error', {'message': 'Please login first'})
+        return
+
+    from_user_id = data.get('user_id')
+    if not from_user_id:
+        emit('friend_error', {'message': 'User ID required'})
+        return
+
+    # Check if request exists
+    if user_id not in friend_requests or from_user_id not in friend_requests[user_id]:
+        emit('friend_error', {'message': 'No friend request from this user'})
+        return
+
+    # Remove from requests
+    friend_requests[user_id].remove(from_user_id)
+
+    # Add to friends
+    if user_id not in friends:
+        friends[user_id] = []
+    if from_user_id not in friends[user_id]:
+        friends[user_id].append(from_user_id)
+
+    if from_user_id not in friends:
+        friends[from_user_id] = []
+    if user_id not in friends[from_user_id]:
+        friends[from_user_id].append(user_id)
+
+    from_username = users.get(from_user_id, {}).get('username', 'Unknown')
+    emit('friend_accepted', {'message': f'You are now friends with {from_username}'})
+
+@socketio.on('get_friends')
+def handle_get_friends():
+    """Get user's friends list"""
+    user_id = session.get('user_id')
+    if not user_id or user_id not in users:
+        emit('friend_error', {'message': 'Please login first'})
+        return
+
+    user_friends = friends.get(user_id, [])
+    friends_list = []
+
+    for friend_id in user_friends:
+        friend_info = {'id': friend_id}
+        if friend_id in users:
+            friend_info['username'] = users[friend_id].get('username', 'Unknown')
+            friend_info['gender'] = users[friend_id].get('gender', 'unknown')
+            friend_info['online'] = True
+        elif friend_id in registered_users:
+            friend_info['username'] = registered_users[friend_id].get('username', 'Unknown')
+            friend_info['gender'] = registered_users[friend_id].get('gender', 'unknown')
+            friend_info['online'] = False
+        friends_list.append(friend_info)
+
+    emit('friends_list', {'friends': friends_list})
+
+def handle_next_partner_internal(user_id):
+    if user_id not in users:
+        return
+
+    user = users[user_id]
+
+    if user.get('room'):
+        leave_room(user['room'])
+
+    user['partner_id'] = None
+    user['room'] = None
+    user['messages_sent'] = 0
+
+    gender = user.get('gender')
+    partner_pref = user.get('partner_pref')
+
+    if gender and partner_pref:
+        partner_id = find_partner(user_id, gender, partner_pref)
+
+        if partner_id and partner_id in users:
+            room_id = create_chat_room(user_id, partner_id)
+
+            users[user_id]['partner_id'] = partner_id
+            users[user_id]['room'] = room_id
+
+            users[partner_id]['partner_id'] = user_id
+            users[partner_id]['room'] = room_id
+
+            join_room(room_id)
+
+            emit('partner_found', {
+                'room': room_id,
+                'partner_gender': users[partner_id]['gender'],
+                'partner_name': users[partner_id].get('username', 'Stranger')
+            }, room=room_id)
+        else:
+            add_to_queue(user_id, gender, partner_pref)
+            emit('waiting', {'message': 'Looking for a stranger to chat with...'}, room=request.sid)
+
+# ==================== PAGE ROUTES ====================
+
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/register')
+def register_page():
+    return render_template('register.html')
+
+@app.route('/chat')
+def main_chat():
+    return render_template('main_chat.html')
+
+@app.route('/chat-rooms')
+def chat_rooms():
+    return render_template('chat_rooms.html')
+
+@app.route('/random-chat')
+def random_chat():
+    return render_template('random_chat.html')
+
+@app.route('/dating-channels')
+def dating_channels_page():
+    return render_template('dating_channels.html')
+
+@app.route('/about')
+def about_page():
+    return render_template('about.html')
+
+@app.route('/blog')
+def blog_page():
+    return render_template('blog.html')
+
+@app.route('/faq')
+def faq_page():
+    return render_template('faq.html')
+
+@app.route('/terms')
+def terms_page():
+    return render_template('terms.html')
+
+@app.route('/privacy')
+def privacy_page():
+    return render_template('privacy.html')
+
+@app.route('/safety')
+def safety_page():
+    return render_template('safety.html')
+
+@app.route('/contact')
+def contact_page():
+    return render_template('contact.html')
+
+@app.route('/profile')
+def profile_page():
+    return render_template('profile.html')
+
+@app.route('/welcome')
+def welcome_page():
+    return render_template('welcome.html')
+
+@app.route('/ai-chat')
+def ai_chat_page():
+    return render_template('ai_chat.html')
+
+@app.route('/chat/1on1')
+def chat_1on1_page():
+    return render_template('chat_1on1.html')
+
+@app.route('/rooms')
+def rooms_page():
+    return render_template('chat_rooms.html')
+
+@app.route('/history')
+def history_page():
+    return render_template('history.html')
+
+@app.route('/inbox')
+def inbox_page():
+    return render_template('inbox.html')
+
+@app.route('/friends')
+def friends_page():
+    return render_template('friends.html')
+
+@app.route('/settings')
+def settings_page():
+    return render_template('settings.html')
+
+@app.route('/blog/<article_id>')
+def blog_article_page(article_id):
+    return render_template('blog_article.html', article_id=article_id)
+
+# API routes for auth
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+    # Simplified login - in production, use proper password hashing
+    email = data.get('email', '').lower()
+    password = data.get('password', '')
+
+    # Find user by email
+    for uid, user_data in registered_users.items():
+        if user_data.get('email', '').lower() == email:
+            # In production, verify password hash
+            session['user_id'] = uid
+            session['username'] = user_data['username']
+            return jsonify({'success': True})
+
+    return jsonify({'success': False, 'message': 'Invalid credentials'})
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    gender = data.get('gender', 'none')
+
+    # Validate
+    if not username or len(username) < 3 or len(username) > 20:
+        return jsonify({'success': False, 'message': 'Username must be 3-20 characters'})
+
+    if not email:
+        return jsonify({'success': False, 'message': 'Email required'})
+
+    if not password or len(password) < 6:
+        return jsonify({'success': False, 'message': 'Password must be at least 6 characters'})
+
+    # Check if email exists
+    for user_data in registered_users.values():
+        if user_data.get('email', '').lower() == email:
+            return jsonify({'success': False, 'message': 'Email already registered'})
+
+    user_id = generate_user_id()
+    registered_users[user_id] = {
+        'username': username,
+        'email': email,
+        'gender': gender,
+        'created_at': time.time()
+    }
+
+    session['user_id'] = user_id
+    session['username'] = username
+
+    return jsonify({'success': True})
+
+# ==================== ADMIN ROUTES ====================
+
+@app.route('/offline')
+def offline_page():
+    """Offline page for PWA"""
+    return render_template('offline.html')
+
+@app.route('/admin')
+def admin_page():
+    """Admin dashboard"""
+    return render_template('admin.html')
+
+# ==================== MESSAGE SEARCH API ====================
+
+@app.route('/api/messages/search')
+def search_messages():
+    """Search messages"""
+    query = request.args.get('q', '')
+    user_id = session.get('user_id')
+
+    if not user_id or not query:
+        return jsonify({'success': False, 'messages': []})
+
+    # Search in messages
+    messages = database.search_messages(user_id, query)
+    return jsonify({'success': True, 'messages': messages})
+
+@app.route('/api/admin/stats')
+def admin_stats():
+    """Get admin dashboard stats"""
+    stats = admin.get_dashboard_stats()
+    return jsonify({'success': True, 'data': stats})
+
+@app.route('/api/admin/users')
+def admin_users():
+    """Get all users"""
+    limit = int(request.args.get('limit', 50))
+    offset = int(request.args.get('offset', 0))
+    users = admin.get_all_users(limit, offset)
+    return jsonify({'success': True, 'data': users})
+
+@app.route('/api/admin/users/<user_id>')
+def admin_user_detail(user_id):
+    """Get user detail"""
+    user = admin.get_user_by_id(user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+    return jsonify({'success': True, 'data': user})
+
+@app.route('/api/admin/users/search')
+def admin_search_users():
+    """Search users"""
+    query = request.args.get('q', '')
+    users = admin.search_users(query)
+    return jsonify({'success': True, 'data': users})
+
+@app.route('/api/admin/users/<user_id>/ban', methods=['POST'])
+def admin_ban_user(user_id):
+    """Ban a user"""
+    admin.update_user_status(user_id, is_banned=True)
+    return jsonify({'success': True, 'message': 'User banned'})
+
+@app.route('/api/admin/users/<user_id>/unban', methods=['POST'])
+def admin_unban_user(user_id):
+    """Unban a user"""
+    admin.update_user_status(user_id, is_banned=False)
+    return jsonify({'success': True, 'message': 'User unbanned'})
+
+@app.route('/api/admin/users/<user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    """Delete a user"""
+    admin.delete_user(user_id)
+    return jsonify({'success': True, 'message': 'User deleted'})
+
+@app.route('/api/admin/messages')
+def admin_messages():
+    """Get recent messages"""
+    limit = int(request.args.get('limit', 100))
+    messages = admin.get_recent_messages(limit)
+    return jsonify({'success': True, 'data': messages})
+
+@app.route('/api/admin/messages/<int:message_id>', methods=['DELETE'])
+def admin_delete_message(message_id):
+    """Delete a message"""
+    admin.delete_message(message_id)
+    return jsonify({'success': True, 'message': 'Message deleted'})
+
+@app.route('/api/admin/messages/search')
+def admin_search_messages():
+    """Search messages"""
+    query = request.args.get('q', '')
+    messages = admin.search_messages(query)
+    return jsonify({'success': True, 'data': messages})
+
+@app.route('/api/admin/reports')
+def admin_reports():
+    """Get reports"""
+    status = request.args.get('status', 'pending')
+    reports = admin.get_all_reports(status)
+    return jsonify({'success': True, 'data': reports})
+
+@app.route('/api/admin/reports/<int:report_id>', methods=['PUT'])
+def admin_update_report(report_id):
+    """Update report status"""
+    data = request.get_json()
+    status = data.get('status', 'reviewed')
+    admin.update_report_status(report_id, status)
+    return jsonify({'success': True, 'message': 'Report updated'})
+
+@app.route('/api/admin/activity')
+def admin_activity():
+    """Get activity stats"""
+    days = int(request.args.get('days', 7))
+    stats = admin.get_activity_stats(days)
+    return jsonify({'success': True, 'data': stats})
+
+# ==================== ERROR HANDLERS ====================
+
+@app.errorhandler(404)
+def not_found(error):
+    """Custom 404 error page"""
+    return render_template('error.html', error_code=404, error_message='Page Not Found', error_description='The page you are looking for does not exist.'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Custom 500 error page"""
+    return render_template('error.html', error_code=500, error_message='Internal Server Error', error_description='Something went wrong on our end. Please try again later.'), 500
+
+@app.errorhandler(403)
+def forbidden(error):
+    """Custom 403 error page"""
+    return render_template('error.html', error_code=403, error_message='Forbidden', error_description='You do not have permission to access this resource.'), 403
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Custom 400 error page"""
+    return render_template('error.html', error_code=400, error_message='Bad Request', error_description='The request could not be understood by the server.'), 400
+
+if __name__ == '__main__':
+    socketio.run(app, debug=False, port=5001, host='0.0.0.0')

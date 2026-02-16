@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - Chat Online{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-file-contract"></i> Terms of Service</h1>
+        <p>Please read our terms carefully</p>
+    </div>
+    <div class="content-page-content">
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing and using Chat Online, you accept and agree to be bound by the terms and provision of this agreement.</p>
+
+        <h2>2. Use License</h2>
+        <p>You are granted a limited, non-exclusive, revocable license to use Chat Online for personal, non-commercial use only.</p>
+
+        <h2>3. User Conduct</h2>
+        <p>You agree NOT to:</p>
+        <ul>
+            <li>Post or transmit obscene, defamatory, or unlawful material</li>
+            <li>Harass, threaten, or intimidate other users</li>
+            <li>Attempt to gain unauthorized access to the service</li>
+            <li>Engage in any activity that could harm the service</li>
+        </ul>
+
+        <h2>4. Age Restriction</h2>
+        <p>You must be 18 years or older to use this service. No exceptions.</p>
+
+        <h2>5. Disclaimer</h2>
+        <p>The service is provided "as is" without warranties of any kind.</p>
+
+        <h2>6. Contact</h2>
+        <p>If you have questions about these terms, please <a href="{{ url_for('contact_page') }}">contact us</a>.</p>
+    </div>
+</div>
+{% endblock %}

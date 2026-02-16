@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.4.6/css/flag-icons.min.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8B5CF6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Chat Online">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Chat Online">
+    <meta name="msapplication-TileColor" content="#8B5CF6">
+    <meta name="msapplication-config" content="none">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Age Verification Modal -->
+    <div id="age-modal" class="age-modal" style="display: flex;">
+        <div class="age-modal-content">
+            <div class="modal-logo">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="modal-title">Welcome to Chat Online</div>
+            <p class="modal-subtitle">By using this website you agree to:</p>
+            <div class="agreement-list">
+                <label class="agreement-item">
+                    <input type="checkbox" id="check-age">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="text">You are over the age of 18</span>
+                </label>
+                <label class="agreement-item">
+                    <input type="checkbox" id="check-terms">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="text">You've read & approved our <a href="{{ url_for('terms_page') }}">Terms of use</a></span>
+                </label>
+                <label class="agreement-item">
+                    <input type="checkbox" id="check-privacy">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="text">You've read & approved our <a href="{{ url_for('privacy_page') }}">Privacy policy</a></span>
+                </label>
+                <label class="agreement-item">
+                    <input type="checkbox" id="check-safety">
+                    <span class="checkmark"><i class="fas fa-check"></i></span>
+                    <span class="text">You've read & approved our <a href="{{ url_for('safety_page') }}">Safety Guidelines</a></span>
+                </label>
+            </div>
+            <div class="modal-buttons">
+                <button id="agree-btn" class="btn btn-agree">
+                    <i class="fas fa-check-circle"></i> I Agree
+                </button>
+                <button id="disagree-btn" class="btn btn-disagree">
+                    <i class="fas fa-times-circle"></i> I Disagree
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-left">
+            <a href="{{ url_for('chat_rooms') }}" class="nav-link"><i class="fas fa-comments"></i> <span>Chat Rooms</span></a>
+            <a href="{{ url_for('dating_channels_page') }}" class="nav-link"><i class="fas fa-heart"></i> <span>Dating</span></a>
+            <a href="{{ url_for('random_chat') }}" class="nav-link"><i class="fas fa-dice"></i> <span>Random Chat</span></a>
+            <a href="{{ url_for('about_page') }}" class="nav-link"><i class="fas fa-info-circle"></i> <span>About</span></a>
+            <a href="{{ url_for('blog_page') }}" class="nav-link"><i class="fas fa-blog"></i> <span>Blog</span></a>
+        </div>
+        <div class="header-logo">
+            <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <h1><i class="fas fa-rocket"></i> Chat Online</h1>
+            </a>
+        </div>
+        <div class="header-right">
+            <a href="{{ url_for('faq_page') }}" class="nav-link"><i class="fas fa-question-circle"></i> <span>FAQ</span></a>
+            <a href="{{ url_for('safety_page') }}" class="nav-link"><i class="fas fa-shield-alt"></i> <span>Safety</span></a>
+            <a href="{{ url_for('contact_page') }}" class="nav-link"><i class="fas fa-envelope"></i> <span>Contact</span></a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('profile_page') }}" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+                <a href="#" id="header-logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}" class="nav-link" id="header-login"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="{{ url_for('register_page') }}" class="register-link nav-link"><i class="fas fa-user-plus"></i> Registration</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        <a href="{{ url_for('chat_rooms') }}" class="mobile-nav-link"><i class="fas fa-comments"></i> Chat Rooms</a>
+        <a href="{{ url_for('dating_channels_page') }}" class="mobile-nav-link"><i class="fas fa-heart"></i> Dating</a>
+        <a href="{{ url_for('random_chat') }}" class="mobile-nav-link"><i class="fas fa-dice"></i> Random Chat</a>
+        <a href="{{ url_for('about_page') }}" class="mobile-nav-link"><i class="fas fa-info-circle"></i> About</a>
+        <a href="{{ url_for('blog_page') }}" class="mobile-nav-link"><i class="fas fa-blog"></i> Blog</a>
+        <a href="{{ url_for('faq_page') }}" class="mobile-nav-link"><i class="fas fa-question-circle"></i> FAQ</a>
+        <a href="{{ url_for('safety_page') }}" class="mobile-nav-link"><i class="fas fa-shield-alt"></i> Safety</a>
+        <a href="{{ url_for('contact_page') }}" class="mobile-nav-link"><i class="fas fa-envelope"></i> Contact</a>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('profile_page') }}" class="mobile-nav-link"><i class="fas fa-user"></i> Profile</a>
+            <a href="#" id="mobile-logout" class="mobile-nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        {% else %}
+            <a href="{{ url_for('login_page') }}" class="mobile-nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="{{ url_for('register_page') }}" class="mobile-nav-link register-mobile"><i class="fas fa-user-plus"></i> Registration</a>
+        {% endif %}
+    </nav>
+
+    <div class="app-container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav mobile-only">
+        <div class="mobile-bottom-nav-items">
+            <a href="{{ url_for('index') }}" class="mobile-bottom-nav-item {% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('chat_rooms') }}" class="mobile-bottom-nav-item {% if 'chat-room' in request.path %}active{% endif %}">
+                <i class="fas fa-comments"></i>
+                <span>Rooms</span>
+            </a>
+            <a href="{{ url_for('random_chat') }}" class="mobile-bottom-nav-item {% if 'random' in request.path %}active{% endif %}">
+                <i class="fas fa-dice"></i>
+                <span>Chat</span>
+            </a>
+            <a href="{{ url_for('friends_page') }}" class="mobile-bottom-nav-item {% if 'friend' in request.path %}active{% endif %}">
+                <i class="fas fa-user-friends"></i>
+                <span>Friends</span>
+            </a>
+            <a href="{{ url_for('profile_page') if session.get('user_id') else url_for('login_page') }}" class="mobile-bottom-nav-item {% if 'profile' in request.path %}active{% endif %}">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="{{ url_for('about_page') }}">About Us</a>
+            <a href="{{ url_for('blog_page') }}">Blog</a>
+            <a href="{{ url_for('faq_page') }}">FAQ</a>
+            <a href="{{ url_for('terms_page') }}">Terms</a>
+            <a href="{{ url_for('privacy_page') }}">Privacy</a>
+            <a href="{{ url_for('safety_page') }}">Safety Tips</a>
+            <a href="{{ url_for('contact_page') }}">Contact</a>
+        </div>
+        <div class="footer-social">
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+        </div>
+        <p>&copy; 2026 Chat Online - 18+ Only. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script>
+        // CSRF Token utility for fetch requests
+        function getCSRFToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.content || '';
+        }
+
+        // Override fetch to automatically add CSRF token
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            // Show loading for API requests
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay && typeof options.showLoading !== 'false') {
+                loadingOverlay.classList.add('active');
+            }
+
+            options.headers = options.headers || {};
+            const csrfToken = getCSRFToken();
+            if (csrfToken && !options.headers['X-CSRF-Token']) {
+                options.headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            return originalFetch(url, options).finally(() => {
+                if (loadingOverlay && typeof options.showLoading !== 'false') {
+                    loadingOverlay.classList.remove('active');
+                }
+            });
+        };
+
+        // Age verification check - show on welcome page only
+        document.addEventListener('DOMContentLoaded', function() {
+            var path = window.location.pathname;
+            var modal = document.getElementById('age-modal');
+
+            // Hide on homepage, show on welcome page
+            if (path === '/' || path === '') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+            }
+
+            document.getElementById('agree-btn').addEventListener('click', function() {
+                // Check if all checkboxes are checked
+                const checkAge = document.getElementById('check-age')?.checked;
+                const checkTerms = document.getElementById('check-terms')?.checked;
+                const checkPrivacy = document.getElementById('check-privacy')?.checked;
+                const checkSafety = document.getElementById('check-safety')?.checked;
+
+                if (!checkAge || !checkTerms || !checkPrivacy || !checkSafety) {
+                    alert('Please check all boxes to continue');
+                    return;
+                }
+
+                localStorage.setItem('age_verified', 'true');
+                document.getElementById('age-modal').style.display = 'none';
+
+                // Redirect to welcome page
+                window.location.href = '/welcome';
+            });
+
+            document.getElementById('disagree-btn').addEventListener('click', function() {
+                window.location.href = '/';
+            });
+
+            // Mobile menu toggle
+            const mobileToggle = document.getElementById('mobile-menu-toggle');
+            const mobileNav = document.getElementById('mobile-nav');
+            const mobileOverlay = document.getElementById('mobile-nav-overlay');
+
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', function() {
+                    mobileNav.classList.toggle('active');
+                    mobileOverlay.classList.toggle('active');
+                });
+            }
+
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    mobileNav.classList.remove('active');
+                    mobileOverlay.classList.remove('active');
+                });
+            }
+
+            // Close mobile menu on link click
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileNav.classList.remove('active');
+                    mobileOverlay.classList.remove('active');
+                });
+            });
+        });
+
+        // ==================== Notification System ====================
+        // Notification sound using Web Audio API (no external files needed)
+        const notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2LkIx7cWNxeoSJiYN7dnd5g4mJiYN7dnh7g4iIh4R+fHlzd4GEiIeEfXl0coSFioiEfXl0coSEiYiCfXl0coSEiYiBfXl0coSEiIh/fXl0coSEiIh/fXl0coSEiIh/fXl0coSEiIh/fXl0coSFioiBfXl0coSFioiBgXp1c4SFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dIOFiIeFgHd2c4OEiIeEgHZ1coODiIeEgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeDgHZ1coODiIeEgHZ1coODhISDgHZ1coODhISDgHZ1coODhISDgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coODhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSEhISCgHZ1coSFioiBgXl1c4OEiIiBgHh2dA==');
+
+        // Mobile-optimized notification settings
+        let notificationSettings = {
+            sound: true,
+            vibration: true,
+            desktop: true
+        };
+
+        // Request notification permission for mobile
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            if (notificationSettings.sound) {
+                notificationSound.currentTime = 0;
+                notificationSound.volume = 0.5;
+                notificationSound.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        // Vibrate for mobile
+        function vibrateDevice() {
+            if (notificationSettings.vibration && navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+
+        // Show notification (works on desktop and mobile)
+        function showNotification(title, message, icon = 'fa-comment') {
+            // Play sound
+            playNotificationSound();
+
+            // Vibrate on mobile
+            vibrateDevice();
+
+            // Show toast notification (works on all devices)
+            showToast(title, message, icon);
+
+            // Show desktop/mobile push notification
+            if (notificationSettings.desktop && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/' + icon.replace('fa-', '') + '.svg',
+                    badge: '/static/favicon.ico',
+                    tag: 'chat-notification',
+                    requireInteraction: false
+                });
+            }
+        }
+
+        // Toast notification with mobile optimization
+        function showToast(title, message, icon = 'fa-bell') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas ${icon}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('toast-hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Request permission on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            requestNotificationPermission();
+            registerServiceWorker();
+            setupOfflineDetection();
+        });
+
+        // Service Worker Registration for PWA
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration.scope);
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showUpdateNotification();
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            }
+        }
+
+        // Update notification
+        function showUpdateNotification() {
+            showToast('A new version is available! Refresh to update.', 'info');
+        }
+
+        // Offline Detection
+        function setupOfflineDetection() {
+            function updateOnlineStatus() {
+                const statusIndicator = document.getElementById('online-status');
+                if (!navigator.onLine) {
+                    showToast('You are offline. Some features may be limited.', 'warning');
+                    document.body.classList.add('offline');
+                } else {
+                    document.body.classList.remove('offline');
+                    // Sync any pending messages
+                    if (window.syncPendingMessages) {
+                        window.syncPendingMessages();
+                    }
+                }
+            }
+
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+    </script>
+    <!-- Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ url_for('static', filename='service-worker.js') }}')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // Offline Detection
+        function updateOnlineStatus() {
+            const status = document.getElementById('online-status');
+            if (status) {
+                if (navigator.onLine) {
+                    status.classList.remove('offline');
+                    status.classList.add('online');
+                    status.innerHTML = '<i class="fas fa-circle"></i> Online';
+                } else {
+                    status.classList.remove('online');
+                    status.classList.add('offline');
+                    status.innerHTML = '<i class="fas fa-circle"></i> Offline';
+                }
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initial check
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOnlineStatus();
+            requestNotificationPermission();
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
