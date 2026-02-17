@@ -4,32 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Online - Admin Panel</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; }
         .admin-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; background: #16213e; padding: 20px; }
-        .sidebar h2 { color: #8B5CF6; margin-bottom: 30px; }
-        .sidebar a { display: block; padding: 12px 15px; color: #a0aec0; text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
+        .sidebar { width: 260px; background: #16213e; padding: 20px 0; flex-shrink: 0; }
+        .sidebar h2 { color: #8B5CF6; padding: 0 20px 20px; margin: 0 0 20px; border-bottom: 1px solid #2d3748; }
+        .sidebar h3 { color: #a0aec0; font-size: 12px; text-transform: uppercase; padding: 0 20px; margin: 20px 0 10px; letter-spacing: 1px; }
+        .sidebar a { display: flex; align-items: center; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: 0.3s; }
         .sidebar a:hover, .sidebar a.active { background: #8B5CF6; color: #fff; }
-        .sidebar a i { margin-right: 10px; width: 20px; }
-        .main-content { flex: 1; padding: 30px; }
-        .main-content h1 { margin-bottom: 20px; }
-        .editor-container { background: #16213e; border-radius: 12px; padding: 20px; }
-        .editor-container label { display: block; margin-bottom: 8px; color: #a0aec0; }
-        .editor-container input, .editor-container textarea, .editor-container select { width: 100%; padding: 12px; border: 1px solid #2d3748; border-radius: 8px; background: #1a1a2e; color: #fff; margin-bottom: 15px; font-family: monospace; font-size: 14px; }
-        .editor-container textarea { min-height: 400px; resize: vertical; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.3s; }
+        .sidebar a i { margin-right: 12px; width: 20px; text-align: center; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header h1 { margin: 0; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: #8B5CF6; color: #fff; }
         .btn-primary:hover { background: #7c3aed; }
         .btn-success { background: #10B981; color: #fff; }
         .btn-success:hover { background: #059669; }
-        .message { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .btn-danger { background: #EF4444; color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #4B5563; color: #fff; }
+        .btn-secondary:hover { background: #374151; }
+        
+        .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #2d3748; }
+        .card-header h3 { margin: 0; color: #fff; }
+        
+        .message { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
         .message.success { background: #10B981; color: #fff; }
         .message.error { background: #EF4444; color: #fff; }
-        .preview-link { display: inline-block; margin-left: 15px; color: #8B5CF6; text-decoration: none; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #a0aec0; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #2d3748; border-radius: 8px; background: #1a1a2e; color: #fff; font-size: 14px; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #8B5CF6; }
+        .form-group textarea { min-height: 300px; resize: vertical; font-family: 'Monaco', 'Consolas', monospace; }
+        
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #2d3748; }
+        .data-table th { color: #a0aec0; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        .data-table tr:hover { background: rgba(139, 92, 246, 0.1); }
+        .data-table .actions { display: flex; gap: 8px; }
+        .data-table .actions a, .data-table .actions button { padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; color: #fff; text-decoration: none; }
+        .data-table .actions .edit { background: #8B5CF6; }
+        .data-table .actions .delete { background: #EF4444; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #10B981; color: #fff; }
+        .badge-warning { background: #F59E0B; color: #fff; }
+        .badge-danger { background: #EF4444; color: #fff; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #16213e; border-radius: 12px; padding: 25px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal h3 { margin-top: 0; margin-bottom: 20px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        
+        .tabs { display: flex; border-bottom: 1px solid #2d3748; margin-bottom: 20px; }
+        .tabs a { padding: 12px 20px; color: #a0aec0; text-decoration: none; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .tabs a:hover, .tabs a.active { color: #8B5CF6; border-bottom-color: #8B5CF6; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #a0aec0; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
+        
+        .preview-link { color: #8B5CF6; text-decoration: none; margin-left: 15px; }
         .preview-link:hover { text-decoration: underline; }
     </style>
 </head>
@@ -37,40 +78,279 @@
     <div class="admin-container">
         <div class="sidebar">
             <h2><i class="fas fa-cogs"></i> Admin Panel</h2>
-            <a href="/admin" class="{{ 'active' if page == 'dashboard' else '' }}"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="/admin/edit/faq" class="{{ 'active' if page == 'faq' else '' }}"><i class="fas fa-question"></i> Edit FAQ</a>
+            
+            <h3>Content Pages</h3>
+            <a href="/admin/edit/faq" class="{{ 'active' if page == 'faq' else '' }}"><i class="fas fa-question-circle"></i> Edit FAQ Page</a>
             <a href="/admin/edit/about" class="{{ 'active' if page == 'about' else '' }}"><i class="fas fa-info-circle"></i> Edit About</a>
-            <a href="/admin/edit/blog" class="{{ 'active' if page == 'blog' else '' }}"><i class="fas fa-blog"></i> Edit Blog</a>
+            <a href="/admin/edit/blog" class="{{ 'active' if page == 'blog' else '' }}"><i class="fas fa-blog"></i> Edit Blog Page</a>
             <a href="/admin/edit/contact" class="{{ 'active' if page == 'contact' else '' }}"><i class="fas fa-envelope"></i> Edit Contact</a>
             <a href="/admin/edit/privacy" class="{{ 'active' if page == 'privacy' else '' }}"><i class="fas fa-lock"></i> Edit Privacy</a>
             <a href="/admin/edit/terms" class="{{ 'active' if page == 'terms' else '' }}"><i class="fas fa-file-contract"></i> Edit Terms</a>
             <a href="/admin/edit/safety" class="{{ 'active' if page == 'safety' else '' }}"><i class="fas fa-shield-alt"></i> Edit Safety</a>
+            
+            <h3>Manage Content</h3>
+            <a href="/admin/manage/faq" class="{{ 'active' if page == 'manage_faq' else '' }}"><i class="fas fa-list"></i> Manage FAQs</a>
+            <a href="/admin/manage/blog" class="{{ 'active' if page == 'manage_blog' else '' }}"><i class="fas fa-newspaper"></i> Manage Blogs</a>
+            
+            <h3>System</h3>
             <a href="/" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a>
         </div>
+        
         <div class="main-content">
             {% if message %}
             <div class="message {{ message_type }}">{{ message }}</div>
             {% endif %}
             
             {% if page == 'dashboard' %}
-            <h1>Welcome to Admin Panel</h1>
-            <div class="editor-container">
-                <p>Select a page from the sidebar to edit its content.</p>
-                <p>Changes will be saved to the HTML files and pushed to GitHub for deployment.</p>
+            <div class="page-header">
+                <h1>Dashboard</h1>
             </div>
-            {% else %}
-            <h1>Edit {{ page_title }}</h1>
-            <div class="editor-container">
+            <div class="card">
+                <h3>Welcome to Admin Panel</h3>
+                <p>Use the sidebar to navigate. You can:</p>
+                <ul style="color: #a0aec0; line-height: 2;">
+                    <li>Edit static content pages (FAQ, About, Contact, etc.)</li>
+                    <li>Add, edit, and delete FAQ items</li>
+                    <li>Manage blog posts</li>
+                </ul>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="card">
+                    <div style="font-size: 36px; color: #8B5CF6;"><i class="fas fa-question-circle"></i></div>
+                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ faq_count }}</div>
+                    <div style="color: #a0aec0;">FAQ Items</div>
+                </div>
+                <div class="card">
+                    <div style="font-size: 36px; color: #10B981;"><i class="fas fa-blog"></i></div>
+                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ blog_count }}</div>
+                    <div style="color: #a0aec0;">Blog Posts</div>
+                </div>
+                <div class="card">
+                    <div style="font-size: 36px; color: #F59E0B;"><i class="fas fa-users"></i></div>
+                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ online_count }}</div>
+                    <div style="color: #a0aec0;">Online Now</div>
+                </div>
+            </div>
+            
+            {% elif page == 'edit_page' %}
+            <div class="page-header">
+                <h1>Edit {{ page_title }}</h1>
+                <a href="/{{ page_key }}" target="_blank" class="btn btn-secondary"><i class="fas fa-external-link-alt"></i> Preview</a>
+            </div>
+            <div class="card">
                 <form method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <label>HTML Content</label>
-                    <textarea name="content" spellcheck="false">{{ content }}</textarea>
+                    <div class="form-group">
+                        <label>HTML Content</label>
+                        <textarea name="content" spellcheck="false">{{ content }}</textarea>
+                    </div>
                     <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Changes</button>
-                    <a href="/{{ page }}" target="_blank" class="preview-link"><i class="fas fa-external-link-alt"></i> Preview</a>
                 </form>
+            </div>
+            
+            {% elif page == 'manage_faq' %}
+            <div class="page-header">
+                <h1>Manage FAQs</h1>
+                <button class="btn btn-primary" onclick="openModal('faq-modal')"><i class="fas fa-plus"></i> Add FAQ</button>
+            </div>
+            <div class="card">
+                {% if faqs %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Icon</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for faq in faqs %}
+                        <tr>
+                            <td>{{ faq.question }}</td>
+                            <td><i class="fas {{ faq.icon }}"></i></td>
+                            <td class="actions">
+                                <button class="edit" onclick="editFaq('{{ loop.index0 }}')">Edit</button>
+                                <form method="POST" action="/admin/delete/faq/{{ loop.index0 }}" style="display:inline;" onsubmit="return confirm('Delete this FAQ?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-question-circle"></i>
+                    <p>No FAQs yet. Click "Add FAQ" to create one.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% elif page == 'manage_blog' %}
+            <div class="page-header">
+                <h1>Manage Blog Posts</h1>
+                <button class="btn btn-primary" onclick="openModal('blog-modal')"><i class="fas fa-plus"></i> Add Blog Post</button>
+            </div>
+            <div class="card">
+                {% if blogs %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for blog in blogs %}
+                        <tr>
+                            <td>{{ blog.title }}</td>
+                            <td><span class="badge badge-success">{{ blog.category }}</span></td>
+                            <td>{{ blog.date }}</td>
+                            <td class="actions">
+                                <button class="edit" onclick="editBlog('{{ loop.index0 }}')">Edit</button>
+                                <form method="POST" action="/admin/delete/blog/{{ loop.index0 }}" style="display:inline;" onsubmit="return confirm('Delete this blog post?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-newspaper"></i>
+                    <p>No blog posts yet. Click "Add Blog Post" to create one.</p>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
         </div>
     </div>
+    
+    <!-- FAQ Modal -->
+    <div class="modal-overlay" id="faq-modal">
+        <div class="modal">
+            <h3 id="faq-modal-title">Add FAQ</h3>
+            <form method="POST" action="/admin/save/faq">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="faq_index" id="faq-index" value="">
+                <div class="form-group">
+                    <label>Question</label>
+                    <input type="text" name="question" id="faq-question" required>
+                </div>
+                <div class="form-group">
+                    <label>Answer</label>
+                    <textarea name="answer" id="faq-answer" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Icon</label>
+                    <select name="icon" id="faq-icon">
+                        <option value="fa-question-circle">Question Circle</option>
+                        <option value="fa-comment">Comment</option>
+                        <option value="fa-shield-alt">Shield</option>
+                        <option value="fa-venus-mars">Venus Mars</option>
+                        <option value="fa-dice">Dice</option>
+                        <option value="fa-user-plus">User Plus</option>
+                        <option value="fa-flag">Flag</option>
+                        <option value="fa-lock">Lock</option>
+                        <option value="fa-globe">Globe</option>
+                        <option value="fa-heart">Heart</option>
+                        <option value="fa-star">Star</option>
+                        <option value="fa-lightbulb">Lightbulb</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('faq-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save FAQ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Blog Modal -->
+    <div class="modal-overlay" id="blog-modal">
+        <div class="modal">
+            <h3 id="blog-modal-title">Add Blog Post</h3>
+            <form method="POST" action="/admin/save/blog">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="blog_index" id="blog-index" value="">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="title" id="blog-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category" id="blog-category">
+                        <option value="Safety">Safety</option>
+                        <option value="Community">Community</option>
+                        <option value="Tips">Tips</option>
+                        <option value="Random Chat">Random Chat</option>
+                        <option value="Global">Global</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" id="blog-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Content (Markdown supported)</label>
+                    <textarea name="content" id="blog-content" rows="10" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('blog-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Blog Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        function editFaq(index) {
+            var faqs = {{ faqs_json | safe }};
+            if (faqs[index]) {
+                document.getElementById('faq-modal-title').textContent = 'Edit FAQ';
+                document.getElementById('faq-index').value = index;
+                document.getElementById('faq-question').value = faqs[index].question;
+                document.getElementById('faq-answer').value = faqs[index].answer;
+                document.getElementById('faq-icon').value = faqs[index].icon;
+                openModal('faq-modal');
+            }
+        }
+        
+        function editBlog(index) {
+            var blogs = {{ blogs_json | safe }};
+            if (blogs[index]) {
+                document.getElementById('blog-modal-title').textContent = 'Edit Blog Post';
+                document.getElementById('blog-index').value = index;
+                document.getElementById('blog-title').value = blogs[index].title;
+                document.getElementById('blog-category').value = blogs[index].category;
+                document.getElementById('blog-date').value = blogs[index].date;
+                document.getElementById('blog-content').value = blogs[index].content;
+                openModal('blog-modal');
+            }
+        }
+        
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

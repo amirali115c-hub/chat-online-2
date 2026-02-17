@@ -1,3 +1,5 @@
+import json
+import os
 from flask import Flask, render_template, request, session, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import uuid
@@ -1299,78 +1301,335 @@ def get_room_stats():
     })
 
 # Admin Panel Routes
+def load_content_data():
+    """Load content data from JSON file"""
+    data_file = 'data/content.json'
+    if os.path.exists(data_file):
+        try:
+            with open(data_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return {'faqs': [], 'blogs': []}
+    return {'faqs': [], 'blogs': []}
+
+def save_content_data(data):
+    """Save content data to JSON file"""
+    data_file = 'data/content.json'
+    with open(data_file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
+
+def generate_faq_html(faqs):
+    """Generate FAQ HTML from FAQ list"""
+    html = '''{% extends "base.html" %}
+
+{% block title %}FAQ - Chat Online{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
+        <p>Find answers to common questions</p>
+    </div>
+    <div class="accordion">
+'''
+    for faq in faqs:
+        html += f'''        <div class="accordion-item">
+            <button class="accordion-header">
+                <span><i class="fas {faq['icon']}"></i> {faq['question']}</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>{faq['answer']}</p>
+                </div>
+            </div>
+        </div>
+'''
+    html += '''    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', function() {
+        const item = this.parentElement;
+        const isActive = item.classList.contains('active');
+
+        document.querySelectorAll('.accordion-item').forEach(otherItem => {
+            otherItem.classList.remove('active');
+        });
+
+        if (!isActive) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}'''
+    return html
+
+def generate_blog_html(blogs):
+    """Generate Blog HTML from blog list"""
+    html = '''{% extends "base.html" %}
+
+{% block title %}Blog - Chat Online{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-blog"></i> Blog</h1>
+        <p>Latest tips, news, and articles</p>
+    </div>
+    <div class="blog-grid">
+'''
+    for blog in blogs:
+        bg_colors = [
+            'linear-gradient(135deg, #0EA5E9, #06B6D4)',
+            'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+            'linear-gradient(135deg, #10B981, #059669)',
+            'linear-gradient(135deg, #F59E0B, #D97706)',
+            'linear-gradient(135deg, #EC4899, #DB2777)',
+            'linear-gradient(135deg, #6366F1, #4F46E5)'
+        ]
+        color = bg_colors[hash(blog['title']) % len(bg_colors)]
+        icon = 'fa-star' if blog['category'] == 'Safety' else 'fa-user-friends' if blog['category'] == 'Community' else 'fa-lightbulb' if blog['category'] == 'Tips' else 'fa-globe'
+        html += f'''
+        <div class="blog-card">
+            <div class="blog-image" style="background: {color};">
+                <i class="fas {icon}"></i>
+            </div>
+            <div class="blog-content">
+                <span class="blog-category">{blog['category']}</span>
+                <h3>{blog['title']}</h3>
+                <p>{blog['content'][:100]}...</p>
+                <span class="blog-meta"><i class="fas fa-calendar"></i> {blog['date']}</span>
+            </div>
+        </div>
+'''
+    html += '''    </div>
+</div>
+{% endblock %}'''
+    return html
+
 @app.route('/admin')
 def admin_panel():
     """Admin dashboard"""
-    return render_template('admin.html', page='dashboard', page_title='Dashboard')
+    data = load_content_data()
+    return render_template('admin.html', 
+                         page='dashboard',
+                         page_title='Dashboard',
+                         faq_count=len(data.get('faqs', [])),
+                         blog_count=len(data.get('blogs', [])),
+                         online_count=len(active_connections))
 
 @app.route('/admin/edit/<page>')
 def edit_page(page):
     """Edit any content page"""
     page_files = {
-        'faq': 'templates/faq.html',
-        'about': 'templates/about.html',
-        'blog': 'templates/blog.html',
-        'contact': 'templates/contact.html',
-        'privacy': 'templates/privacy.html',
-        'terms': 'templates/terms.html',
-        'safety': 'templates/safety.html'
+        'faq': ('templates/faq.html', 'FAQ Page', 'faq'),
+        'about': ('templates/about.html', 'About Page', 'about'),
+        'blog': ('templates/blog.html', 'Blog Page', 'blog'),
+        'contact': ('templates/contact.html', 'Contact Page', 'contact'),
+        'privacy': ('templates/privacy.html', 'Privacy Policy', 'privacy'),
+        'terms': ('templates/terms.html', 'Terms of Service', 'terms'),
+        'safety': ('templates/safety.html', 'Safety Guidelines', 'safety')
     }
     
     if page not in page_files:
         return render_template('admin.html', page='dashboard', page_title='Dashboard', message='Page not found', message_type='error')
     
-    file_path = page_files[page]
+    file_path = page_files[page][0]
     
-    # Read the current content
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    page_titles = {
-        'faq': 'FAQ Page',
-        'about': 'About Page',
-        'blog': 'Blog Page',
-        'contact': 'Contact Page',
-        'privacy': 'Privacy Policy',
-        'terms': 'Terms of Service',
-        'safety': 'Safety Guidelines'
-    }
-    
     return render_template('admin.html', 
-                         page=page, 
-                         page_title=page_titles.get(page, page.title()),
+                         page='edit_page',
+                         page_key=page,
+                         page_title=page_files[page][1],
                          content=content)
 
 @app.route('/admin/edit/<page>', methods=['POST'])
 def save_page(page):
     """Save page content"""
     page_files = {
-        'faq': 'templates/faq.html',
-        'about': 'templates/about.html',
-        'blog': 'templates/blog.html',
-        'contact': 'templates/contact.html',
-        'privacy': 'templates/privacy.html',
-        'terms': 'templates/terms.html',
-        'safety': 'templates/safety.html'
+        'faq': ('templates/faq.html', 'FAQ Page'),
+        'about': ('templates/about.html', 'About Page'),
+        'blog': ('templates/blog.html', 'Blog Page'),
+        'contact': ('templates/contact.html', 'Contact Page'),
+        'privacy': ('templates/privacy.html', 'Privacy Policy'),
+        'terms': ('templates/terms.html', 'Terms of Service'),
+        'safety': ('templates/safety.html', 'Safety Guidelines')
     }
     
     if page not in page_files:
         return render_template('admin.html', page='dashboard', page_title='Dashboard', message='Page not found', message_type='error')
     
-    file_path = page_files[page]
+    file_path = page_files[page][0]
     new_content = request.form.get('content', '')
     
-    # Validate CSRF token
     csrf_token = request.form.get('csrf_token', '')
     if not validate_csrf_token(csrf_token):
-        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message='Invalid CSRF token', message_type='error')
+        return render_template('admin.html', page='edit_page', page_key=page, page_title=page_files[page][1], content=new_content, message='Invalid CSRF token', message_type='error')
     
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message='Changes saved successfully!', message_type='success')
+        return render_template('admin.html', page='edit_page', page_key=page, page_title=page_files[page][1], content=new_content, message='Changes saved successfully!', message_type='success')
     except Exception as e:
-        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message=f'Error saving: {str(e)}', message_type='error')
+        return render_template('admin.html', page='edit_page', page_key=page, page_title=page_files[page][1], content=new_content, message=f'Error saving: {str(e)}', message_type='error')
+
+@app.route('/admin/manage/faq')
+def manage_faq():
+    """Manage FAQ items"""
+    data = load_content_data()
+    faqs = data.get('faqs', [])
+    return render_template('admin.html',
+                         page='manage_faq',
+                         faqs=faqs,
+                         faqs_json=json.dumps(faqs))
+
+@app.route('/admin/manage/blog')
+def manage_blog():
+    """Manage blog posts"""
+    data = load_content_data()
+    blogs = data.get('blogs', [])
+    return render_template('admin.html',
+                         page='manage_blog',
+                         blogs=blogs,
+                         blogs_json=json.dumps(blogs))
+
+@app.route('/admin/save/faq', methods=['POST'])
+def save_faq():
+    """Add or edit FAQ item"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='manage_faq', faqs=load_content_data().get('faqs', []), message='Invalid CSRF token', message_type='error')
+    
+    question = request.form.get('question', '').strip()
+    answer = request.form.get('answer', '').strip()
+    icon = request.form.get('icon', 'fa-question-circle')
+    index = request.form.get('faq_index', '')
+    
+    if not question or not answer:
+        data = load_content_data()
+        return render_template('admin.html', page='manage_faq', faqs=data.get('faqs', []), faqs_json=json.dumps(data.get('faqs', [])), message='Question and answer are required', message_type='error')
+    
+    data = load_content_data()
+    faq = {'question': question, 'answer': answer, 'icon': icon}
+    
+    if index:
+        try:
+            idx = int(index)
+            if 0 <= idx < len(data['faqs']):
+                data['faqs'][idx] = faq
+            else:
+                data['faqs'].append(faq)
+        except:
+            data['faqs'].append(faq)
+    else:
+        data['faqs'].append(faq)
+    
+    save_content_data(data)
+    
+    # Regenerate FAQ HTML
+    with open('templates/faq.html', 'w', encoding='utf-8') as f:
+        f.write(generate_faq_html(data['faqs']))
+    
+    return render_template('admin.html', page='manage_faq', faqs=data.get('faqs', []), faqs_json=json.dumps(data.get('faqs', [])), message='FAQ saved successfully!', message_type='success')
+
+@app.route('/admin/delete/faq/<int:index>', methods=['POST'])
+def delete_faq(index):
+    """Delete FAQ item"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='manage_faq', faqs=load_content_data().get('faqs', []), message='Invalid CSRF token', message_type='error')
+    
+    data = load_content_data()
+    
+    try:
+        if 0 <= index < len(data['faqs']):
+            del data['faqs'][index]
+            save_content_data(data)
+            
+            # Regenerate FAQ HTML
+            with open('templates/faq.html', 'w', encoding='utf-8') as f:
+                f.write(generate_faq_html(data['faqs']))
+            
+            message = 'FAQ deleted successfully!'
+        else:
+            message = 'FAQ not found!'
+    except Exception as e:
+        message = f'Error: {str(e)}'
+    
+    return render_template('admin.html', page='manage_faq', faqs=data.get('faqs', []), faqs_json=json.dumps(data.get('faqs', [])), message=message, message_type='success')
+
+@app.route('/admin/save/blog', methods=['POST'])
+def save_blog():
+    """Add or edit blog post"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='manage_blog', blogs=load_content_data().get('blogs', []), message='Invalid CSRF token', message_type='error')
+    
+    title = request.form.get('title', '').strip()
+    category = request.form.get('category', 'Tips')
+    date = request.form.get('date', '')
+    content = request.form.get('content', '').strip()
+    index = request.form.get('blog_index', '')
+    
+    if not title or not date or not content:
+        data = load_content_data()
+        return render_template('admin.html', page='manage_blog', blogs=data.get('blogs', []), blogs_json=json.dumps(data.get('blogs', [])), message='Title, date, and content are required', message_type='error')
+    
+    data = load_content_data()
+    blog = {'title': title, 'category': category, 'date': date, 'content': content}
+    
+    if index:
+        try:
+            idx = int(index)
+            if 0 <= idx < len(data['blogs']):
+                data['blogs'][idx] = blog
+            else:
+                data['blogs'].insert(0, blog)
+        except:
+            data['blogs'].insert(0, blog)
+    else:
+        data['blogs'].insert(0, blog)
+    
+    save_content_data(data)
+    
+    # Regenerate Blog HTML
+    with open('templates/blog.html', 'w', encoding='utf-8') as f:
+        f.write(generate_blog_html(data['blogs']))
+    
+    return render_template('admin.html', page='manage_blog', blogs=data.get('blogs', []), blogs_json=json.dumps(data.get('blogs', [])), message='Blog post saved successfully!', message_type='success')
+
+@app.route('/admin/delete/blog/<int:index>', methods=['POST'])
+def delete_blog(index):
+    """Delete blog post"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='manage_blog', blogs=load_content_data().get('blogs', []), message='Invalid CSRF token', message_type='error')
+    
+    data = load_content_data()
+    
+    try:
+        if 0 <= index < len(data['blogs']):
+            del data['blogs'][index]
+            save_content_data(data)
+            
+            # Regenerate Blog HTML
+            with open('templates/blog.html', 'w', encoding='utf-8') as f:
+                f.write(generate_blog_html(data['blogs']))
+            
+            message = 'Blog post deleted successfully!'
+        else:
+            message = 'Blog post not found!'
+    except Exception as e:
+        message = f'Error: {str(e)}'
+    
+    return render_template('admin.html', page='manage_blog', blogs=data.get('blogs', []), blogs_json=json.dumps(data.get('blogs', [])), message=message, message_type='success')
 
 if __name__ == '__main__':
     # For production, use eventlet
