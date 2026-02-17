@@ -1298,6 +1298,80 @@ def get_room_stats():
         'data': room_stats
     })
 
+# Admin Panel Routes
+@app.route('/admin')
+def admin_panel():
+    """Admin dashboard"""
+    return render_template('admin.html', page='dashboard', page_title='Dashboard')
+
+@app.route('/admin/edit/<page>')
+def edit_page(page):
+    """Edit any content page"""
+    page_files = {
+        'faq': 'templates/faq.html',
+        'about': 'templates/about.html',
+        'blog': 'templates/blog.html',
+        'contact': 'templates/contact.html',
+        'privacy': 'templates/privacy.html',
+        'terms': 'templates/terms.html',
+        'safety': 'templates/safety.html'
+    }
+    
+    if page not in page_files:
+        return render_template('admin.html', page='dashboard', page_title='Dashboard', message='Page not found', message_type='error')
+    
+    file_path = page_files[page]
+    
+    # Read the current content
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    page_titles = {
+        'faq': 'FAQ Page',
+        'about': 'About Page',
+        'blog': 'Blog Page',
+        'contact': 'Contact Page',
+        'privacy': 'Privacy Policy',
+        'terms': 'Terms of Service',
+        'safety': 'Safety Guidelines'
+    }
+    
+    return render_template('admin.html', 
+                         page=page, 
+                         page_title=page_titles.get(page, page.title()),
+                         content=content)
+
+@app.route('/admin/edit/<page>', methods=['POST'])
+def save_page(page):
+    """Save page content"""
+    page_files = {
+        'faq': 'templates/faq.html',
+        'about': 'templates/about.html',
+        'blog': 'templates/blog.html',
+        'contact': 'templates/contact.html',
+        'privacy': 'templates/privacy.html',
+        'terms': 'templates/terms.html',
+        'safety': 'templates/safety.html'
+    }
+    
+    if page not in page_files:
+        return render_template('admin.html', page='dashboard', page_title='Dashboard', message='Page not found', message_type='error')
+    
+    file_path = page_files[page]
+    new_content = request.form.get('content', '')
+    
+    # Validate CSRF token
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message='Invalid CSRF token', message_type='error')
+    
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message='Changes saved successfully!', message_type='success')
+    except Exception as e:
+        return render_template('admin.html', page=page, page_title=page.title(), content=new_content, message=f'Error saving: {str(e)}', message_type='error')
+
 if __name__ == '__main__':
     # For production, use eventlet
     try:
