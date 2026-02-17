@@ -154,9 +154,22 @@
 
 {% block extra_js %}
 <script>
-// Prevent form issues
+// Store form data in sessionStorage before form submission
 document.getElementById('entry-form').addEventListener('submit', function(e) {
-    // Form will submit naturally
+    var username = document.querySelector('input[name="username"]').value.trim();
+    var gender = document.querySelector('input[name="gender"]:checked');
+    var age = document.querySelector('select[name="age"]').value;
+    var country = document.querySelector('select[name="country"]').value;
+    var state = document.querySelector('select[name="state"]').value;
+    
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender ? gender.value : '');
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state || '');
+    sessionStorage.setItem('is_guest', 'true');
+    sessionStorage.setItem('age_verified', 'true');
+    
     return true;
 });
 
