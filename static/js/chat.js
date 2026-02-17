@@ -265,42 +265,6 @@ function setupEventListeners() {
         });
     });
 
-    // Entry form submission
-    if (elements.entryForm) {
-        elements.entryForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = elements.guestUsername.value.trim();
-            const gender = document.querySelector('input[name="guest_gender"]:checked');
-            const age = elements.guestAge.value;
-            const country = elements.guestCountry.value;
-            const state = elements.guestState?.value;
-
-            if (!username || !gender || !age || !country) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            // Store in sessionStorage
-            sessionStorage.setItem('guest_username', username);
-            sessionStorage.setItem('guest_gender', gender.value);
-            sessionStorage.setItem('guest_age', age);
-            sessionStorage.setItem('guest_country', country);
-            sessionStorage.setItem('guest_state', state || '');
-            sessionStorage.setItem('is_guest', 'true');
-
-            // Show age verification modal first
-            showAgeVerificationModal();
-        });
-    }
-
-    // Age verification modal
-    function showAgeVerificationModal() {
-        const modal = document.getElementById('age-verification-modal');
-        if (modal) {
-            modal.classList.add('active');
-        }
-    }
-
     // Login form
     if (elements.loginForm) {
         elements.loginForm.addEventListener('submit', (e) => {
