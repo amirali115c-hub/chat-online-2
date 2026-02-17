@@ -37,6 +37,7 @@
         .message.success { background: #10B981; color: #fff; }
         .message.error { background: #EF4444; color: #fff; }
         
+        .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; color: #a0aec0; font-size: 14px; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #2d3748; border-radius: 8px; background: #1a1a2e; color: #fff; font-size: 14px; }
@@ -57,21 +58,27 @@
         .badge-warning { background: #F59E0B; color: #fff; }
         .badge-danger { background: #EF4444; color: #fff; }
         
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #16213e; border-radius: 12px; padding: 25px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
-        .modal h3 { margin-top: 0; margin-bottom: 20px; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        
-        .tabs { display: flex; border-bottom: 1px solid #2d3748; margin-bottom: 20px; }
-        .tabs a { padding: 12px 20px; color: #a0aec0; text-decoration: none; border-bottom: 2px solid transparent; transition: 0.3s; }
-        .tabs a:hover, .tabs a.active { color: #8B5CF6; border-bottom-color: #8B5CF6; }
-        
         .empty-state { text-align: center; padding: 60px 20px; color: #a0aec0; }
         .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
         
         .preview-link { color: #8B5CF6; text-decoration: none; margin-left: 15px; }
         .preview-link:hover { text-decoration: underline; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .image-preview { max-width: 200px; border-radius: 8px; margin-top: 10px; }
+        .upload-area { border: 2px dashed #2d3748; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { border-color: #8B5CF6; }
+        .upload-area i { font-size: 48px; color: #a0aec0; margin-bottom: 10px; }
+        
+        .help-text { font-size: 12px; color: #a0aec0; margin-top: 5px; }
+        
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #16213e; border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-card i { font-size: 36px; color: #8B5CF6; margin-bottom: 10px; }
+        .stat-card .number { font-size: 28px; font-weight: bold; }
+        .stat-card .label { color: #a0aec0; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -80,17 +87,21 @@
             <h2><i class="fas fa-cogs"></i> Admin Panel</h2>
             
             <h3>Content Pages</h3>
-            <a href="/admin/edit/faq" class="{{ 'active' if page == 'faq' else '' }}"><i class="fas fa-question-circle"></i> Edit FAQ Page</a>
-            <a href="/admin/edit/about" class="{{ 'active' if page == 'about' else '' }}"><i class="fas fa-info-circle"></i> Edit About</a>
-            <a href="/admin/edit/blog" class="{{ 'active' if page == 'blog' else '' }}"><i class="fas fa-blog"></i> Edit Blog Page</a>
-            <a href="/admin/edit/contact" class="{{ 'active' if page == 'contact' else '' }}"><i class="fas fa-envelope"></i> Edit Contact</a>
-            <a href="/admin/edit/privacy" class="{{ 'active' if page == 'privacy' else '' }}"><i class="fas fa-lock"></i> Edit Privacy</a>
-            <a href="/admin/edit/terms" class="{{ 'active' if page == 'terms' else '' }}"><i class="fas fa-file-contract"></i> Edit Terms</a>
-            <a href="/admin/edit/safety" class="{{ 'active' if page == 'safety' else '' }}"><i class="fas fa-shield-alt"></i> Edit Safety</a>
+            <a href="/admin/edit/faq" class="{{ 'active' if page == 'edit_faq' else '' }}"><i class="fas fa-question-circle"></i> Edit FAQ</a>
+            <a href="/admin/edit/about" class="{{ 'active' if page == 'edit_about' else '' }}"><i class="fas fa-info-circle"></i> Edit About</a>
+            <a href="/admin/edit/contact" class="{{ 'active' if page == 'edit_contact' else '' }}"><i class="fas fa-envelope"></i> Edit Contact</a>
+            <a href="/admin/edit/privacy" class="{{ 'active' if page == 'edit_privacy' else '' }}"><i class="fas fa-lock"></i> Edit Privacy</a>
+            <a href="/admin/edit/terms" class="{{ 'active' if page == 'edit_terms' else '' }}"><i class="fas fa-file-contract"></i> Edit Terms</a>
+            <a href="/admin/edit/safety" class="{{ 'active' if page == 'edit_safety' else '' }}"><i class="fas fa-shield-alt"></i> Edit Safety</a>
             
-            <h3>Manage Content</h3>
-            <a href="/admin/manage/faq" class="{{ 'active' if page == 'manage_faq' else '' }}"><i class="fas fa-list"></i> Manage FAQs</a>
-            <a href="/admin/manage/blog" class="{{ 'active' if page == 'manage_blog' else '' }}"><i class="fas fa-newspaper"></i> Manage Blogs</a>
+            <h3>Blog Management</h3>
+            <a href="/admin/blog" class="{{ 'active' if page == 'blog_list' else '' }}"><i class="fas fa-newspaper"></i> All Posts</a>
+            <a href="/admin/blog/new" class="{{ 'active' if page == 'blog_new' else '' }}"><i class="fas fa-plus"></i> New Post</a>
+            <a href="/admin/blog/categories" class="{{ 'active' if page == 'blog_categories' else '' }}"><i class="fas fa-tags"></i> Categories</a>
+            
+            <h3>Media</h3>
+            <a href="/admin/media" class="{{ 'active' if page == 'media' else '' }}"><i class="fas fa-images"></i> Media Library</a>
+            <a href="/admin/upload" class="{{ 'active' if page == 'upload' else '' }}"><i class="fas fa-upload"></i> Upload Image</a>
             
             <h3>System</h3>
             <a href="/" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a>
@@ -105,117 +116,93 @@
             <div class="page-header">
                 <h1>Dashboard</h1>
             </div>
-            <div class="card">
-                <h3>Welcome to Admin Panel</h3>
-                <p>Use the sidebar to navigate. You can:</p>
-                <ul style="color: #a0aec0; line-height: 2;">
-                    <li>Edit static content pages (FAQ, About, Contact, etc.)</li>
-                    <li>Add, edit, and delete FAQ items</li>
-                    <li>Manage blog posts</li>
-                </ul>
-            </div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                <div class="card">
-                    <div style="font-size: 36px; color: #8B5CF6;"><i class="fas fa-question-circle"></i></div>
-                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ faq_count }}</div>
-                    <div style="color: #a0aec0;">FAQ Items</div>
+            <div class="grid-stats">
+                <div class="stat-card">
+                    <i class="fas fa-newspaper"></i>
+                    <div class="number">{{ post_count }}</div>
+                    <div class="label">Blog Posts</div>
                 </div>
-                <div class="card">
-                    <div style="font-size: 36px; color: #10B981;"><i class="fas fa-blog"></i></div>
-                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ blog_count }}</div>
-                    <div style="color: #a0aec0;">Blog Posts</div>
+                <div class="stat-card">
+                    <i class="fas fa-eye"></i>
+                    <div class="number">{{ page_views }}</div>
+                    <div class="label">Page Views</div>
                 </div>
-                <div class="card">
-                    <div style="font-size: 36px; color: #F59E0B;"><i class="fas fa-users"></i></div>
-                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">{{ online_count }}</div>
-                    <div style="color: #a0aec0;">Online Now</div>
-                    <div style="font-size: 12px; color: #a0aec0; margin-top: 5px;">
-                        {{ online_guests | default(0) }} guests, {{ online_registered | default(0) }} registered
-                    </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="number">{{ online_count }}</div>
+                    <div class="label">Online Now</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-images"></i>
+                    <div class="number">{{ media_count }}</div>
+                    <div class="label">Media Files</div>
                 </div>
             </div>
             
-            {% elif page == 'edit_page' %}
-            <div class="page-header">
-                <h1>Edit {{ page_title }}</h1>
-                <a href="/{{ page_key }}" target="_blank" class="btn btn-secondary"><i class="fas fa-external-link-alt"></i> Preview</a>
-            </div>
             <div class="card">
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="form-group">
-                        <label>HTML Content</label>
-                        <textarea name="content" spellcheck="false">{{ content }}</textarea>
-                    </div>
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Changes</button>
-                </form>
-            </div>
-            
-            {% elif page == 'manage_faq' %}
-            <div class="page-header">
-                <h1>Manage FAQs</h1>
-                <button class="btn btn-primary" onclick="openModal('faq-modal')"><i class="fas fa-plus"></i> Add FAQ</button>
-            </div>
-            <div class="card">
-                {% if faqs %}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Question</th>
-                            <th>Icon</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for faq in faqs %}
-                        <tr>
-                            <td>{{ faq.question }}</td>
-                            <td><i class="fas {{ faq.icon }}"></i></td>
-                            <td class="actions">
-                                <button class="edit" onclick="editFaq('{{ loop.index0 }}')">Edit</button>
-                                <form method="POST" action="/admin/delete/faq/{{ loop.index0 }}" style="display:inline;" onsubmit="return confirm('Delete this FAQ?');">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="delete">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-question-circle"></i>
-                    <p>No FAQs yet. Click "Add FAQ" to create one.</p>
+                <div class="card-header">
+                    <h3>Recent Blog Posts</h3>
+                    <a href="/admin/blog" class="btn btn-secondary">View All</a>
                 </div>
-                {% endif %}
-            </div>
-            
-            {% elif page == 'manage_blog' %}
-            <div class="page-header">
-                <h1>Manage Blog Posts</h1>
-                <button class="btn btn-primary" onclick="openModal('blog-modal')"><i class="fas fa-plus"></i> Add Blog Post</button>
-            </div>
-            <div class="card">
-                {% if blogs %}
+                {% if recent_posts %}
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Title</th>
                             <th>Category</th>
                             <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in recent_posts %}
+                        <tr>
+                            <td>{{ post.title }}</td>
+                            <td><span class="badge badge-success">{{ post.category }}</span></td>
+                            <td>{{ post.date }}</td>
+                            <td><span class="badge badge-success">Published</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-newspaper"></i>
+                    <p>No blog posts yet. <a href="/admin/blog/new" style="color: #8B5CF6;">Create your first post!</a></p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% elif page == 'blog_list' %}
+            <div class="page-header">
+                <h1>Blog Posts</h1>
+                <a href="/admin/blog/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Post</a>
+            </div>
+            
+            <div class="card">
+                {% if posts %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Category</th>
+                            <th>Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for blog in blogs %}
+                        {% for post in posts %}
                         <tr>
-                            <td>{{ blog.title }}</td>
-                            <td><span class="badge badge-success">{{ blog.category }}</span></td>
-                            <td>{{ blog.date }}</td>
+                            <td>{{ post.title }}</td>
+                            <td><code style="color: #a0aec0;">{{ post.slug }}</code></td>
+                            <td><span class="badge badge-success">{{ post.category }}</span></td>
+                            <td>{{ post.date }}</td>
                             <td class="actions">
-                                <button class="edit" onclick="editBlog('{{ loop.index0 }}')">Edit</button>
-                                <form method="POST" action="/admin/delete/blog/{{ loop.index0 }}" style="display:inline;" onsubmit="return confirm('Delete this blog post?');">
+                                <a href="/admin/blog/edit/{{ post.slug }}" class="edit">Edit</a>
+                                <a href="/blog/{{ post.slug }}" target="_blank" class="edit"><i class="fas fa-eye"></i></a>
+                                <form method="POST" action="/admin/blog/delete/{{ post.slug }}" style="display:inline;" onsubmit="return confirm('Delete this post?');">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="delete">Delete</button>
                                 </form>
@@ -227,133 +214,114 @@
                 {% else %}
                 <div class="empty-state">
                     <i class="fas fa-newspaper"></i>
-                    <p>No blog posts yet. Click "Add Blog Post" to create one.</p>
+                    <p>No blog posts yet.</p>
+                    <a href="/admin/blog/new" class="btn btn-primary" style="margin-top: 15px;"><i class="fas fa-plus"></i> Create First Post</a>
                 </div>
                 {% endif %}
             </div>
+            
+            {% elif page == 'blog_edit' %}
+            <div class="page-header">
+                <h1>{{ 'Edit Blog Post' if post else 'New Blog Post' }}</h1>
+                <div>
+                    <a href="/blog/{{ post.slug if post else '' }}" target="_blank" class="preview-link"><i class="fas fa-eye"></i> Preview</a>
+                </div>
+            </div>
+            
+            <form method="POST" action="/admin/blog/save" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="slug" value="{{ post.slug if post else '' }}">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" name="title" value="{{ post.title if post else '' }}" required placeholder="Enter post title">
+                    </div>
+                    <div class="form-group">
+                        <label>Slug *</label>
+                        <input type="text" name="slug" value="{{ post.slug if post else '' }}" required placeholder="url-friendly-name" {{ 'readonly' if post else '' }}>
+                        <p class="help-text">URL: /blog/[slug]</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category">
+                            <option value="">Select Category</option>
+                            <option value="Safety" {{ 'selected' if post and post.category == 'Safety' else '' }}>Safety</option>
+                            <option value="Community" {{ 'selected' if post and post.category == 'Community' else '' }}>Community</option>
+                            <option value="Tips" {{ 'selected' if post and post.category == 'Tips' else '' }}>Tips</option>
+                            <option value="Random Chat" {{ 'selected' if post and post.category == 'Random Chat' else '' }}>Random Chat</option>
+                            <option value="Global" {{ 'selected' if post and post.category == 'Global' else '' }}>Global</option>
+                            <option value="News" {{ 'selected' if post and post.category == 'News' else '' }}>News</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="date" value="{{ post.date if post else '' }}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Excerpt (Short Description)</label>
+                    <textarea name="excerpt" rows="2" placeholder="Brief description shown in blog listings">{{ post.excerpt if post else '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Featured Image</label>
+                    <input type="file" name="featured_image" accept="image/*">
+                    {% if post and post.featured_image %}
+                    <img src="{{ post.featured_image }}" alt="Featured" class="image-preview">
+                    <p class="help-text">Current: {{ post.featured_image }}</p>
+                    {% endif %}
+                </div>
+                
+                <h3 style="margin: 30px 0 15px; color: #8B5CF6;"><i class="fas fa-search-engine"></i> SEO Settings</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Meta Title</label>
+                        <input type="text" name="meta_title" value="{{ post.meta_title if post else '' }}" placeholder="SEO title (defaults to post title)">
+                        <p class="help-text">Leave empty to use post title</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Meta Description</label>
+                        <textarea name="meta_description" rows="2" placeholder="SEO description">{{ post.meta_description if post else '' }}</textarea>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 30px 0 15px; color: #8B5CF6;"><i class="fas fa-pen"></i> Content</h3>
+                
+                <div class="form-group">
+                    <label>Content (Markdown Supported) *</label>
+                    <textarea name="content" id="content-editor" required placeholder="Write your post content here...
+
+## Heading 2
+### Heading 3
+
+**Bold text** and *italic text*
+
+- Bullet list
+- Another item
+
+1. Numbered list
+2. Another item
+
+[Link text](https://example.com)
+
+![Image alt](/uploads/image.jpg)">{{ post.content if post else '' }}</textarea>
+                    <p class="help-text">Supports Markdown: # Heading, **bold**, *italic*, - list, 1. numbered, [link](url), ![alt](image)</p>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Post</button>
+                    <a href="/admin/blog" class="btn btn-secondary" style="margin-left: 10px;">Cancel</a>
+                </div>
+            </form>
+            
             {% endif %}
         </div>
     </div>
-    
-    <!-- FAQ Modal -->
-    <div class="modal-overlay" id="faq-modal">
-        <div class="modal">
-            <h3 id="faq-modal-title">Add FAQ</h3>
-            <form method="POST" action="/admin/save/faq">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="faq_index" id="faq-index" value="">
-                <div class="form-group">
-                    <label>Question</label>
-                    <input type="text" name="question" id="faq-question" required>
-                </div>
-                <div class="form-group">
-                    <label>Answer</label>
-                    <textarea name="answer" id="faq-answer" rows="5" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Icon</label>
-                    <select name="icon" id="faq-icon">
-                        <option value="fa-question-circle">Question Circle</option>
-                        <option value="fa-comment">Comment</option>
-                        <option value="fa-shield-alt">Shield</option>
-                        <option value="fa-venus-mars">Venus Mars</option>
-                        <option value="fa-dice">Dice</option>
-                        <option value="fa-user-plus">User Plus</option>
-                        <option value="fa-flag">Flag</option>
-                        <option value="fa-lock">Lock</option>
-                        <option value="fa-globe">Globe</option>
-                        <option value="fa-heart">Heart</option>
-                        <option value="fa-star">Star</option>
-                        <option value="fa-lightbulb">Lightbulb</option>
-                    </select>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('faq-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-success">Save FAQ</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Blog Modal -->
-    <div class="modal-overlay" id="blog-modal">
-        <div class="modal">
-            <h3 id="blog-modal-title">Add Blog Post</h3>
-            <form method="POST" action="/admin/save/blog">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="blog_index" id="blog-index" value="">
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" name="title" id="blog-title" required>
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="category" id="blog-category">
-                        <option value="Safety">Safety</option>
-                        <option value="Community">Community</option>
-                        <option value="Tips">Tips</option>
-                        <option value="Random Chat">Random Chat</option>
-                        <option value="Global">Global</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" id="blog-date" required>
-                </div>
-                <div class="form-group">
-                    <label>Content (Markdown supported)</label>
-                    <textarea name="content" id="blog-content" rows="10" required></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('blog-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-success">Save Blog Post</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <script>
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-        }
-        
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-        
-        function editFaq(index) {
-            var faqs = {{ faqs_json | safe }};
-            if (faqs[index]) {
-                document.getElementById('faq-modal-title').textContent = 'Edit FAQ';
-                document.getElementById('faq-index').value = index;
-                document.getElementById('faq-question').value = faqs[index].question;
-                document.getElementById('faq-answer').value = faqs[index].answer;
-                document.getElementById('faq-icon').value = faqs[index].icon;
-                openModal('faq-modal');
-            }
-        }
-        
-        function editBlog(index) {
-            var blogs = {{ blogs_json | safe }};
-            if (blogs[index]) {
-                document.getElementById('blog-modal-title').textContent = 'Edit Blog Post';
-                document.getElementById('blog-index').value = index;
-                document.getElementById('blog-title').value = blogs[index].title;
-                document.getElementById('blog-category').value = blogs[index].category;
-                document.getElementById('blog-date').value = blogs[index].date;
-                document.getElementById('blog-content').value = blogs[index].content;
-                openModal('blog-modal');
-            }
-        }
-        
-        // Close modal on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(function(el) {
-            el.addEventListener('click', function(e) {
-                if (e.target === el) {
-                    el.classList.remove('active');
-                }
-            });
-        });
-    </script>
 </body>
 </html>

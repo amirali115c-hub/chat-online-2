@@ -1,7 +1,222 @@
 import json
 import os
-from flask import Flask, render_template, request, session, jsonify
+import re
+import time
+import uuid
+import hashlib
+import threading
+from datetime import datetime
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from werkzeug.utils import secure_filename
+from collections import defaultdict
+
+# Markdown support
+try:
+    import markdown
+    MARKDOWN_AVAILABLE = True
+except ImportError:
+    MARKDOWN_AVAILABLE = False
+    print("Markdown module not available - install with: pip install markdown")
+
+# Configuration
+BLOG_CONTENT_DIR = 'content/blog'
+UPLOAD_DIR = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Ensure directories exist
+os.makedirs(BLOG_CONTENT_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def slugify(text):
+    """Convert text to URL-friendly slug"""
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_-]+', '-', text)
+    text = text.strip('-')
+    return text
+
+def parse_frontmatter(content):
+    """Parse YAML frontmatter and content from markdown file"""
+    if content.startswith('---'):
+        parts = content[4:].split('---', 1)
+        if len(parts) == 2:
+            frontmatter = parts[0].strip()
+            body = parts[1].strip()
+            
+            data = {}
+            for line in frontmatter.split('\n'):
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    data[key.strip()] = value.strip()
+            
+            return data, body
+    return {}, content
+
+def generate_frontmatter(data, body):
+    """Generate markdown with frontmatter"""
+    lines = ['---']
+    for key, value in data.items():
+        lines.append(f'{key}: {value}')
+    lines.append('---')
+    lines.append('')
+    lines.append(body)
+    return '\n'.join(lines)
+
+def get_blog_posts():
+    """Get all blog posts from content directory"""
+    posts = []
+    
+    if not os.path.exists(BLOG_CONTENT_DIR):
+        return posts
+    
+    for filename in os.listdir(BLOG_CONTENT_DIR):
+        if filename.endswith('.md'):
+            filepath = os.path.join(BLOG_CONTENT_DIR, filename)
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                data, body = parse_frontmatter(content)
+                
+                # Convert markdown to HTML if available
+                html_content = body
+                if MARKDOWN_AVAILABLE:
+                    md = markdown.Markdown(extensions=['tables', 'fenced_code'])
+                    html_content = md.convert(body)
+                
+                # Generate excerpt from content
+                excerpt = data.get('excerpt', '')
+                if not excerpt and body:
+                    excerpt = body[:200] + '...' if len(body) > 200 else body
+                
+                # Generate color and icon based on category
+                colors = {
+                    'Safety': 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
+                    'Community': 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                    'Tips': 'linear-gradient(135deg, #10B981, #059669)',
+                    'Random Chat': 'linear-gradient(135deg, #F59E0B, #D97706)',
+                    'Global': 'linear-gradient(135deg, #6366F1, #4F46E5)',
+                    'News': 'linear-gradient(135deg, #EC4899, #DB2777)'
+                }
+                icons = {
+                    'Safety': 'fa-shield-alt',
+                    'Community': 'fa-user-friends',
+                    'Tips': 'fa-lightbulb',
+                    'Random Chat': 'fa-dice',
+                    'Global': 'fa-globe',
+                    'News': 'fa-newspaper'
+                }
+                
+                posts.append({
+                    'slug': data.get('slug', filename[:-3]),
+                    'title': data.get('title', 'Untitled'),
+                    'meta_title': data.get('meta_title', ''),
+                    'meta_description': data.get('meta_description', ''),
+                    'featured_image': data.get('featured_image', ''),
+                    'category': data.get('category', 'Tips'),
+                    'date': data.get('date', datetime.now().strftime('%Y-%m-%d')),
+                    'author': data.get('author', 'Admin'),
+                    'excerpt': excerpt,
+                    'content': body,
+                    'html_content': html_content,
+                    'color': colors.get(data.get('category', 'Tips'), 'linear-gradient(135deg, #8B5CF6, #7C3AED)'),
+                    'icon': icons.get(data.get('category', 'Tips'), 'fa-newspaper')
+                })
+            except Exception as e:
+                print(f"Error reading {filename}: {e}")
+    
+    # Sort by date descending
+    posts.sort(key=lambda x: x['date'], reverse=True)
+    return posts
+
+def get_blog_post(slug):
+    """Get a single blog post by slug"""
+    posts = get_blog_posts()
+    for post in posts:
+        if post['slug'] == slug:
+            return post
+    return None
+
+def save_blog_post(title, slug, content, category, date, excerpt, meta_title, meta_description, featured_image=None):
+    """Save a blog post"""
+    # Ensure slug
+    if not slug:
+        slug = slugify(title)
+    
+    # Check if post exists
+    filepath = os.path.join(BLOG_CONTENT_DIR, f'{slug}.md')
+    existing_post = None
+    if os.path.exists(filepath):
+        with open(filepath, 'r', encoding='utf-8') as f:
+            existing_content = f.read()
+        existing_data, _ = parse_frontmatter(existing_content)
+        existing_post = existing_data
+    
+    # Preserve existing featured_image if not uploading new one
+    current_image = featured_image
+    if not current_image and existing_post:
+        current_image = existing_post.get('featured_image', '')
+    
+    # Build frontmatter data
+    data = {
+        'title': title,
+        'slug': slug,
+        'category': category,
+        'date': date,
+        'author': 'Admin',
+        'excerpt': excerpt,
+        'meta_title': meta_title,
+        'meta_description': meta_description,
+        'featured_image': current_image
+    }
+    
+    # Generate markdown with frontmatter
+    markdown_content = generate_frontmatter(data, content)
+    
+    # Save file
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(markdown_content)
+    
+    return slug
+
+def delete_blog_post(slug):
+    """Delete a blog post"""
+    filepath = os.path.join(BLOG_CONTENT_DIR, f'{slug}.md')
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        return True
+    return False
+
+def get_uploaded_images():
+    """Get list of uploaded images"""
+    images = []
+    if os.path.exists(UPLOAD_DIR):
+        for filename in os.listdir(UPLOAD_DIR):
+            if allowed_file(filename):
+                filepath = os.path.join(UPLOAD_DIR, filename)
+                images.append({
+                    'filename': filename,
+                    'url': f'/static/uploads/{filename}',
+                    'size': os.path.getsize(filepath),
+                    'date': datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d')
+                })
+    return sorted(images, key=lambda x: x['date'], reverse=True)
+
+def handle_file_upload(file):
+    """Handle image upload and return URL"""
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        # Add timestamp to avoid conflicts
+        name, ext = os.path.splitext(filename)
+        filename = f'{name}_{int(time.time())}{ext}'
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        file.save(filepath)
+        return f'/static/uploads/{filename}'
+    return None
 import uuid
 import time
 import hashlib
@@ -1082,8 +1297,150 @@ def settings_page():
     return render_template('settings.html')
 
 @app.route('/blog/<article_id>')
-def blog_article_page(article_id):
-    return render_template('blog_article.html', article_id=article_id)
+@app.route('/blog/<slug>')
+def blog_article_page(slug):
+    """Display a single blog post"""
+    post = get_blog_post(slug)
+    if post:
+        return render_template('blog_article.html', post=post, page_title=post['title'])
+    return render_template('error.html', message='Blog post not found'), 404
+
+# Admin Routes
+@app.route('/admin')
+def admin_dashboard():
+    """Admin dashboard"""
+    posts = get_blog_posts()
+    images = get_uploaded_images()
+    stats = get_online_stats()
+    
+    return render_template('admin.html',
+                         page='dashboard',
+                         post_count=len(posts),
+                         page_views=len(posts) * 100,  # Mock stat
+                         online_count=stats['total'],
+                         media_count=len(images),
+                         recent_posts=posts[:5])
+
+@app.route('/admin/blog')
+def admin_blog_list():
+    """List all blog posts"""
+    posts = get_blog_posts()
+    return render_template('admin.html',
+                         page='blog_list',
+                         posts=posts)
+
+@app.route('/admin/blog/new')
+def admin_blog_new():
+    """Create new blog post"""
+    return render_template('admin.html',
+                         page='blog_edit',
+                         post=None)
+
+@app.route('/admin/blog/edit/<slug>')
+def admin_blog_edit(slug):
+    """Edit existing blog post"""
+    post = get_blog_post(slug)
+    if post:
+        return render_template('admin.html',
+                             page='blog_edit',
+                             post=post)
+    return redirect(url_for('admin_blog_list'))
+
+@app.route('/admin/blog/save', methods=['POST'])
+def admin_blog_save():
+    """Save blog post"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='blog_edit', message='Invalid CSRF token', message_type='error')
+    
+    title = request.form.get('title', '').strip()
+    slug = request.form.get('slug', '').strip()
+    content = request.form.get('content', '').strip()
+    category = request.form.get('category', 'Tips').strip()
+    date = request.form.get('date', '').strip()
+    excerpt = request.form.get('excerpt', '').strip()
+    meta_title = request.form.get('meta_title', '').strip()
+    meta_description = request.form.get('meta_description', '').strip()
+    
+    # Handle file upload
+    featured_image = None
+    if 'featured_image' in request.files:
+        file = request.files['featured_image']
+        featured_image = handle_file_upload(file)
+    
+    if not title or not content:
+        return render_template('admin.html',
+                             page='blog_edit',
+                             message='Title and content are required',
+                             message_type='error')
+    
+    try:
+        save_blog_post(title, slug, content, category, date, excerpt, meta_title, meta_description, featured_image)
+        post = get_blog_post(slug or slugify(title))
+        return render_template('admin.html',
+                             page='blog_edit',
+                             post=post,
+                             message='Blog post saved successfully!',
+                             message_type='success')
+    except Exception as e:
+        return render_template('admin.html',
+                             page='blog_edit',
+                             message=f'Error saving: {str(e)}',
+                             message_type='error')
+
+@app.route('/admin/blog/delete/<slug>', methods=['POST'])
+def admin_blog_delete(slug):
+    """Delete blog post"""
+    csrf_token = request.form.get('csrf_token', '')
+    if not validate_csrf_token(csrf_token):
+        return render_template('admin.html', page='blog_list', message='Invalid CSRF token', message_type='error')
+    
+    if delete_blog_post(slug):
+        return render_template('admin.html',
+                             page='blog_list',
+                             posts=get_blog_posts(),
+                             message='Blog post deleted successfully!',
+                             message_type='success')
+    return render_template('admin.html',
+                         page='blog_list',
+                         posts=get_blog_posts(),
+                         message='Post not found',
+                         message_type='error')
+
+@app.route('/admin/media')
+def admin_media():
+    """Media library"""
+    images = get_uploaded_images()
+    return render_template('admin.html',
+                         page='media',
+                         images=images)
+
+@app.route('/admin/upload', methods=['GET', 'POST'])
+def admin_upload():
+    """Upload image"""
+    if request.method == 'POST':
+        csrf_token = request.form.get('csrf_token', '')
+        if not validate_csrf_token(csrf_token):
+            return render_template('admin.html', page='upload', message='Invalid CSRF token', message_type='error')
+        
+        if 'file' not in request.files:
+            return render_template('admin.html', page='upload', message='No file selected', message_type='error')
+        
+        file = request.files['file']
+        url = handle_file_upload(file)
+        
+        if url:
+            return render_template('admin.html',
+                                 page='upload',
+                                 message=f'Image uploaded: {url}',
+                                 message_type='success',
+                                 uploaded_url=url)
+        return render_template('admin.html',
+                             page='upload',
+                             message='Invalid file type. Allowed: png, jpg, jpeg, gif, webp',
+                             message_type='error')
+    
+    return render_template('admin.html', page='upload')
 
 # API routes for auth
 @app.route('/api/login', methods=['POST'])

@@ -1,44 +1,45 @@
 {% extends "base.html" %}
+{% import "macros.html" as macros %}
 
-{% block title %}Blog - Chat Online{% endblock %}
+{% block title %}{{ page_title if page_title else "Blog - Chat Online" }}{% endblock %}
+
+{% block extra_css %}
+<meta name="title" content="{{ meta_title if meta_title else 'Blog - Chat Online' }}">
+<meta name="description" content="{{ meta_description if meta_description else 'Latest tips, news, and articles about online chat and safety.' }}">
+{% endblock %}
 
 {% block content %}
 <div class="content-page-container">
     <div class="content-page-header">
-        <h1><i class="fas fa-blog"></i> Blog</h1>
-        <p>Latest tips, news, and articles</p>
+        <h1><i class="fas fa-blog"></i> {{ title if title else "Blog" }}</h1>
+        <p>{{ subtitle if subtitle else "Latest tips, news, and articles" }}</p>
     </div>
+    
+    {% if posts %}
     <div class="blog-grid">
-
-        <div class="blog-card">
-            <div class="blog-image" style="background: linear-gradient(135deg, #10B981, #059669);">
-                <i class="fas fa-star"></i>
+        {% for post in posts %}
+        <a href="{{ url_for('blog_article_page', slug=post.slug) }}" class="blog-card">
+            <div class="blog-image" style="background: {{ post.color }};">
+                {% if post.featured_image %}
+                <img src="{{ post.featured_image }}" alt="{{ post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <i class="fas {{ post.icon }}"></i>
+                {% endif %}
             </div>
             <div class="blog-content">
-                <span class="blog-category">Safety</span>
-                <h3>How to Stay Safe Online</h3>
-                <p>Essential tips for protecting yourself while chatting with strangers online.
-
-## 1. Protect Your Per...</p>
-                <span class="blog-meta"><i class="fas fa-calendar"></i> 2026-02-15</span>
+                <span class="blog-category">{{ post.category }}</span>
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.excerpt }}</p>
+                <span class="blog-meta"><i class="fas fa-calendar"></i> {{ post.date }}</span>
             </div>
-        </div>
-
-        <div class="blog-card">
-            <div class="blog-image" style="background: linear-gradient(135deg, #0EA5E9, #06B6D4);">
-                <i class="fas fa-user-friends"></i>
-            </div>
-            <div class="blog-content">
-                <span class="blog-category">Community</span>
-                <h3>Making Friends Through Chat</h3>
-                <p>How to make meaningful connections in chat rooms.
-
-## Be Genuine
-
-Authenticity attracts people. Be y...</p>
-                <span class="blog-meta"><i class="fas fa-calendar"></i> 2026-02-12</span>
-            </div>
-        </div>
+        </a>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-newspaper"></i>
+        <p>No blog posts yet. Check back soon!</p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
