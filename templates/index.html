@@ -154,6 +154,12 @@
 
 {% block extra_js %}
 <script>
+// Prevent form issues
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    // Form will submit naturally
+    return true;
+});
+
 // Age dropdown
 var ageSelect = document.getElementById('guest-age');
 for (var i = 18; i <= 100; i++) {
