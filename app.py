@@ -214,6 +214,30 @@ def index():
 
     return render_template('index.html')
 
+@app.route('/guest-login', methods=['POST'])
+def guest_login():
+    """Handle guest form submission"""
+    username = request.form.get('username', '').strip()
+    gender = request.form.get('gender', '')
+    age = request.form.get('age', '')
+    country = request.form.get('country', '')
+    state = request.form.get('state', '')
+    
+    if not username or not gender or not age or not country:
+        return render_template('index.html')
+    
+    # Store in session
+    session['guest_username'] = username
+    session['guest_gender'] = gender
+    session['guest_age'] = age
+    session['guest_country'] = country
+    session['guest_state'] = state or ''
+    session['is_guest'] = True
+    session['age_verified'] = True
+    session['agreed_at'] = time.time()
+    
+    return app.redirect('/welcome')
+
 @app.route('/home')
 def home():
     return render_template('index.html')

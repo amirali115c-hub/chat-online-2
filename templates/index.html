@@ -44,10 +44,11 @@
             <h1>Welcome to Chat Online</h1>
             <p class="welcome-subtitle">18+ Free Chat Rooms</p>
 
-            <div id="entry-form" class="entry-form">
+            <form action="/guest-login" method="POST" id="entry-form" class="entry-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="guest-username" placeholder="Choose a username" maxlength="20">
+                    <input type="text" name="username" placeholder="Choose a username" maxlength="20" required>
                     <span class="username-hint">Letters, numbers, underscores only</span>
                 </div>
 
@@ -55,21 +56,21 @@
                     <label><i class="fas fa-venus-mars"></i> I am</label>
                     <div class="gender-selector gender-selector-three">
                         <label class="gender-box male">
-                            <input type="radio" name="guest_gender" value="male">
+                            <input type="radio" name="gender" value="male" required>
                             <div class="gender-content">
                                 <i class="fas fa-male"></i>
                                 <span>Male</span>
                             </div>
                         </label>
                         <label class="gender-box female">
-                            <input type="radio" name="guest_gender" value="female">
+                            <input type="radio" name="gender" value="female">
                             <div class="gender-content">
                                 <i class="fas fa-female"></i>
                                 <span>Female</span>
                             </div>
                         </label>
                         <label class="gender-box">
-                            <input type="radio" name="guest_gender" value="other">
+                            <input type="radio" name="gender" value="other">
                             <div class="gender-content">
                                 <i class="fas fa-user"></i>
                                 <span>Other</span>
@@ -81,23 +82,23 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label><i class="fas fa-birthday-cake"></i> Age</label>
-                        <select id="guest-age"></select>
+                        <select name="age" id="guest-age" required></select>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-globe"></i> Country</label>
-                        <select id="guest-country"></select>
+                        <select name="country" id="guest-country" required></select>
                     </div>
                 </div>
 
                 <div class="form-group" id="state-group" style="display: none;">
                     <label><i class="fas fa-map-marker-alt"></i> State</label>
-                    <select id="guest-state"></select>
+                    <select name="state" id="guest-state"></select>
                 </div>
 
-                <button type="button" class="btn btn-primary btn-large" id="startBtn" onclick="startChatting()">
+                <button type="submit" class="btn btn-primary btn-large">
                     <i class="fas fa-sign-in-alt"></i> Start Chatting
                 </button>
-            </div>
+            </form>
 
             <div class="entry-footer-links">
                 <a href="{{ url_for('login_page') }}" class="nav-link">Already have an account? Login</a>
@@ -153,12 +154,6 @@
 
 {% block extra_js %}
 <script>
-// Check if already verified
-if (sessionStorage.getItem('age_verified') === 'true') {
-    window.location.href = '/welcome';
-    return;
-}
-
 // Age dropdown
 var ageSelect = document.getElementById('guest-age');
 for (var i = 18; i <= 100; i++) {
@@ -307,45 +302,5 @@ countrySelect.addEventListener('change', function() {
         stateSelect.innerHTML = '<option value="">Select State</option>';
     }
 });
-
-// Start button click
-function startChatting() {
-    var username = document.getElementById('guest-username').value.trim();
-    var gender = document.querySelector('input[name="guest_gender"]:checked');
-    var age = document.getElementById('guest-age').value;
-    var country = document.getElementById('guest-country').value;
-    var state = document.getElementById('guest-state').value;
-
-    if (!username) {
-        alert('Please enter a username');
-        return false;
-    }
-    if (!gender) {
-        alert('Please select your gender');
-        return false;
-    }
-    if (!age) {
-        alert('Please select your age');
-        return false;
-    }
-    if (!country) {
-        alert('Please select your country');
-        return false;
-    }
-
-    // Store data
-    sessionStorage.setItem('guest_username', username);
-    sessionStorage.setItem('guest_gender', gender.value);
-    sessionStorage.setItem('guest_age', age);
-    sessionStorage.setItem('guest_country', country);
-    sessionStorage.setItem('guest_state', state || '');
-    sessionStorage.setItem('is_guest', 'true');
-    sessionStorage.setItem('age_verified', 'true');
-    sessionStorage.setItem('agreed_at', new Date().toISOString());
-
-    // Navigate to welcome page
-    window.location.href = '/welcome';
-    return false;
-}
 </script>
 {% endblock %}
