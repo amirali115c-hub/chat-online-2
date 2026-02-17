@@ -20,5 +20,8 @@ python-dotenv>=1.0.0
 # Database
 psycopg2-binary>=2.9.0
 
+# Monitoring & Logging
+sentry-sdk>=1.40.0
+
 # Email (optional)
 # Flask-Mail>=0.9.0

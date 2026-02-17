@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import jwt
 import uuid
 import re
+import os
 from database import (
     init_database, get_db, create_user, get_user_by_id, get_user_by_username,
     get_user_by_email, update_user_online_status, search_users,
@@ -17,8 +18,8 @@ from database import (
 # Create API blueprint
 api = Blueprint('api', __name__, url_prefix='/api')
 
-# JWT Secret (in production, use environment variable)
-JWT_SECRET = 'chat-online-jwt-secret-change-in-production'
+# JWT Secret from environment variable
+JWT_SECRET = os.environ.get('JWT_SECRET', 'chat-online-jwt-dev-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
 
 # Initialize database

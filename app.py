@@ -5,11 +5,45 @@ import time
 import uuid
 import hashlib
 import threading
-from datetime import datetime
-from flask import Flask, render_template, request, session, jsonify, redirect, url_for, send_from_directory
+import logging
+from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for, send_from_directory, g
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 from collections import defaultdict
+from config import get_config
+
+# Load configuration
+config = get_config()
+
+# Setup logging
+os.makedirs('logs', exist_ok=True)
+file_handler = RotatingFileHandler(
+    config.LOG_FILE,
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=10,
+    encoding='utf-8'
+)
+file_handler.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# Configure logger
+logger = logging.getLogger('chat_online')
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+# Log application startup
+logger.info("=" * 60)
+logger.info("Chat Online Application Starting")
+logger.info("=" * 60)
 
 # Markdown support
 try:
@@ -230,7 +264,25 @@ from csrf import generate_csrf_token, validate_csrf_token
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['SECRET_KEY'] = 'chat-online-secret-key-change-in-production'
+app.config['SECRET_KEY'] = config.SECRET_KEY
+
+# Initialize Sentry for error tracking (optional - set SENTRY_DSN env var to enable)
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        from sentry_sdk.integrations.socketio import SocketIOIntegration
+        
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[FlaskIntegration(), SocketIOIntegration()],
+            traces_sample_rate=0.1,
+            send_default_pii=False
+        )
+        logger.info("Sentry error tracking initialized")
+    except ImportError:
+        logger.warning("Sentry SDK not installed - error tracking disabled")
 
 # Add CSRF token generator to Jinja context
 app.jinja_env.globals['csrf_token'] = generate_csrf_token
@@ -500,9 +552,16 @@ def check_rate():
 @socketio.on('connect')
 def handle_connect():
     client_ip = get_client_ip()
-
+    
+    # Check if blocked
+    if is_ip_blocked(client_ip):
+        logger.warning(f"Blocked IP attempted connection: {client_ip}")
+        emit('error', {'message': 'Access denied'})
+        return False
+    
     # Check if bot
     if is_bot_request():
+        logger.info(f"Bot blocked: {client_ip}")
         emit('error', {'message': 'Access denied'})
         return False
 
@@ -511,6 +570,7 @@ def handle_connect():
     ip_connections[client_ip] = [t for t in ip_connections[client_ip] if current_time - t < 60]
 
     if len(ip_connections[client_ip]) >= MAX_CONNECTIONS_PER_IP:
+        logger.warning(f"Connection limit exceeded from {client_ip}")
         emit('error', {'message': 'Too many connections from your IP'})
         return False
 
@@ -570,6 +630,7 @@ def handle_connect():
         'total_online': len(active_connections)
     }, room=GLOBAL_ONLINE_ROOM)
     
+    logger.info(f"User connected: {username} (ID: {user_id}) from {client_ip}")
     emit('connected', {'user_id': user_id, 'username': username, 'gender': gender, 'is_guest': is_guest})
 
 def cleanup_stale_connections():
@@ -962,6 +1023,8 @@ def handle_message(data):
         'sender': 'partner',
         'timestamp': time.time()
     }, room=user['room'])
+    
+    logger.info(f"Message sent by {username} to room {user['room']}")
 
 @socketio.on('typing')
 def handle_typing(data):
@@ -1313,7 +1376,11 @@ def blog_article_page(slug):
 # Admin Routes
 @app.route('/admin')
 def admin_dashboard():
-    """Admin dashboard"""
+    """Admin dashboard - requires authentication"""
+    # Check authentication
+    if not session.get(ADMIN_AUTH_KEY):
+        return render_template('admin_login.html')
+    
     posts = get_blog_posts()
     images = get_uploaded_images()
     stats = get_online_stats()
@@ -1321,10 +1388,17 @@ def admin_dashboard():
     return render_template('admin.html',
                          page='dashboard',
                          post_count=len(posts),
-                         page_views=len(posts) * 100,  # Mock stat
+                         page_views=len(posts) * 100,
                          online_count=stats['total'],
                          media_count=len(images),
                          recent_posts=posts[:5])
+
+# All other admin routes
+ADMIN_ROUTES = [
+    'admin_blog_list', 'admin_blog_new', 'admin_blog_edit', 'admin_blog_save', 
+    'admin_blog_delete', 'admin_media', 'admin_upload', 'admin_dashboard',
+    'admin_health', 'admin_health_issues', 'admin_health_analytics'
+]
 
 @app.route('/admin/blog')
 def admin_blog_list():
@@ -1447,11 +1521,79 @@ def admin_upload():
     
     return render_template('admin.html', page='upload')
 
+# ==================== ADMIN AUTHENTICATION ====================
+
+ADMIN_AUTH_KEY = 'admin_authenticated'
+
+def require_admin(f):
+    """Decorator to require admin authentication"""
+    from functools import wraps
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get(ADMIN_AUTH_KEY):
+            # Check for admin credentials in headers
+            auth_header = request.headers.get('X-Admin-Auth', '')
+            expected = f"{config.ADMIN_USERNAME}:{config.ADMIN_PASSWORD}"
+            
+            if auth_header == expected:
+                session[ADMIN_AUTH_KEY] = True
+                logger.info(f"Admin authenticated from {get_client_ip()}")
+            else:
+                logger.warning(f"Unauthorized admin access attempt from {get_client_ip()}")
+                return jsonify({'error': 'Unauthorized'}), 401
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+# Login endpoint for admin panel
+@app.route('/api/admin/login', methods=['POST'])
+def api_admin_login():
+    """Admin login endpoint"""
+    data = request.get_json()
+    username = data.get('username', '')
+    password = data.get('password', '')
+    
+    client_ip = get_client_ip()
+    
+    # Rate limit
+    if not check_rate_limit(client_ip, 'admin_login'):
+        logger.warning(f"Admin login rate limit exceeded from {client_ip}")
+        return jsonify({'success': False, 'message': 'Too many attempts'}), 429
+    
+    if username == config.ADMIN_USERNAME and password == config.ADMIN_PASSWORD:
+        session[ADMIN_AUTH_KEY] = True
+        session['admin_username'] = username
+        logger.info(f"Admin logged in: {username} from {client_ip}")
+        return jsonify({'success': True, 'message': 'Login successful'})
+    
+    logger.warning(f"Failed admin login attempt: {username} from {client_ip}")
+    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+@app.route('/api/admin/logout', methods=['POST'])
+def api_admin_logout():
+    """Admin logout endpoint"""
+    session.pop(ADMIN_AUTH_KEY, None)
+    session.pop('admin_username', None)
+    return jsonify({'success': True})
+
+@app.route('/api/admin/check', methods=['GET'])
+def api_admin_check():
+    """Check if admin is authenticated"""
+    return jsonify({'authenticated': session.get(ADMIN_AUTH_KEY, False)})
+
 # API routes for auth
 @app.route('/api/login', methods=['POST'])
 def api_login():
+    client_ip = get_client_ip()
+    
+    # Rate limit login attempts
+    if not check_rate_limit(client_ip, 'login'):
+        logger.warning(f"Login rate limit exceeded from {client_ip}")
+        return jsonify({'success': False, 'message': 'Too many attempts. Please wait.'}), 429
+    
     data = request.get_json()
-    # Simplified login - in production, use proper password hashing
     email = data.get('email', '').lower()
     password = data.get('password', '')
 
@@ -1461,12 +1603,22 @@ def api_login():
             # In production, verify password hash
             session['user_id'] = uid
             session['username'] = user_data['username']
+            session['login_time'] = time.time()
+            logger.info(f"User logged in: {user_data['username']} from {client_ip}")
             return jsonify({'success': True})
 
-    return jsonify({'success': False, 'message': 'Invalid credentials'})
+    logger.warning(f"Failed login attempt for {email} from {client_ip}")
+    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
 
 @app.route('/api/register', methods=['POST'])
 def api_register():
+    client_ip = get_client_ip()
+    
+    # Rate limit registration
+    if not check_rate_limit(client_ip, 'register'):
+        logger.warning(f"Registration rate limit exceeded from {client_ip}")
+        return jsonify({'success': False, 'message': 'Too many registration attempts'}), 429
+    
     data = request.get_json()
     username = data.get('username', '').strip()
     email = data.get('email', '').strip().lower()
