@@ -44,10 +44,10 @@
             <h1>Welcome to Chat Online</h1>
             <p class="welcome-subtitle">18+ Free Chat Rooms</p>
 
-            <form id="entry-form" class="entry-form">
+            <div id="entry-form" class="entry-form">
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="guest-username" placeholder="Choose a username" maxlength="20" required>
+                    <input type="text" id="guest-username" placeholder="Choose a username" maxlength="20">
                     <span class="username-hint">Letters, numbers, underscores only</span>
                 </div>
 
@@ -81,11 +81,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label><i class="fas fa-birthday-cake"></i> Age</label>
-                        <select id="guest-age" required></select>
+                        <select id="guest-age"></select>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-globe"></i> Country</label>
-                        <select id="guest-country" required></select>
+                        <select id="guest-country"></select>
                     </div>
                 </div>
 
@@ -97,7 +97,7 @@
                 <button type="button" class="btn btn-primary btn-large" id="startBtn">
                     <i class="fas fa-sign-in-alt"></i> Start Chatting
                 </button>
-            </form>
+            </div>
 
             <div class="entry-footer-links">
                 <a href="{{ url_for('login_page') }}" class="nav-link">Already have an account? Login</a>
@@ -156,12 +156,13 @@
 // Check if already verified
 if (sessionStorage.getItem('age_verified') === 'true') {
     window.location.href = '/welcome';
+    return;
 }
 
 // Age dropdown
-const ageSelect = document.getElementById('guest-age');
-for (let i = 18; i <= 100; i++) {
-    const opt = document.createElement('option');
+var ageSelect = document.getElementById('guest-age');
+for (var i = 18; i <= 100; i++) {
+    var opt = document.createElement('option');
     opt.value = i;
     opt.textContent = i;
     if (i === 18) opt.selected = true;
@@ -169,7 +170,7 @@ for (let i = 18; i <= 100; i++) {
 }
 
 // Countries
-const countries = [
+var countries = [
     { code: 'US', name: 'United States' },
     { code: 'GB', name: 'United Kingdom' },
     { code: 'CA', name: 'Canada' },
@@ -227,7 +228,7 @@ const countries = [
 ];
 
 // US States
-const usStates = [
+var usStates = [
     { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
     { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
     { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
@@ -255,13 +256,13 @@ const usStates = [
     { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
 ];
 
-const countrySelect = document.getElementById('guest-country');
-const stateSelect = document.getElementById('guest-state');
-const stateGroup = document.getElementById('state-group');
+var countrySelect = document.getElementById('guest-country');
+var stateSelect = document.getElementById('guest-state');
+var stateGroup = document.getElementById('state-group');
 
 // Populate countries
-countries.forEach(c => {
-    const opt = document.createElement('option');
+countries.forEach(function(c) {
+    var opt = document.createElement('option');
     opt.value = c.code;
     opt.textContent = c.name;
     if (c.code === 'US') opt.selected = true;
@@ -271,8 +272,8 @@ countries.forEach(c => {
 // Initialize states
 function initStates(states) {
     stateSelect.innerHTML = '<option value="">Select State</option>';
-    states.forEach(s => {
-        const opt = document.createElement('option');
+    states.forEach(function(s) {
+        var opt = document.createElement('option');
         opt.value = s.code;
         opt.textContent = s.name;
         stateSelect.appendChild(opt);
@@ -308,28 +309,29 @@ countrySelect.addEventListener('change', function() {
 });
 
 // Start button click
-document.getElementById('startBtn').addEventListener('click', function() {
-    const username = document.getElementById('guest-username').value.trim();
-    const gender = document.querySelector('input[name="guest_gender"]:checked');
-    const age = document.getElementById('guest-age').value;
-    const country = document.getElementById('guest-country').value;
-    const state = document.getElementById('guest-state').value;
+var startBtn = document.getElementById('startBtn');
+startBtn.onclick = function() {
+    var username = document.getElementById('guest-username').value.trim();
+    var gender = document.querySelector('input[name="guest_gender"]:checked');
+    var age = document.getElementById('guest-age').value;
+    var country = document.getElementById('guest-country').value;
+    var state = document.getElementById('guest-state').value;
 
     if (!username) {
         alert('Please enter a username');
-        return;
+        return false;
     }
     if (!gender) {
         alert('Please select your gender');
-        return;
+        return false;
     }
     if (!age) {
         alert('Please select your age');
-        return;
+        return false;
     }
     if (!country) {
         alert('Please select your country');
-        return;
+        return false;
     }
 
     // Store data
@@ -342,8 +344,9 @@ document.getElementById('startBtn').addEventListener('click', function() {
     sessionStorage.setItem('age_verified', 'true');
     sessionStorage.setItem('agreed_at', new Date().toISOString());
 
-    // Go to welcome page
+    // Navigate to welcome page
     window.location.href = '/welcome';
-});
+    return false;
+};
 </script>
 {% endblock %}
