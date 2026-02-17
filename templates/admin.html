@@ -103,6 +103,11 @@
             <a href="/admin/media" class="{{ 'active' if page == 'media' else '' }}"><i class="fas fa-images"></i> Media Library</a>
             <a href="/admin/upload" class="{{ 'active' if page == 'upload' else '' }}"><i class="fas fa-upload"></i> Upload Image</a>
             
+            <h3>Monitoring</h3>
+            <a href="/admin/health" class="{{ 'active' if page == 'health' else '' }}"><i class="fas fa-heartbeat"></i> Health Dashboard</a>
+            <a href="/admin/health/issues" class="{{ 'active' if page == 'issues' else '' }}"><i class="fas fa-exclamation-triangle"></i> Issues</a>
+            <a href="/admin/health/analytics" class="{{ 'active' if page == 'analytics' else '' }}"><i class="fas fa-chart-line"></i> Analytics</a>
+            
             <h3>System</h3>
             <a href="/" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a>
         </div>

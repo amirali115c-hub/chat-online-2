@@ -2102,6 +2102,279 @@ def delete_blog(index):
     
     return render_template('admin.html', page='manage_blog', blogs=data.get('blogs', []), blogs_json=json.dumps(data.get('blogs', [])), message=message, message_type='success')
 
+# ==================== HEALTH MONITORING ====================
+
+# Health monitoring storage
+health_data = {
+    'page_load_times': [],
+    'errors': [],
+    'page_views': [],
+    '404_pages': [],
+    'login_failures': [],
+    'suspicious_activity': [],
+    'startup_time': datetime.now(),
+    'checks': {}
+}
+
+def log_error(error_type, message, path='', details=None):
+    """Log an error for tracking"""
+    error = {
+        'type': error_type,
+        'message': message,
+        'path': path,
+        'details': details,
+        'timestamp': datetime.now().isoformat(),
+        'ip': get_client_ip()
+    }
+    health_data['errors'].append(error)
+    # Keep only last 100 errors
+    if len(health_data['errors']) > 100:
+        health_data['errors'] = health_data['errors'][-100:]
+    return error
+
+def log_page_view(page, user_type='guest'):
+    """Log a page view"""
+    view = {
+        'page': page,
+        'user_type': user_type,
+        'timestamp': datetime.now().isoformat(),
+        'ip': get_client_ip()
+    }
+    health_data['page_views'].append(view)
+    # Keep only last 1000 views
+    if len(health_data['page_views']) > 1000:
+        health_data['page_views'] = health_data['page_views'][-1000:]
+
+def log_404(page):
+    """Log a 404 page"""
+    error = {
+        'page': page,
+        'timestamp': datetime.now().isoformat(),
+        'ip': get_client_ip()
+    }
+    health_data['404_pages'].append(error)
+    if len(health_data['404_pages']) > 50:
+        health_data['404_pages'] = health_data['404_pages'][-50:]
+
+def get_health_status():
+    """Get current health status"""
+    checks = {
+        'overall': 'healthy',
+        'database': {'status': 'unknown'},
+        'memory': {'status': 'unknown'},
+        'disk': {'status': 'unknown'},
+        'socket': {'status': 'unknown'},
+        'uptime': {'status': 'unknown'}
+    }
+    
+    # Check database
+    try:
+        start = time.time()
+        db = get_db()
+        db.execute('SELECT 1')
+        elapsed = (time.time() - start) * 1000
+        checks['database'] = {'status': 'healthy', 'response_time_ms': round(elapsed, 2)}
+    except Exception as e:
+        checks['database'] = {'status': 'error', 'message': str(e)}
+        checks['overall'] = 'critical'
+    
+    # Check memory
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        checks['memory'] = {
+            'status': 'warning' if mem.percent > 80 else 'healthy',
+            'percent_used': mem.percent,
+            'total_gb': round(mem.total / (1024**3), 2)
+        }
+        if mem.percent > 90:
+            checks['overall'] = 'critical'
+        elif mem.percent > 80:
+            checks['overall'] = 'warning'
+    except:
+        pass
+    
+    # Check disk
+    try:
+        import psutil
+        usage = psutil.disk_usage('/')
+        checks['disk'] = {
+            'status': 'warning' if usage.percent > 80 else 'healthy',
+            'percent_used': usage.percent
+        }
+    except:
+        pass
+    
+    # Check socket connections
+    total = len(active_connections)
+    guests = sum(1 for c in active_connections.values() if c.get('is_guest'))
+    checks['socket'] = {
+        'status': 'healthy',
+        'total_connections': total,
+        'guests': guests,
+        'registered': total - guests
+    }
+    
+    # Check uptime
+    uptime = datetime.now() - health_data['startup_time']
+    checks['uptime'] = {
+        'status': 'healthy',
+        'hours': round(uptime.total_seconds() / 3600, 2)
+    }
+    
+    return checks
+
+def get_analytics(days=1):
+    """Get analytics data"""
+    cutoff = datetime.now() - timedelta(days=days)
+    views = [v for v in health_data['page_views'] if datetime.fromisoformat(v['timestamp']) > cutoff]
+    
+    page_counts = {}
+    for view in views:
+        page = view['page']
+        page_counts[page] = page_counts.get(page, 0) + 1
+    
+    popular_pages = sorted(page_counts.items(), key=lambda x: x[1], reverse=True)[:20]
+    
+    return {
+        'period_days': days,
+        'total_views': len(views),
+        'unique_pages': len(page_counts),
+        'popular_pages': [{'page': p[0], 'views': p[1]} for p in popular_pages],
+        'errors_count': len([e for e in health_data['errors'] if datetime.fromisoformat(e['timestamp']) > cutoff]),
+        '404_count': len([e for e in health_data['404_pages'] if datetime.fromisoformat(e['timestamp']) > cutoff])
+    }
+
+def get_all_issues():
+    """Get all current issues"""
+    issues = []
+    checks = get_health_status()
+    
+    # Check for warnings in health
+    for check_name, check_data in checks.items():
+        if check_name == 'overall':
+            continue
+        if check_data.get('status') == 'warning':
+            issues.append({
+                'type': 'warning',
+                'source': check_name,
+                'message': f"{check_name} has warnings"
+            })
+    
+    # Add recent errors
+    recent_errors = health_data['errors'][-10:]
+    for error in recent_errors:
+        issues.append({
+            'type': 'error',
+            'source': error['type'],
+            'message': error['message'],
+            'path': error.get('path', '')
+        })
+    
+    # Add recent 404s
+    for error in health_data['404_pages'][-5:]:
+        issues.append({
+            'type': '404',
+            'source': 'broken_link',
+            'message': f"404: {error['page']}",
+            'path': error['page']
+        })
+    
+    return issues
+
+# Health monitoring routes
+@app.route('/admin/health')
+def admin_health():
+    """Health dashboard"""
+    checks = get_health_status()
+    analytics = get_analytics(1)
+    issues = get_all_issues()
+    
+    return render_template('health_dashboard.html',
+                         page='health',
+                         overall_status=checks['overall'],
+                         checks=checks,
+                         analytics=analytics,
+                         issues=issues,
+                         timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+@app.route('/admin/health/issues')
+def admin_health_issues():
+    """All issues"""
+    issues = get_all_issues()
+    return render_template('health_dashboard.html',
+                         page='issues',
+                         issues=issues,
+                         timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+@app.route('/admin/health/analytics')
+def admin_health_analytics():
+    """Analytics"""
+    analytics = get_analytics(7)
+    return render_template('health_dashboard.html',
+                         page='analytics',
+                         analytics=analytics,
+                         timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+@app.route('/api/health')
+def api_health():
+    """Health check API"""
+    checks = get_health_status()
+    issues = get_all_issues()
+    return jsonify({
+        'success': True,
+        'data': {
+            'checks': checks,
+            'issues_count': len(issues)
+        }
+    })
+
+@app.route('/api/health/errors')
+def api_health_errors():
+    """Get recent errors"""
+    return jsonify({
+        'success': True,
+        'data': health_data['errors'][-20:]
+    })
+
+@app.route('/api/health/analytics')
+def api_analytics():
+    """Analytics API"""
+    return jsonify({
+        'success': True,
+        'data': get_analytics(7)
+    })
+
+@app.route('/api/log-error', methods=['POST'])
+def api_log_error():
+    """Log an error from client"""
+    data = request.get_json()
+    log_error(
+        error_type=data.get('type', 'unknown'),
+        message=data.get('message', ''),
+        path=data.get('path', ''),
+        details=data.get('details', {})
+    )
+    return jsonify({'success': True})
+
+@app.route('/api/log-pageview', methods=['POST'])
+def api_log_pageview():
+    """Log a page view"""
+    data = request.get_json()
+    log_page_view(
+        page=data.get('page', ''),
+        user_type=data.get('user_type', 'guest')
+    )
+    return jsonify({'success': True})
+
+@app.route('/admin/health/pages')
+def admin_health_pages():
+    """Page views"""
+    return jsonify({
+        'success': True,
+        'data': health_data['page_views'][-100:]
+    })
+
 if __name__ == '__main__':
     # For production, use eventlet
     try:
