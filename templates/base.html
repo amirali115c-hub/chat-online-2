@@ -58,8 +58,8 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- Age Verification Modal -->
-    <div id="age-modal" class="age-modal" style="display: flex;">
+    <!-- Age Verification Modal - hidden by default, shown via JS -->
+    <div id="age-modal" class="age-modal" style="display: none;">
         <div class="age-modal-content">
             <div class="modal-logo">
                 <i class="fas fa-comment-dots"></i>
@@ -233,15 +233,14 @@
             });
         };
 
-        // Age verification check - show on welcome page only
+        // Age verification check - show modal if not verified
         document.addEventListener('DOMContentLoaded', function() {
             var path = window.location.pathname;
             var modal = document.getElementById('age-modal');
+            var isVerified = localStorage.getItem('age_verified') === 'true';
 
-            // Hide on homepage, show on welcome page
-            if (path === '/' || path === '') {
-                modal.style.display = 'none';
-            } else {
+            // Show modal only on non-homepage pages if not verified
+            if (path !== '/' && path !== '' && !isVerified) {
                 modal.style.display = 'flex';
             }
 
@@ -258,7 +257,7 @@
                 }
 
                 localStorage.setItem('age_verified', 'true');
-                document.getElementById('age-modal').style.display = 'none';
+                modal.style.display = 'none';
 
                 // Redirect to welcome page
                 window.location.href = '/welcome';
