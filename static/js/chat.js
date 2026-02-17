@@ -142,10 +142,18 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeSocket() {
     socket = io();
 
-    socket.on('connect', () => console.log('Connected'));
+    socket.on('connect', () => {
+        console.log('Socket connected');
+    });
 
     socket.on('connected', (data) => {
         userId = data.user_id;
+        userData = {
+            id: data.user_id,
+            username: data.username || 'Guest',
+            gender: data.gender,
+            is_guest: data.is_guest || false
+        };
         console.log('User connected with ID:', userId);
         // Send tab ID to server so it tracks us as separate user
         socket.emit('register_tab', { tab_id: TAB_ID });
@@ -153,7 +161,9 @@ function initializeSocket() {
         startHeartbeat();
     });
 
-    socket.on('disconnect', () => console.log('Disconnected'));
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected');
+    });
 
     socket.on('error', (data) => {
         console.error('Error:', data.message);

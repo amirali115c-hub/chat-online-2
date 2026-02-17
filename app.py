@@ -516,7 +516,7 @@ def handle_connect():
 
     ip_connections[client_ip].append(current_time)
 
-    # Validate session
+    # Validate session - allow guests with age_verified
     if not validate_session():
         emit('error', {'message': 'Invalid session. Please refresh the page.'})
         return False
@@ -528,6 +528,12 @@ def handle_connect():
     username = session.get('guest_username', 'Guest')
     gender = session.get('guest_gender', None)
     country = session.get('guest_country', '')
+    
+    # Store session data
+    session['user_id'] = user_id
+    session['username'] = username
+    session['gender'] = gender
+    session['country'] = country
     
     users[user_id] = {
         'gender': gender,
@@ -542,7 +548,6 @@ def handle_connect():
         'messages_sent': 0,
         'last_message_time': 0
     }
-    session['user_id'] = user_id
     
     # Track active connection for real-time user counting
     active_connections[request.sid] = {
@@ -565,7 +570,7 @@ def handle_connect():
         'total_online': len(active_connections)
     }, room=GLOBAL_ONLINE_ROOM)
     
-    emit('connected', {'user_id': user_id})
+    emit('connected', {'user_id': user_id, 'username': username, 'gender': gender, 'is_guest': is_guest})
 
 def cleanup_stale_connections():
     """Remove connections that haven't pinged in 5 minutes"""
@@ -1561,7 +1566,7 @@ def get_all_online_users():
             'username': username,
             'gender': gender,
             'country': country,
-            'is_guest': conn.get('guest', False)
+            'is_guest': conn.get('is_guest', False)
         })
     
     return jsonify({
@@ -1742,6 +1747,13 @@ def debug_connections():
         'success': True,
         'data': {
             'total_connections': len(active_connections),
+            'session_info': {
+                'user_id': session.get('user_id'),
+                'username': session.get('username') or session.get('guest_username'),
+                'gender': session.get('gender') or session.get('guest_gender'),
+                'is_guest': session.get('is_guest'),
+                'session_id': session.get('sid')
+            },
             'connections': [
                 {
                     'sid': sid,

@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('chat_tab_' + tabId + '_username', '{{ session.get("guest_username", "Guest") }}');
         localStorage.setItem('chat_tab_' + tabId + '_gender', '{{ session.get("guest_gender", "") }}');
         localStorage.setItem('chat_tab_' + tabId + '_country', '{{ session.get("guest_country", "") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_is_guest', '{{ "true" if session.get("is_guest") else "false" }}');
     }
     
     // Check age verification (per-tab)
@@ -427,15 +428,24 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('username-display').textContent = username;
 
     // Initialize socket connection if not already connected
-    if (typeof initializeSocket === 'function' && (!socket || !socket.connected)) {
-        initializeSocket();
+    if (typeof initializeSocket === 'function') {
+        if (!socket || !socket.connected) {
+            initializeSocket();
+        }
     }
 
-    // Load online users
-    loadUsers();
+    // Load online users after a short delay to ensure socket is connected
+    setTimeout(function() {
+        loadUsers();
+    }, 500);
 
     // Setup action icon clicks
     setupActionIcons();
+    
+    // Refresh users every 10 seconds
+    setInterval(function() {
+        loadUsers();
+    }, 10000);
 });
 
 function startRandomChat() {
