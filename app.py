@@ -120,6 +120,9 @@ def validate_session():
     """Validate user session for authenticity"""
     # Check if session exists and has required data
     if 'session_start' not in session:
+        # For guest users, check if they have guest verification
+        if session.get('is_guest') and session.get('age_verified'):
+            return True
         return False
 
     # Session should be at least 2 seconds old (prevents instant bot registration)
@@ -304,11 +307,21 @@ def handle_connect():
         return False
 
     user_id = generate_user_id()
+    
+    # Check if guest user
+    is_guest = session.get('is_guest', False)
+    username = session.get('guest_username', 'Guest')
+    gender = session.get('guest_gender', None)
+    country = session.get('guest_country', '')
+    
     users[user_id] = {
-        'gender': None,
+        'gender': gender,
         'partner_pref': None,
         'partner_id': None,
         'room': None,
+        'username': username,
+        'country': country,
+        'is_guest': is_guest,
         'connected_at': time.time(),
         'ip': client_ip,
         'messages_sent': 0,
@@ -319,9 +332,11 @@ def handle_connect():
     # Track active connection for real-time user counting
     active_connections[request.sid] = {
         'user_id': user_id,
-        'username': None,
-        'gender': None,
-        'country': None,
+        'session_id': session.sid,
+        'username': username,
+        'gender': gender,
+        'country': country,
+        'is_guest': is_guest,
         'current_room': 'lobby',
         'connected_at': current_time
     }
@@ -1312,6 +1327,33 @@ def load_content_data():
             return {'faqs': [], 'blogs': []}
     return {'faqs': [], 'blogs': []}
 
+def get_online_stats():
+    """Get online user statistics"""
+    total = len(active_connections)
+    guests = sum(1 for c in active_connections.values() if c.get('is_guest'))
+    registered = total - guests
+    return {'total': total, 'guests': guests, 'registered': registered}
+
+@app.route('/api/debug/connections')
+def debug_connections():
+    """Debug endpoint to check active connections"""
+    return jsonify({
+        'success': True,
+        'data': {
+            'total_connections': len(active_connections),
+            'connections': [
+                {
+                    'sid': sid,
+                    'username': conn.get('username'),
+                    'gender': conn.get('gender'),
+                    'is_guest': conn.get('is_guest'),
+                    'connected_at': conn.get('connected_at')
+                }
+                for sid, conn in active_connections.items()
+            ]
+        }
+    })
+
 def save_content_data(data):
     """Save content data to JSON file"""
     data_file = 'data/content.json'
@@ -1416,12 +1458,18 @@ def generate_blog_html(blogs):
 def admin_panel():
     """Admin dashboard"""
     data = load_content_data()
+    # Count online users by type
+    total = len(active_connections)
+    guests = sum(1 for c in active_connections.values() if c.get('is_guest'))
+    registered = total - guests
     return render_template('admin.html', 
                          page='dashboard',
                          page_title='Dashboard',
                          faq_count=len(data.get('faqs', [])),
                          blog_count=len(data.get('blogs', [])),
-                         online_count=len(active_connections))
+                         online_count=total,
+                         online_guests=guests,
+                         online_registered=registered)
 
 @app.route('/admin/edit/<page>')
 def edit_page(page):
