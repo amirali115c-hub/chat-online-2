@@ -4,6 +4,7 @@ import uuid
 import time
 import hashlib
 import re
+import os
 from collections import defaultdict
 from config import Config
 from database import init_database
@@ -17,8 +18,22 @@ app.config['SECRET_KEY'] = 'chat-online-secret-key-change-in-production'
 # Add CSRF token generator to Jinja context
 app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
-# Initialize database
-init_database()
+# Health check endpoint for Koyeb (MUST be before anything else)
+@app.route('/health')
+def health():
+    return {'status': 'ok'}, 200
+
+@app.route('/')
+def root():
+    return {'status': 'chat-online', 'version': '1.0'}, 200
+
+# Initialize database (with error handling for Koyeb)
+try:
+    init_database()
+    print("Database initialized successfully")
+except Exception as e:
+    print(f"Database initialization warning: {e}")
+    print("App will continue - database will initialize when needed")
 
 # Register API blueprint
 app.register_blueprint(api)

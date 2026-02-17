@@ -17,8 +17,8 @@ Werkzeug>=2.3.0
 gunicorn>=21.0.0
 python-dotenv>=1.0.0
 
-# Database (for SQLite - built in, for PostgreSQL use:)
-# psycopg2-binary>=2.9.0
+# Database
+psycopg2-binary>=2.9.0
 
 # Email (optional)
 # Flask-Mail>=0.9.0
