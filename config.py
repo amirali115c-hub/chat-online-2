@@ -15,9 +15,17 @@ class Config:
     JWT_ALGORITHM = 'HS256'
     JWT_EXPIRATION_HOURS = 24
     
-    # Database
+    # Database - support both SQLite and PostgreSQL
     DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///chat_online.db')
     USE_POSTGRES = 'postgresql' in DATABASE_URL.lower()
+    
+    # SQLite specific
+    if not USE_POSTGRES:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Redis
     REDIS_URL = os.environ.get('REDIS_URL', '')

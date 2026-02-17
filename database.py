@@ -9,10 +9,10 @@ from datetime import datetime
 from contextlib import contextmanager
 
 # Database configuration
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///chat_online.db')
 
-# Determine which database to use
-USE_POSTGRES = bool(DATABASE_URL)
+# Determine which database to use - PostgreSQL if URL contains postgresql
+USE_POSTGRES = 'postgresql' in DATABASE_URL.lower()
 
 if USE_POSTGRES:
     try:
@@ -22,9 +22,13 @@ if USE_POSTGRES:
     except ImportError:
         print("WARNING: psycopg2 not installed, falling back to SQLite")
         USE_POSTGRES = False
-        DB_FILE = os.environ.get('DB_FILE', 'chat_online.db')
+        DB_FILE = 'chat_online.db'
 else:
-    DB_FILE = os.environ.get('DB_FILE', 'chat_online.db')
+    # Parse SQLite URL (sqlite:///filename.db)
+    if DATABASE_URL.startswith('sqlite://'):
+        DB_FILE = DATABASE_URL.replace('sqlite://', '').replace('/', '')
+    else:
+        DB_FILE = DATABASE_URL
     print(f"Using SQLite database: {DB_FILE}")
 
 # ==================== DATABASE CONNECTION ====================
