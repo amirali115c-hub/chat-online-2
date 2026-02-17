@@ -391,6 +391,16 @@
 <script>
 // Load user data
 document.addEventListener('DOMContentLoaded', function() {
+    // Check URL parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const verified = urlParams.get('verified');
+    
+    // Set sessionStorage from URL param
+    if (verified === '1') {
+        sessionStorage.setItem('age_verified', 'true');
+        sessionStorage.setItem('guest_username', '{{ session.get("guest_username", "Guest") }}');
+    }
+    
     // Check age verification
     const ageVerified = sessionStorage.getItem('age_verified');
     
