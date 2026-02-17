@@ -410,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (verified === '1') {
         localStorage.setItem('chat_tab_' + tabId + '_age_verified', 'true');
         localStorage.setItem('chat_tab_' + tabId + '_username', '{{ session.get("guest_username", "Guest") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_gender', '{{ session.get("guest_gender", "") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_country', '{{ session.get("guest_country", "") }}');
     }
     
     // Check age verification (per-tab)
@@ -424,7 +426,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var username = localStorage.getItem('chat_tab_' + tabId + '_username') || 'Guest';
     document.getElementById('username-display').textContent = username;
 
-    // Load demo users
+    // Initialize socket connection if not already connected
+    if (typeof initializeSocket === 'function' && (!socket || !socket.connected)) {
+        initializeSocket();
+    }
+
+    // Load online users
     loadUsers();
 
     // Setup action icon clicks

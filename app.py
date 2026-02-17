@@ -338,7 +338,8 @@ def handle_connect():
         'country': country,
         'is_guest': is_guest,
         'current_room': 'lobby',
-        'connected_at': current_time
+        'connected_at': current_time,
+        'last_ping': current_time
     }
     
     # Join global online users room for broadcasting
@@ -350,6 +351,42 @@ def handle_connect():
     }, room=GLOBAL_ONLINE_ROOM)
     
     emit('connected', {'user_id': user_id})
+
+def cleanup_stale_connections():
+    """Remove connections that haven't pinged in 5 minutes"""
+    current_time = time.time()
+    stale_threshold = 300  # 5 minutes
+    
+    stale_sids = []
+    for sid, conn in active_connections.items():
+        last_ping = conn.get('last_ping', conn.get('connected_at', 0))
+        if current_time - last_ping > stale_threshold:
+            stale_sids.append(sid)
+    
+    for sid in stale_sids:
+        if sid in active_connections:
+            del active_connections[sid]
+        if sid in users:
+            user_id = active_connections.get(sid, {}).get('user_id')
+            if user_id and user_id in users:
+                del users[user_id]
+    
+    return len(stale_sids)
+
+# Run cleanup every 5 minutes
+import threading
+def run_cleanup():
+    while True:
+        time.sleep(300)  # 5 minutes
+        try:
+            cleaned = cleanup_stale_connections()
+            if cleaned > 0:
+                print(f"Cleaned up {cleaned} stale connections")
+        except Exception as e:
+            print(f"Cleanup error: {e}")
+
+cleanup_thread = threading.Thread(target=run_cleanup, daemon=True)
+cleanup_thread.start()
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -391,6 +428,13 @@ def handle_update_profile(data):
             'gender': data.get('gender'),
             'country': data.get('country')
         })
+
+@socketio.on('ping')
+def handle_ping():
+    """Update user's last ping timestamp"""
+    if request.sid in active_connections:
+        active_connections[request.sid]['last_ping'] = time.time()
+        emit('pong', {'status': 'ok'})
 
 @socketio.on('join_room_tracking')
 def handle_join_room_tracking(data):
@@ -1353,6 +1397,28 @@ def debug_connections():
             ]
         }
     })
+
+@app.route('/api/ping', methods=['POST'])
+def ping():
+    """Keep-alive endpoint - updates user's last seen timestamp"""
+    current_time = time.time()
+    
+    # Try to find connection by session
+    sid = None
+    for conn_sid, conn in active_connections.items():
+        if conn.get('session_id') == session.get('sid'):
+            sid = conn_sid
+            break
+    
+    # Fall back to request.sid if available
+    if not sid and hasattr(request, 'sid'):
+        sid = request.sid
+    
+    if sid and sid in active_connections:
+        active_connections[sid]['last_ping'] = current_time
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'message': 'Not connected'})
 
 def save_content_data(data):
     """Save content data to JSON file"""

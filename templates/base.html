@@ -386,7 +386,23 @@
             requestNotificationPermission();
             registerServiceWorker();
             setupOfflineDetection();
+            startHeartbeat();
         });
+
+        // Heartbeat to keep connection alive
+        function startHeartbeat() {
+            // Ping every 30 seconds
+            setInterval(function() {
+                fetch('/api/ping', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(function(e) {
+                    console.log('Heartbeat failed:', e);
+                });
+            }, 30000);
+        }
 
         // Service Worker Registration for PWA
         function registerServiceWorker() {

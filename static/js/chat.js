@@ -149,6 +149,8 @@ function initializeSocket() {
         console.log('User connected with ID:', userId);
         // Send tab ID to server so it tracks us as separate user
         socket.emit('register_tab', { tab_id: TAB_ID });
+        // Start heartbeat
+        startHeartbeat();
     });
 
     socket.on('disconnect', () => console.log('Disconnected'));
@@ -156,6 +158,20 @@ function initializeSocket() {
     socket.on('error', (data) => {
         console.error('Error:', data.message);
         alert(data.message);
+    });
+
+    // Heartbeat to keep connection alive
+    function startHeartbeat() {
+        setInterval(function() {
+            if (socket && socket.connected) {
+                socket.emit('ping');
+            }
+        }, 30000); // Every 30 seconds
+    }
+
+    socket.on('pong', function() {
+        // Server acknowledged ping
+        console.log('Heartbeat received');
     });
 
     socket.on('login_success', (data) => {
