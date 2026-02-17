@@ -642,6 +642,16 @@ let currentFilter = 'all';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification for guest users
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (isGuest === 'true') {
+        const ageVerified = sessionStorage.getItem('age_verified');
+        if (!ageVerified) {
+            window.location.href = '/';
+            return;
+        }
+    }
+
     loadDatingData();
 });
 

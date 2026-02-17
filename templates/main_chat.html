@@ -237,6 +237,16 @@ function useGuestMode() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification for guest users
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (isGuest === 'true') {
+        const ageVerified = sessionStorage.getItem('age_verified');
+        if (!ageVerified) {
+            window.location.href = '/';
+            return;
+        }
+    }
+
     // Check for registered user first, then fall back to guest
     let username, gender, age, country, isGuest;
     const token = localStorage.getItem('auth_token');

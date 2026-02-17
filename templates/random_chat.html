@@ -365,6 +365,16 @@
 
 {% block extra_js %}
 <script>
+// Check age verification before allowing access
+document.addEventListener('DOMContentLoaded', function() {
+    const ageVerified = sessionStorage.getItem('age_verified');
+    
+    if (!ageVerified) {
+        window.location.href = '/';
+        return;
+    }
+});
+
 let currentPreference = 'anyone';
 let currentPartner = null;
 

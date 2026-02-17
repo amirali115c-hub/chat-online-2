@@ -2,6 +2,215 @@
 
 {% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Age Verification Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    max-width: 520px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.4s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.age-modal .modal-header {
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+    padding: var(--space-6);
+    text-align: center;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+}
+
+.age-modal .modal-header h2 {
+    color: var(--white);
+    font-size: var(--text-xl);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.age-modal .modal-body {
+    padding: var(--space-6);
+    text-align: center;
+}
+
+.warning-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-5);
+    box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4);
+}
+
+.warning-icon i {
+    font-size: 45px;
+    color: var(--white);
+}
+
+.age-modal h3 {
+    font-size: 28px;
+    color: #DC2626;
+    margin-bottom: var(--space-3);
+    font-weight: 700;
+}
+
+.warning-text {
+    font-size: var(--text-lg);
+    color: var(--bg-600);
+    margin-bottom: var(--space-5);
+}
+
+.terms-box {
+    background: #FEF2F2;
+    border: 2px solid #FECACA;
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    text-align: left;
+    margin-bottom: var(--space-5);
+}
+
+.terms-box h4 {
+    font-size: var(--text-base);
+    color: #991B1B;
+    margin-bottom: var(--space-3);
+    font-weight: 600;
+}
+
+.terms-box p {
+    font-size: var(--text-sm);
+    color: #7F1D1D;
+    margin-bottom: var(--space-3);
+}
+
+.terms-box ul {
+    margin: 0;
+    padding-left: var(--space-5);
+    font-size: var(--text-sm);
+    color: #991B1B;
+}
+
+.terms-box li {
+    margin-bottom: var(--space-2);
+}
+
+.agreement-checkbox {
+    margin-bottom: var(--space-4);
+}
+
+.agreement-checkbox label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    cursor: pointer;
+    padding: var(--space-4);
+    background: var(--bg-50);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--bg-200);
+    transition: all var(--transition-base);
+}
+
+.agreement-checkbox label:hover {
+    border-color: var(--primary);
+    background: var(--primary-lightest);
+}
+
+.agreement-checkbox input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.agreement-checkbox span {
+    font-size: var(--text-sm);
+    color: var(--bg-700);
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.age-modal .modal-footer {
+    padding: var(--space-4) var(--space-6) var(--space-6);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+.age-modal .btn {
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-base);
+}
+
+.age-modal .btn-secondary {
+    background: var(--bg-100);
+    color: var(--bg-600);
+    border: none;
+}
+
+.age-modal .btn-secondary:hover {
+    background: var(--bg-200);
+}
+
+.age-modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+    color: var(--white);
+    border: none;
+}
+
+.age-modal .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4);
+}
+
+.age-modal .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Three Column Layout -->
 <div class="entry-three-columns">
@@ -395,7 +604,120 @@ document.getElementById('startBtn').addEventListener('click', function() {
     sessionStorage.setItem('guest_state', state);
     sessionStorage.setItem('is_guest', 'true');
 
-    window.location.href = '/welcome';
+    // Show age verification modal
+    showAgeVerificationModal();
 });
+
+function showAgeVerificationModal() {
+    const modal = document.createElement('div');
+    modal.id = 'age-verification-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content age-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Age Verification</h2>
+            </div>
+            <div class="modal-body">
+                <div class="warning-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3>18+ Only</h3>
+                <p class="warning-text">This chat platform is for users aged 18 and above only.</p>
+                
+                <div class="terms-box">
+                    <h4>Terms of Service Agreement</h4>
+                    <p>By using Chat Online, you agree to the following:</p>
+                    <ul>
+                        <li>You are at least 18 years of age</li>
+                        <li>You will not share personal information (phone, address, social media)</li>
+                        <li>You will not engage in illegal activities</li>
+                        <li>You will respect other users</li>
+                        <li>You understand this is a moderated chat platform</li>
+                    </ul>
+                </div>
+
+                <div class="agreement-checkbox">
+                    <label>
+                        <input type="checkbox" id="agree-terms">
+                        <span>I am 18+ and I agree to the Terms of Service</span>
+                    </label>
+                </div>
+
+                <div class="agreement-checkbox">
+                    <label>
+                        <input type="checkbox" id="agree-rules">
+                        <span>I understand the chat rules and will follow them</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="declineAgeVerification()">
+                    <i class="fas fa-times"></i> I am under 18
+                </button>
+                <button class="btn btn-primary" id="agree-btn" onclick="acceptAgeVerification()" disabled>
+                    <i class="fas fa-check"></i> I Agree & Enter
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Add event listeners for checkboxes
+    document.getElementById('agree-terms').addEventListener('change', checkAgreement);
+    document.getElementById('agree-rules').addEventListener('change', checkAgreement);
+}
+
+function checkAgreement() {
+    const agreeTerms = document.getElementById('agree-terms').checked;
+    const agreeRules = document.getElementById('agree-rules').checked;
+    const agreeBtn = document.getElementById('agree-btn');
+    
+    if (agreeTerms && agreeRules) {
+        agreeBtn.disabled = false;
+    } else {
+        agreeBtn.disabled = true;
+    }
+}
+
+function acceptAgeVerification() {
+    const agreeTerms = document.getElementById('agree-terms').checked;
+    const agreeRules = document.getElementById('agree-rules').checked;
+    
+    if (!agreeTerms || !agreeRules) {
+        alert('Please agree to both terms to continue');
+        return;
+    }
+    
+    // Store agreement status
+    const username = document.getElementById('guest-username').value.trim();
+    const gender = document.querySelector('input[name="guest_gender"]:checked').value;
+    const age = document.getElementById('guest-age').value;
+    const country = document.getElementById('guest-country').value;
+    const state = document.getElementById('guest-state').value;
+    
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('is_guest', 'true');
+    sessionStorage.setItem('age_verified', 'true');
+    sessionStorage.setItem('agreed_at', new Date().toISOString());
+    
+    // Close modal
+    const modal = document.getElementById('age-verification-modal');
+    if (modal) modal.remove();
+    
+    // Redirect to welcome page
+    window.location.href = '/welcome';
+}
+
+function declineAgeVerification() {
+    const modal = document.getElementById('age-verification-modal');
+    if (modal) modal.remove();
+    
+    alert('Sorry, you must be 18 or older to use this chat platform.');
+    window.location.href = '/';
+}
 </script>
 {% endblock %}

@@ -391,6 +391,15 @@
 <script>
 // Load user data
 document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification
+    const ageVerified = sessionStorage.getItem('age_verified');
+    
+    if (!ageVerified) {
+        // User hasn't agreed to terms, redirect to home
+        window.location.href = '/';
+        return;
+    }
+
     const username = sessionStorage.getItem('guest_username') || 'Guest';
     document.getElementById('username-display').textContent = username;
 
