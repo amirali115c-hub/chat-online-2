@@ -4,7 +4,7 @@
 
 {% block extra_css %}
 <style>
-/* Age Verification Modal Styles */
+/* Age Verification Modal Styles - SMALLER VERSION */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -21,19 +21,19 @@
 
 .modal-content {
     background: var(--white);
-    border-radius: var(--radius-2xl);
-    max-width: 520px;
-    width: 92%;
+    border-radius: var(--radius-xl);
+    max-width: 380px; /* REDUCED from 520px */
+    width: 90%;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: modalSlideIn 0.4s ease;
+    animation: modalSlideIn 0.3s ease;
 }
 
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-40px) scale(0.95);
+        transform: translateY(-30px) scale(0.95);
     }
     to {
         opacity: 1;
@@ -43,101 +43,101 @@
 
 .age-modal .modal-header {
     background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
-    padding: var(--space-6);
+    padding: var(--space-4);
     text-align: center;
-    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .age-modal .modal-header h2 {
     color: var(--white);
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
     margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
 }
 
 .age-modal .modal-body {
-    padding: var(--space-6);
+    padding: var(--space-4);
     text-align: center;
 }
 
 .warning-icon {
-    width: 90px;
-    height: 90px;
+    width: 60px; /* REDUCED from 90px */
+    height: 60px;
     background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto var(--space-5);
-    box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4);
+    margin: 0 auto var(--space-4);
+    box-shadow: 0 6px 15px -5px rgba(220, 38, 38, 0.4);
 }
 
 .warning-icon i {
-    font-size: 45px;
+    font-size: 28px;
     color: var(--white);
 }
 
 .age-modal h3 {
-    font-size: 28px;
+    font-size: 20px; /* REDUCED from 28px */
     color: #DC2626;
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
     font-weight: 700;
 }
 
 .warning-text {
-    font-size: var(--text-lg);
+    font-size: var(--text-sm);
     color: var(--bg-600);
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-4);
 }
 
 .terms-box {
     background: #FEF2F2;
     border: 2px solid #FECACA;
-    border-radius: var(--radius-xl);
-    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
     text-align: left;
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-4);
 }
 
 .terms-box h4 {
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     color: #991B1B;
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
     font-weight: 600;
 }
 
 .terms-box p {
-    font-size: var(--text-sm);
+    font-size: 12px;
     color: #7F1D1D;
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
 }
 
 .terms-box ul {
     margin: 0;
-    padding-left: var(--space-5);
-    font-size: var(--text-sm);
+    padding-left: var(--space-4);
+    font-size: 12px;
     color: #991B1B;
 }
 
 .terms-box li {
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
 }
 
 .agreement-checkbox {
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-3);
 }
 
 .agreement-checkbox label {
     display: flex;
     align-items: flex-start;
-    gap: var(--space-3);
+    gap: var(--space-2);
     cursor: pointer;
-    padding: var(--space-4);
+    padding: var(--space-3);
     background: var(--bg-50);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     border: 2px solid var(--bg-200);
     transition: all var(--transition-base);
 }
@@ -147,39 +147,44 @@
     background: var(--primary-lightest);
 }
 
+.agreement-checkbox label.checked {
+    border-color: var(--primary);
+    background: var(--primary-lightest);
+}
+
 .agreement-checkbox input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    margin-top: 2px;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
     cursor: pointer;
     accent-color: var(--primary);
     flex-shrink: 0;
 }
 
 .agreement-checkbox span {
-    font-size: var(--text-sm);
+    font-size: 13px;
     color: var(--bg-700);
-    line-height: 1.5;
+    line-height: 1.4;
     font-weight: 500;
 }
 
 .age-modal .modal-footer {
-    padding: var(--space-4) var(--space-6) var(--space-6);
+    padding: var(--space-3) var(--space-4) var(--space-4);
     display: flex;
     gap: var(--space-3);
     justify-content: center;
 }
 
 .age-modal .btn {
-    padding: var(--space-4) var(--space-8);
-    border-radius: var(--radius-xl);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-lg);
     font-weight: var(--font-semibold);
     cursor: pointer;
     transition: all var(--transition-base);
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
 }
 
 .age-modal .btn-secondary {
@@ -200,7 +205,7 @@
 
 .age-modal .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 15px -5px rgba(139, 92, 246, 0.4);
 }
 
 .age-modal .btn-primary:disabled {
@@ -609,6 +614,12 @@ document.getElementById('startBtn').addEventListener('click', function() {
 });
 
 function showAgeVerificationModal() {
+    // Remove any existing modal first
+    const existingModal = document.getElementById('age-verification-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
     const modal = document.createElement('div');
     modal.id = 'age-verification-modal';
     modal.className = 'modal-overlay';
@@ -626,35 +637,33 @@ function showAgeVerificationModal() {
                 
                 <div class="terms-box">
                     <h4>Terms of Service Agreement</h4>
-                    <p>By using Chat Online, you agree to the following:</p>
+                    <p>By using Chat Online, you agree to:</p>
                     <ul>
-                        <li>You are at least 18 years of age</li>
-                        <li>You will not share personal information (phone, address, social media)</li>
-                        <li>You will not engage in illegal activities</li>
-                        <li>You will respect other users</li>
-                        <li>You understand this is a moderated chat platform</li>
+                        <li>Be at least 18 years old</li>
+                        <li>Not share personal information</li>
+                        <li>Follow chat rules & respect others</li>
                     </ul>
                 </div>
 
                 <div class="agreement-checkbox">
-                    <label>
+                    <label id="label-terms">
                         <input type="checkbox" id="agree-terms">
-                        <span>I am 18+ and I agree to the Terms of Service</span>
+                        <span>I am 18+ and agree to Terms</span>
                     </label>
                 </div>
 
                 <div class="agreement-checkbox">
-                    <label>
+                    <label id="label-rules">
                         <input type="checkbox" id="agree-rules">
-                        <span>I understand the chat rules and will follow them</span>
+                        <span>I understand and will follow the rules</span>
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="declineAgeVerification()">
-                    <i class="fas fa-times"></i> I am under 18
+                <button class="btn btn-secondary" onclick="handleDecline()">
+                    <i class="fas fa-times"></i> Under 18
                 </button>
-                <button class="btn btn-primary" id="agree-btn" onclick="acceptAgeVerification()" disabled>
+                <button class="btn btn-primary" id="agree-btn" onclick="handleAccept()" disabled>
                     <i class="fas fa-check"></i> I Agree & Enter
                 </button>
             </div>
@@ -662,44 +671,78 @@ function showAgeVerificationModal() {
     `;
     document.body.appendChild(modal);
     
-    // Add event listeners for checkboxes
-    document.getElementById('agree-terms').addEventListener('change', checkAgreement);
-    document.getElementById('agree-rules').addEventListener('change', checkAgreement);
-}
-
-function checkAgreement() {
-    const agreeTerms = document.getElementById('agree-terms').checked;
-    const agreeRules = document.getElementById('agree-rules').checked;
+    // Get elements
+    const agreeTerms = document.getElementById('agree-terms');
+    const agreeRules = document.getElementById('agree-rules');
     const agreeBtn = document.getElementById('agree-btn');
+    const labelTerms = document.getElementById('label-terms');
+    const labelRules = document.getElementById('label-rules');
     
-    if (agreeTerms && agreeRules) {
-        agreeBtn.disabled = false;
-    } else {
-        agreeBtn.disabled = true;
+    // Add visual feedback for checkboxes
+    agreeTerms.addEventListener('change', function() {
+        if (this.checked) {
+            labelTerms.classList.add('checked');
+        } else {
+            labelTerms.classList.remove('checked');
+        }
+        updateButton();
+    });
+    
+    agreeRules.addEventListener('change', function() {
+        if (this.checked) {
+            labelRules.classList.add('checked');
+        } else {
+            labelRules.classList.remove('checked');
+        }
+        updateButton();
+    });
+    
+    function updateButton() {
+        if (agreeTerms.checked && agreeRules.checked) {
+            agreeBtn.disabled = false;
+            agreeBtn.style.opacity = '1';
+        } else {
+            agreeBtn.disabled = true;
+            agreeBtn.style.opacity = '0.5';
+        }
     }
+    
+    // Prevent modal close on overlay click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            // Don't close - user must decide
+        }
+    });
 }
 
-function acceptAgeVerification() {
-    const agreeTerms = document.getElementById('agree-terms').checked;
-    const agreeRules = document.getElementById('agree-rules').checked;
+function handleAccept() {
+    const agreeTerms = document.getElementById('agree-terms');
+    const agreeRules = document.getElementById('agree-rules');
     
-    if (!agreeTerms || !agreeRules) {
-        alert('Please agree to both terms to continue');
+    if (!agreeTerms.checked || !agreeRules.checked) {
+        alert('Please check both boxes to continue');
         return;
     }
     
-    // Store agreement status
+    // Store all data in sessionStorage
     const username = document.getElementById('guest-username').value.trim();
-    const gender = document.querySelector('input[name="guest_gender"]:checked').value;
+    const gender = document.querySelector('input[name="guest_gender"]:checked');
     const age = document.getElementById('guest-age').value;
     const country = document.getElementById('guest-country').value;
     const state = document.getElementById('guest-state').value;
     
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields first');
+        const modal = document.getElementById('age-verification-modal');
+        if (modal) modal.remove();
+        return;
+    }
+    
     sessionStorage.setItem('guest_username', username);
-    sessionStorage.setItem('guest_gender', gender);
+    sessionStorage.setItem('guest_gender', gender.value);
     sessionStorage.setItem('guest_age', age);
     sessionStorage.setItem('guest_country', country);
-    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('guest_state', state || '');
     sessionStorage.setItem('is_guest', 'true');
     sessionStorage.setItem('age_verified', 'true');
     sessionStorage.setItem('agreed_at', new Date().toISOString());
@@ -712,12 +755,12 @@ function acceptAgeVerification() {
     window.location.href = '/welcome';
 }
 
-function declineAgeVerification() {
+function handleDecline() {
     const modal = document.getElementById('age-verification-modal');
     if (modal) modal.remove();
     
     alert('Sorry, you must be 18 or older to use this chat platform.');
-    window.location.href = '/';
+    // Optionally redirect or just close
 }
 </script>
 {% endblock %}
