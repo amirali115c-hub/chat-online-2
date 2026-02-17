@@ -389,20 +389,31 @@
 
 {% block extra_js %}
 <script>
+// Generate unique tab ID if not exists
+function getTabId() {
+    var tabId = localStorage.getItem('chat_tab_id');
+    if (!tabId) {
+        tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('chat_tab_id', tabId);
+    }
+    return tabId;
+}
+
 // Load user data
 document.addEventListener('DOMContentLoaded', function() {
     // Check URL parameter first
-    const urlParams = new URLSearchParams(window.location.search);
-    const verified = urlParams.get('verified');
+    var urlParams = new URLSearchParams(window.location.search);
+    var verified = urlParams.get('verified');
+    var tabId = getTabId();
     
-    // Set sessionStorage from URL param
+    // Set localStorage from URL param (per-tab)
     if (verified === '1') {
-        sessionStorage.setItem('age_verified', 'true');
-        sessionStorage.setItem('guest_username', '{{ session.get("guest_username", "Guest") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_age_verified', 'true');
+        localStorage.setItem('chat_tab_' + tabId + '_username', '{{ session.get("guest_username", "Guest") }}');
     }
     
-    // Check age verification
-    const ageVerified = sessionStorage.getItem('age_verified');
+    // Check age verification (per-tab)
+    var ageVerified = localStorage.getItem('chat_tab_' + tabId + '_age_verified');
     
     if (!ageVerified) {
         // User hasn't agreed to terms, redirect to home
@@ -410,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    const username = sessionStorage.getItem('guest_username') || 'Guest';
+    var username = localStorage.getItem('chat_tab_' + tabId + '_username') || 'Guest';
     document.getElementById('username-display').textContent = username;
 
     // Load demo users
@@ -425,8 +436,8 @@ function startRandomChat() {
 }
 
 function loadUsers() {
-    // Fetch real online users from API
-    fetch('/api/online/users')
+    // Fetch all online users (registered + guests)
+    fetch('/api/online/all')
         .then(response => response.json())
         .then(data => {
             const userList = document.getElementById('user-list');
@@ -443,11 +454,8 @@ function loadUsers() {
                             <span class="online-dot"></span>
                         </div>
                         <div class="user-info">
-                            <div class="user-name">
-                                ${user.username}
-                                ${user.country ? `<span class="flag-icon flag-icon-${user.country.toLowerCase()}"></span>` : ''}
-                            </div>
-                            <div class="user-meta">Online Now</div>
+                            <div class="user-name">${user.username} ${user.country ? '<span class="flag-icon flag-icon-' + user.country.toLowerCase() + '"></span>' : ''}</div>
+                            <div class="user-meta">${user.is_guest ? 'Guest' : 'Online'}</div>
                         </div>
                     `;
                     userList.appendChild(card);

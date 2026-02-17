@@ -8,6 +8,18 @@ let userData = {};
 let currentSection = 'online';
 let isLoggedIn = false;
 
+// Generate unique tab ID
+function getTabId() {
+    let tabId = localStorage.getItem('chat_tab_id');
+    if (!tabId) {
+        tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('chat_tab_id', tabId);
+    }
+    return tabId;
+}
+
+const TAB_ID = getTabId();
+
 // Country and State Data
 const countries = {
     "US": { name: "United States", code: "us", states: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"] },
@@ -135,6 +147,8 @@ function initializeSocket() {
     socket.on('connected', (data) => {
         userId = data.user_id;
         console.log('User connected with ID:', userId);
+        // Send tab ID to server so it tracks us as separate user
+        socket.emit('register_tab', { tab_id: TAB_ID });
     });
 
     socket.on('disconnect', () => console.log('Disconnected'));

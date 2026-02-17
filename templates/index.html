@@ -154,24 +154,15 @@
 
 {% block extra_js %}
 <script>
-// Store form data in sessionStorage before form submission
-document.getElementById('entry-form').addEventListener('submit', function(e) {
-    var username = document.querySelector('input[name="username"]').value.trim();
-    var gender = document.querySelector('input[name="gender"]:checked');
-    var age = document.querySelector('select[name="age"]').value;
-    var country = document.querySelector('select[name="country"]').value;
-    var state = document.querySelector('select[name="state"]').value;
-    
-    sessionStorage.setItem('guest_username', username);
-    sessionStorage.setItem('guest_gender', gender ? gender.value : '');
-    sessionStorage.setItem('guest_age', age);
-    sessionStorage.setItem('guest_country', country);
-    sessionStorage.setItem('guest_state', state || '');
-    sessionStorage.setItem('is_guest', 'true');
-    sessionStorage.setItem('age_verified', 'true');
-    
-    return true;
-});
+// Generate unique tab ID
+function getTabId() {
+    var tabId = localStorage.getItem('chat_tab_id');
+    if (!tabId) {
+        tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('chat_tab_id', tabId);
+    }
+    return tabId;
+}
 
 // Age dropdown
 var ageSelect = document.getElementById('guest-age');
@@ -320,6 +311,28 @@ countrySelect.addEventListener('change', function() {
         stateGroup.style.display = 'none';
         stateSelect.innerHTML = '<option value="">Select State</option>';
     }
+});
+
+// Form submission - store data in localStorage
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    var username = document.querySelector('input[name="username"]').value.trim();
+    var gender = document.querySelector('input[name="gender"]:checked');
+    var age = document.querySelector('select[name="age"]').value;
+    var country = document.querySelector('select[name="country"]').value;
+    var state = document.querySelector('select[name="state"]').value;
+    
+    var tabId = getTabId();
+    
+    localStorage.setItem('chat_tab_' + tabId + '_username', username);
+    localStorage.setItem('chat_tab_' + tabId + '_gender', gender ? gender.value : '');
+    localStorage.setItem('chat_tab_' + tabId + '_age', age);
+    localStorage.setItem('chat_tab_' + tabId + '_country', country);
+    localStorage.setItem('chat_tab_' + tabId + '_state', state || '');
+    localStorage.setItem('chat_tab_' + tabId + '_is_guest', 'true');
+    localStorage.setItem('chat_tab_' + tabId + '_age_verified', 'true');
+    localStorage.setItem('chat_tab_' + tabId + '_agreed_at', new Date().toISOString());
+    
+    return true;
 });
 </script>
 {% endblock %}

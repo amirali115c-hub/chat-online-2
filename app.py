@@ -1127,6 +1127,33 @@ def admin_user_detail(user_id):
         return jsonify({'success': False, 'error': 'User not found'}), 404
     return jsonify({'success': True, 'data': user})
 
+@app.route('/api/online/all')
+def get_all_online_users():
+    """Get all online users including guests"""
+    from flask import jsonify
+    users_list = []
+    
+    # Get users from active_connections (includes both registered and guest users)
+    for sid, conn in active_connections.items():
+        username = conn.get('username') or 'Guest'
+        gender = conn.get('gender', 'unknown')
+        country = conn.get('country', '')
+        users_list.append({
+            'id': sid,
+            'username': username,
+            'gender': gender,
+            'country': country,
+            'is_guest': conn.get('guest', False)
+        })
+    
+    return jsonify({
+        'success': True,
+        'data': {
+            'users': users_list,
+            'count': len(users_list)
+        }
+    })
+
 @app.route('/api/admin/users/search')
 def admin_search_users():
     """Search users"""
