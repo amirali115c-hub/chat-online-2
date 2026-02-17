@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import jwt
@@ -162,6 +162,13 @@ def register():
 
     user = get_user_by_id(user_id)
 
+    # Set Flask session for Socket.IO auth
+    session['user_id'] = user_id
+    session['username'] = user['username']
+
+    # Update online status
+    update_user_online_status(user_id, 1)
+
     return jsonify({
         'success': True,
         'data': {
@@ -209,6 +216,10 @@ def login():
     # Generate token
     token = generate_token(user['id'], user['username'])
 
+    # Set Flask session for Socket.IO auth
+    session['user_id'] = user['id']
+    session['username'] = user['username']
+
     return jsonify({
         'success': True,
         'data': {
@@ -227,6 +238,9 @@ def logout():
         payload = decode_token(token)
         if payload:
             update_user_online_status(payload['user_id'], 0)
+
+    # Clear Flask session
+    session.clear()
 
     return jsonify({
         'success': True,
@@ -785,4 +799,89 @@ def get_stats_api():
     return jsonify({
         'success': True,
         'data': stats
+    })
+
+
+# ==================== ONLINE USERS ENDPOINT ====================
+
+@api.route('/users/online', methods=['GET'])
+def get_online_users():
+    """Get list of online users"""
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+
+    # Decode token to get current user
+    payload = decode_token(token) if token else None
+    current_user_id = payload['user_id'] if payload else None
+
+    # Get online users from database
+    if USE_POSTGRES:
+        if current_user_id:
+            online_users = fetch_all('''
+                SELECT id, username, gender, age, country, state, bio, avatar, is_online, last_seen, created_at
+                FROM users
+                WHERE is_online = 1 AND id != %s
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''', (current_user_id,))
+        else:
+            online_users = fetch_all('''
+                SELECT id, username, gender, age, country, state, bio, avatar, is_online, last_seen, created_at
+                FROM users
+                WHERE is_online = 1
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''')
+    else:
+        if current_user_id:
+            online_users = fetch_all('''
+                SELECT id, username, gender, age, country, state, bio, avatar, is_online, last_seen, created_at
+                FROM users
+                WHERE is_online = 1 AND id != ?
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''', (current_user_id,))
+        else:
+            online_users = fetch_all('''
+                SELECT id, username, gender, age, country, state, bio, avatar, is_online, last_seen, created_at
+                FROM users
+                WHERE is_online = 1
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''')
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'users': [user_to_dict(user) for user in online_users],
+            'count': len(online_users)
+        }
+    })
+
+
+@api.route('/users/online', methods=['POST'])
+def update_online_status():
+    """Update user's online status"""
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+
+    if not token:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'UNAUTHORIZED', 'message': 'Not authenticated'}
+        }), 401
+
+    payload = decode_token(token)
+    if not payload:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_TOKEN', 'message': 'Invalid or expired token'}
+        }), 401
+
+    data = request.get_json()
+    is_online = data.get('is_online', True)
+
+    update_user_online_status(payload['user_id'], 1 if is_online else 0)
+
+    return jsonify({
+        'success': True,
+        'message': 'Status updated'
     })

@@ -75,21 +75,26 @@ document.getElementById('login-password-form').addEventListener('submit', async 
     const password = document.getElementById('login-password').value;
     
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: userEmail, password })
+            body: JSON.stringify({ usernameOrEmail: userEmail, password })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            window.location.href = '{{ url_for("main_chat") }}';
+            // Store JWT token and user data in localStorage
+            localStorage.setItem('auth_token', data.data.token);
+            localStorage.setItem('user_data', JSON.stringify(data.data.user));
+            
+            // Redirect to chat page
+            window.location.href = '/chat/1on1';
         } else {
-            document.getElementById('login-password-error').textContent = data.message || 'Login failed';
+            document.getElementById('login-password-error').textContent = data.error?.message || 'Login failed';
         }
     } catch (error) {
-        document.getElementById('login-password-error').textContent = 'An error occurred';
+        document.getElementById('login-password-error').textContent = 'An error occurred. Please try again.';
     }
 });
 

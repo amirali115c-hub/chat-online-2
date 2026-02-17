@@ -98,7 +98,7 @@ document.getElementById('register-form').addEventListener('submit', async functi
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm-password').value;
-    const gender = document.querySelector('input[name="register_gender"]:checked')?.value;
+    const gender = document.querySelector('input[name="register_gender"]:checked')?.value || 'none';
     const terms = document.getElementById('register-terms').checked;
     
     if (!username || !email || !password || !confirmPassword) {
@@ -111,8 +111,8 @@ document.getElementById('register-form').addEventListener('submit', async functi
         return;
     }
     
-    if (password.length < 6) {
-        document.getElementById('register-error').textContent = 'Password must be at least 6 characters';
+    if (password.length < 8) {
+        document.getElementById('register-error').textContent = 'Password must be at least 8 characters';
         return;
     }
     
@@ -122,7 +122,7 @@ document.getElementById('register-form').addEventListener('submit', async functi
     }
     
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, email, password, gender })
@@ -131,12 +131,18 @@ document.getElementById('register-form').addEventListener('submit', async functi
         const data = await response.json();
         
         if (data.success) {
-            window.location.href = '{{ url_for("main_chat") }}';
+            // Store JWT token and user data in localStorage
+            localStorage.setItem('auth_token', data.data.token);
+            localStorage.setItem('user_data', JSON.stringify(data.data.user));
+            
+            // Redirect to 1on1 chat page
+            window.location.href = '/chat/1on1';
         } else {
-            document.getElementById('register-error').textContent = data.message || 'Registration failed';
+            const errorMessage = data.error?.details?.[0]?.message || data.error?.message || 'Registration failed';
+            document.getElementById('register-error').textContent = errorMessage;
         }
     } catch (error) {
-        document.getElementById('register-error').textContent = 'An error occurred';
+        document.getElementById('register-error').textContent = 'An error occurred. Please try again.';
     }
 });
 </script>
