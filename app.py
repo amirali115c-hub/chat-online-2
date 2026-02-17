@@ -223,7 +223,10 @@ def guest_login():
     country = request.form.get('country', '')
     state = request.form.get('state', '')
     
+    print(f"Guest login attempt: username={username}, gender={gender}, age={age}, country={country}")
+    
     if not username or not gender or not age or not country:
+        print("Validation failed - missing fields")
         return render_template('index.html')
     
     # Store in session
@@ -236,7 +239,8 @@ def guest_login():
     session['age_verified'] = True
     session['agreed_at'] = time.time()
     
-    return app.redirect('/welcome')
+    print("Session set, redirecting to /welcome")
+    return app.redirect('/welcome', code=302)
 
 @app.route('/home')
 def home():
