@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir gunicorn eventlet
 COPY . .
 
 # Expose port
-EXPOSE $PORT
+EXPOSE 5000
 
-# Run with gunicorn for production (1 worker for faster startup)
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
+# Run with gunicorn for production (using shell form for PORT expansion)
+CMD sh -c "gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app"
