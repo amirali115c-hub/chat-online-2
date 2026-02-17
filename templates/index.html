@@ -153,174 +153,10 @@
 
 {% block extra_js %}
 <script>
-// =====================
-// AGE VERIFICATION POPUP
-// =====================
-
-// Create the age verification popup HTML
-function createAgePopup() {
-    // Remove existing popup if any
-    const existing = document.getElementById('age-popup');
-    if (existing) existing.remove();
-    
-    const popup = document.createElement('div');
-    popup.id = 'age-popup';
-    popup.innerHTML = `
-        <div class="popup-content">
-            <div class="popup-header">
-                <span class="warning-icon">⚠️</span>
-                <h3>18+ Only</h3>
-            </div>
-            <div class="popup-body">
-                <p>You must be 18 or older to enter this chat platform.</p>
-                <div class="popup-checkbox" id="checkbox-terms">
-                    <input type="checkbox" id="popup-terms">
-                    <label for="popup-terms">I am 18+ and agree to the <a href="/terms" target="_blank">Terms of Service</a></label>
-                </div>
-                <div class="popup-checkbox" id="checkbox-rules">
-                    <input type="checkbox" id="popup-rules">
-                    <label for="popup-rules">I understand the <a href="/safety" target="_blank">chat rules</a></label>
-                </div>
-            </div>
-            <div class="popup-footer">
-                <button id="btn-under-18" class="btn-popup btn-decline">I am under 18</button>
-                <button id="btn-agree" class="btn-popup btn-accept">Enter Chat</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(popup);
-    return popup;
+// Check if already verified
+if (sessionStorage.getItem('age_verified') === 'true') {
+    window.location.href = '/welcome';
 }
-
-// Show the age popup
-function showAgePopup() {
-    const popup = createAgePopup();
-    const btnTerms = document.getElementById('popup-terms');
-    const btnRules = document.getElementById('popup-rules');
-    const btnAccept = document.getElementById('btn-agree');
-    const btnDecline = document.getElementById('btn-under-18');
-    const checkboxTerms = document.getElementById('checkbox-terms');
-    const checkboxRules = document.getElementById('checkbox-rules');
-    
-    // Initially disable button
-    btnAccept.disabled = true;
-    btnAccept.style.opacity = '0.5';
-    
-    // Check both boxes and enable/disable button
-    function updateButton() {
-        const termsChecked = btnTerms.checked;
-        const rulesChecked = btnRules.checked;
-        
-        // Update visual state
-        if (termsChecked) checkboxTerms.classList.add('checked');
-        else checkboxTerms.classList.remove('checked');
-        
-        if (rulesChecked) checkboxRules.classList.add('checked');
-        else checkboxRules.classList.remove('checked');
-        
-        // Enable button only if both checked
-        if (termsChecked && rulesChecked) {
-            btnAccept.disabled = false;
-            btnAccept.style.opacity = '1';
-        } else {
-            btnAccept.disabled = true;
-            btnAccept.style.opacity = '0.5';
-        }
-    }
-    
-    btnTerms.addEventListener('change', updateButton);
-    btnRules.addEventListener('change', updateButton);
-    
-    // Accept button click
-    btnAccept.addEventListener('click', function() {
-        if (!btnTerms.checked || !btnRules.checked) {
-            alert('Please check both boxes to continue');
-            return;
-        }
-        
-        // Store verification
-        sessionStorage.setItem('age_verified', 'true');
-        sessionStorage.setItem('agreed_at', new Date().toISOString());
-        
-        // Remove popup
-        popup.remove();
-        
-        // Redirect
-        window.location.href = '/welcome';
-    });
-    
-    // Decline button click
-    btnDecline.addEventListener('click', function() {
-        popup.remove();
-        alert('Sorry, you must be 18 or older to use this chat platform.');
-    });
-}
-
-// =====================
-// FORM HANDLING
-// =====================
-
-// Get form data
-function getFormData() {
-    const username = document.getElementById('guest-username').value.trim();
-    const genderEl = document.querySelector('input[name="guest_gender"]:checked');
-    const age = document.getElementById('guest-age').value;
-    const country = document.getElementById('guest-country').value;
-    const state = document.getElementById('guest-state').value;
-    
-    return {
-        username,
-        gender: genderEl ? genderEl.value : null,
-        age,
-        country,
-        state
-    };
-}
-
-// Validate form
-function validateForm() {
-    const data = getFormData();
-    if (!data.username) {
-        alert('Please enter a username');
-        return false;
-    }
-    if (!data.gender) {
-        alert('Please select your gender');
-        return false;
-    }
-    if (!data.age) {
-        alert('Please select your age');
-        return false;
-    }
-    if (!data.country) {
-        alert('Please select your country');
-        return false;
-    }
-    return data;
-}
-
-// Store guest data
-function storeGuestData(data) {
-    sessionStorage.setItem('guest_username', data.username);
-    sessionStorage.setItem('guest_gender', data.gender);
-    sessionStorage.setItem('guest_age', data.age);
-    sessionStorage.setItem('guest_country', data.country);
-    sessionStorage.setItem('guest_state', data.state || '');
-    sessionStorage.setItem('is_guest', 'true');
-}
-
-// Start button click
-document.getElementById('startBtn').addEventListener('click', function() {
-    const data = validateForm();
-    if (!data) return;
-    
-    storeGuestData(data);
-    showAgePopup();
-});
-
-// =====================
-// DROPDOWN SETUP
-// =====================
 
 // Age dropdown
 const ageSelect = document.getElementById('guest-age');
@@ -332,11 +168,7 @@ for (let i = 18; i <= 100; i++) {
     ageSelect.appendChild(opt);
 }
 
-// Country dropdown
-const countrySelect = document.getElementById('guest-country');
-const stateSelect = document.getElementById('guest-state');
-const stateGroup = document.getElementById('state-group');
-
+// Countries
 const countries = [
     { code: 'US', name: 'United States' },
     { code: 'GB', name: 'United Kingdom' },
@@ -423,7 +255,20 @@ const usStates = [
     { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
 ];
 
-// Initialize states dropdown
+const countrySelect = document.getElementById('guest-country');
+const stateSelect = document.getElementById('guest-state');
+const stateGroup = document.getElementById('state-group');
+
+// Populate countries
+countries.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.code;
+    opt.textContent = c.name;
+    if (c.code === 'US') opt.selected = true;
+    countrySelect.appendChild(opt);
+});
+
+// Initialize states
 function initStates(states) {
     stateSelect.innerHTML = '<option value="">Select State</option>';
     states.forEach(s => {
@@ -434,7 +279,9 @@ function initStates(states) {
     });
 }
 
-// Country change handler
+initStates(usStates);
+
+// Country change
 countrySelect.addEventListener('change', function() {
     if (this.value === 'US') {
         stateGroup.style.display = 'block';
@@ -460,173 +307,43 @@ countrySelect.addEventListener('change', function() {
     }
 });
 
-// Populate countries
-countries.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.code;
-    opt.textContent = c.name;
-    if (c.code === 'US') opt.selected = true;
-    countrySelect.appendChild(opt);
+// Start button click
+document.getElementById('startBtn').addEventListener('click', function() {
+    const username = document.getElementById('guest-username').value.trim();
+    const gender = document.querySelector('input[name="guest_gender"]:checked');
+    const age = document.getElementById('guest-age').value;
+    const country = document.getElementById('guest-country').value;
+    const state = document.getElementById('guest-state').value;
+
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    if (!gender) {
+        alert('Please select your gender');
+        return;
+    }
+    if (!age) {
+        alert('Please select your age');
+        return;
+    }
+    if (!country) {
+        alert('Please select your country');
+        return;
+    }
+
+    // Store data
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender.value);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state || '');
+    sessionStorage.setItem('is_guest', 'true');
+    sessionStorage.setItem('age_verified', 'true');
+    sessionStorage.setItem('agreed_at', new Date().toISOString());
+
+    // Go to welcome page
+    window.location.href = '/welcome';
 });
-
-// Initialize US states on load
-initStates(usStates);
 </script>
-
-<style>
-/* Age Popup Styles - Fixed Centering */
-#age-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.85);
-}
-
-#age-popup .popup-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 380px;
-    width: 90%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    overflow: visible;
-    animation: popupSlideIn 0.3s ease;
-}
-
-@keyframes popupSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-#age-popup .popup-header {
-    background: linear-gradient(135deg, #DC2626, #EF4444);
-    padding: 20px;
-    text-align: center;
-    color: white;
-    border-radius: 12px 12px 0 0;
-}
-
-#age-popup .popup-header .warning-icon {
-    font-size: 40px;
-    display: block;
-    margin-bottom: 8px;
-}
-
-#age-popup .popup-header h3 {
-    margin: 0;
-    font-size: 22px;
-}
-
-#age-popup .popup-body {
-    padding: 20px;
-    text-align: center;
-}
-
-#age-popup .popup-body p {
-    margin: 0 0 20px;
-    color: #333;
-    font-size: 15px;
-}
-
-#age-popup .popup-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-}
-
-#age-popup .popup-checkbox:hover {
-    background: #e8e8e8;
-}
-
-#age-popup .popup-checkbox.checked {
-    background: #ede9fe;
-    border-color: #8b5cf6;
-}
-
-#age-popup .popup-checkbox input {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    cursor: pointer;
-    accent-color: #8b5cf6;
-    flex-shrink: 0;
-}
-
-#age-popup .popup-checkbox label {
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    text-align: left;
-    line-height: 1.4;
-}
-
-#age-popup .popup-checkbox a {
-    color: #8b5cf6;
-    text-decoration: none;
-}
-
-#age-popup .popup-checkbox a:hover {
-    text-decoration: underline;
-}
-
-#age-popup .popup-footer {
-    padding: 15px 20px 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-#age-popup .btn-popup {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-#age-popup .btn-decline {
-    background: #f5f5f5;
-    color: #666;
-}
-
-#age-popup .btn-decline:hover {
-    background: #e5e5e5;
-}
-
-#age-popup .btn-accept {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    color: white;
-}
-
-#age-popup .btn-accept:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-}
-
-#age-popup .btn-accept:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-</style>
 {% endblock %}
