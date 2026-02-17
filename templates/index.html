@@ -159,10 +159,13 @@
 
 // Create the age verification popup HTML
 function createAgePopup() {
+    // Remove existing popup if any
+    const existing = document.getElementById('age-popup');
+    if (existing) existing.remove();
+    
     const popup = document.createElement('div');
     popup.id = 'age-popup';
     popup.innerHTML = `
-        <div class="popup-overlay"></div>
         <div class="popup-content">
             <div class="popup-header">
                 <span class="warning-icon">⚠️</span>
@@ -170,18 +173,18 @@ function createAgePopup() {
             </div>
             <div class="popup-body">
                 <p>You must be 18 or older to enter this chat platform.</p>
-                <div class="popup-checkbox">
+                <div class="popup-checkbox" id="checkbox-terms">
                     <input type="checkbox" id="popup-terms">
                     <label for="popup-terms">I am 18+ and agree to the <a href="/terms" target="_blank">Terms of Service</a></label>
                 </div>
-                <div class="popup-checkbox">
+                <div class="popup-checkbox" id="checkbox-rules">
                     <input type="checkbox" id="popup-rules">
                     <label for="popup-rules">I understand the <a href="/safety" target="_blank">chat rules</a></label>
                 </div>
             </div>
             <div class="popup-footer">
                 <button id="btn-under-18" class="btn-popup btn-decline">I am under 18</button>
-                <button id="btn-agree" class="btn-popup btn-accept" disabled>Enter Chat</button>
+                <button id="btn-agree" class="btn-popup btn-accept">Enter Chat</button>
             </div>
         </div>
     `;
@@ -189,30 +192,34 @@ function createAgePopup() {
     return popup;
 }
 
-// Check if already verified
-function isAgeVerified() {
-    return sessionStorage.getItem('age_verified') === 'true';
-}
-
 // Show the age popup
 function showAgePopup() {
-    if (isAgeVerified()) {
-        // Already verified, redirect
-        window.location.href = '/welcome';
-        return;
-    }
-    
     const popup = createAgePopup();
-    const overlay = popup.querySelector('.popup-overlay');
-    const content = popup.querySelector('.popup-content');
     const btnTerms = document.getElementById('popup-terms');
     const btnRules = document.getElementById('popup-rules');
     const btnAccept = document.getElementById('btn-agree');
     const btnDecline = document.getElementById('btn-under-18');
+    const checkboxTerms = document.getElementById('checkbox-terms');
+    const checkboxRules = document.getElementById('checkbox-rules');
     
-    // Enable button only when both checked
-    function checkBoth() {
-        if (btnTerms.checked && btnRules.checked) {
+    // Initially disable button
+    btnAccept.disabled = true;
+    btnAccept.style.opacity = '0.5';
+    
+    // Check both boxes and enable/disable button
+    function updateButton() {
+        const termsChecked = btnTerms.checked;
+        const rulesChecked = btnRules.checked;
+        
+        // Update visual state
+        if (termsChecked) checkboxTerms.classList.add('checked');
+        else checkboxTerms.classList.remove('checked');
+        
+        if (rulesChecked) checkboxRules.classList.add('checked');
+        else checkboxRules.classList.remove('checked');
+        
+        // Enable button only if both checked
+        if (termsChecked && rulesChecked) {
             btnAccept.disabled = false;
             btnAccept.style.opacity = '1';
         } else {
@@ -221,12 +228,15 @@ function showAgePopup() {
         }
     }
     
-    btnTerms.addEventListener('change', checkBoth);
-    btnRules.addEventListener('change', checkBoth);
+    btnTerms.addEventListener('change', updateButton);
+    btnRules.addEventListener('change', updateButton);
     
-    // Accept button
+    // Accept button click
     btnAccept.addEventListener('click', function() {
-        if (!btnTerms.checked || !btnRules.checked) return;
+        if (!btnTerms.checked || !btnRules.checked) {
+            alert('Please check both boxes to continue');
+            return;
+        }
         
         // Store verification
         sessionStorage.setItem('age_verified', 'true');
@@ -235,19 +245,14 @@ function showAgePopup() {
         // Remove popup
         popup.remove();
         
-        // Go to welcome page
+        // Redirect
         window.location.href = '/welcome';
     });
     
-    // Decline button
+    // Decline button click
     btnDecline.addEventListener('click', function() {
         popup.remove();
         alert('Sorry, you must be 18 or older to use this chat platform.');
-    });
-    
-    // Prevent closing by clicking overlay
-    overlay.addEventListener('click', function(e) {
-        e.stopPropagation();
     });
 }
 
@@ -469,36 +474,27 @@ initStates(usStates);
 </script>
 
 <style>
-/* Age Popup Styles - Simple & Clean */
+/* Age Popup Styles - Fixed Centering */
 #age-popup {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-#age-popup .popup-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     background: rgba(0, 0, 0, 0.85);
 }
 
 #age-popup .popup-content {
-    position: relative;
     background: white;
     border-radius: 12px;
     max-width: 380px;
     width: 90%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
+    overflow: visible;
     animation: popupSlideIn 0.3s ease;
 }
 
@@ -518,6 +514,7 @@ initStates(usStates);
     padding: 20px;
     text-align: center;
     color: white;
+    border-radius: 12px 12px 0 0;
 }
 
 #age-popup .popup-header .warning-icon {
@@ -552,6 +549,7 @@ initStates(usStates);
     margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.2s;
+    border: 2px solid transparent;
 }
 
 #age-popup .popup-checkbox:hover {
@@ -560,7 +558,7 @@ initStates(usStates);
 
 #age-popup .popup-checkbox.checked {
     background: #ede9fe;
-    border: 1px solid #8b5cf6;
+    border-color: #8b5cf6;
 }
 
 #age-popup .popup-checkbox input {
@@ -569,6 +567,7 @@ initStates(usStates);
     margin-top: 2px;
     cursor: pointer;
     accent-color: #8b5cf6;
+    flex-shrink: 0;
 }
 
 #age-popup .popup-checkbox label {
