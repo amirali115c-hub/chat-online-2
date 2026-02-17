@@ -217,19 +217,61 @@
 {% block extra_js %}
 <script>
 // Chat functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Get stored user data
+
+function useGuestMode() {
     const username = sessionStorage.getItem('guest_username');
     const gender = sessionStorage.getItem('guest_gender');
     const age = sessionStorage.getItem('guest_age');
     const country = sessionStorage.getItem('guest_country');
     const isGuest = sessionStorage.getItem('is_guest');
     
+    if (username && isGuest) {
+        window.username = username;
+        window.gender = gender;
+        window.age = age;
+        window.country = country;
+        window.isGuest = isGuest === 'true';
+        return true;
+    }
+    return false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for registered user first, then fall back to guest
+    let username, gender, age, country, isGuest;
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+
+    if (token && userData) {
+        // Registered user
+        try {
+            const user = JSON.parse(userData);
+            username = user.username;
+            gender = user.gender;
+            age = user.age;
+            country = user.country;
+            isGuest = 'false';
+        } catch (e) {
+            // Invalid user data, try guest mode
+            if (!useGuestMode()) {
+                window.location.href = '{{ url_for("index") }}';
+                return;
+            }
+        }
+    } else {
+        // Try guest mode
+        if (!useGuestMode()) {
+            window.location.href = '{{ url_for("index") }}';
+            return;
+        }
+    }
+
     if (!username || !isGuest) {
+        // Redirect to home if no valid session
         window.location.href = '{{ url_for("index") }}';
         return;
     }
-    
+
     // Connect to socket
     const socket = io();
     
@@ -239,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.gender = gender;
     window.age = age;
     window.country = country;
+    window.isGuest = isGuest === 'true';
     
     // Socket event handlers
     socket.on('connect', function() {
