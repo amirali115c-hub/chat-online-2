@@ -316,22 +316,27 @@ input, textarea, select {
 .header-logo {
     display: flex;
     align-items: center;
+    background: var(--gradient);
+    padding: 8px 16px;
+    border-radius: var(--radius-lg);
 }
 
 .header-logo a {
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .header-logo h1 {
-    font-size: 20px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #8B5CF6, #EC4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
     display: flex;
     align-items: center;
     outline: none;
+    margin: 0;
+    gap: 8px;
 }
 
 .header-logo a:focus,
@@ -339,17 +344,10 @@ input, textarea, select {
     outline: none;
     box-shadow: none;
 }
-    gap: 4px;
-    white-space: nowrap;
-    margin: 0;
-}
 
 .header-logo h1 i {
-    background: linear-gradient(135deg, #8B5CF6, #EC4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 12px;
+    font-size: 20px;
+    color: white;
 }
 
 .header-right {
@@ -521,6 +519,22 @@ input, textarea, select {
 
 .welcome-logo i {
     font-size: var(--text-display-sm);
+    color: var(--white);
+}
+
+.modal-logo {
+    width: 80px;
+    height: 80px;
+    background: var(--gradient);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-6);
+}
+
+.modal-logo i {
+    font-size: 40px;
     color: var(--white);
 }
 
