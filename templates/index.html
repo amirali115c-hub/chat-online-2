@@ -94,7 +94,7 @@
                     <select id="guest-state"></select>
                 </div>
 
-                <button type="button" class="btn btn-primary btn-large" id="startBtn">
+                <button type="button" class="btn btn-primary btn-large" id="startBtn" onclick="startChatting()">
                     <i class="fas fa-sign-in-alt"></i> Start Chatting
                 </button>
             </div>
@@ -309,8 +309,7 @@ countrySelect.addEventListener('change', function() {
 });
 
 // Start button click
-var startBtn = document.getElementById('startBtn');
-startBtn.onclick = function() {
+function startChatting() {
     var username = document.getElementById('guest-username').value.trim();
     var gender = document.querySelector('input[name="guest_gender"]:checked');
     var age = document.getElementById('guest-age').value;
@@ -347,6 +346,6 @@ startBtn.onclick = function() {
     // Navigate to welcome page
     window.location.href = '/welcome';
     return false;
-};
+}
 </script>
 {% endblock %}
