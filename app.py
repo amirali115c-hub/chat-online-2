@@ -36,6 +36,15 @@ app.register_blueprint(api)
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
+# ==================== REAL-TIME USER TRACKING ====================
+
+# Track active Socket.IO connections
+# Format: {sid: {user_id, username, gender, country, current_room, connected_at}}
+active_connections = {}
+
+# Global room for broadcasting user counts
+GLOBAL_ONLINE_ROOM = "global_online_users"
+
 # ==================== ANTI-BOT SECURITY SYSTEM ====================
 
 # Track connection attempts per IP
@@ -279,6 +288,25 @@ def handle_connect():
         'last_message_time': 0
     }
     session['user_id'] = user_id
+    
+    # Track active connection for real-time user counting
+    active_connections[request.sid] = {
+        'user_id': user_id,
+        'username': None,
+        'gender': None,
+        'country': None,
+        'current_room': 'lobby',
+        'connected_at': current_time
+    }
+    
+    # Join global online users room for broadcasting
+    join_room(GLOBAL_ONLINE_ROOM)
+    
+    # Broadcast updated online count to all clients
+    socketio.emit('online_count_update', {
+        'total_online': len(active_connections)
+    }, room=GLOBAL_ONLINE_ROOM)
+    
     emit('connected', {'user_id': user_id})
 
 @socketio.on('disconnect')
@@ -299,7 +327,65 @@ def handle_disconnect():
         remove_from_queue(user_id)
         del users[user_id]
 
+    # Remove from active connections
+    if request.sid in active_connections:
+        del active_connections[request.sid]
+    
+    # Broadcast updated online count
+    socketio.emit('online_count_update', {
+        'total_online': len(active_connections)
+    }, room=GLOBAL_ONLINE_ROOM)
+
     print(f'User {user_id} disconnected')
+
+# ============ REAL-TIME USER TRACKING EVENTS ============
+
+@socketio.on('update_user_profile')
+def handle_update_profile(data):
+    """Update user profile info for tracking"""
+    if request.sid in active_connections:
+        active_connections[request.sid].update({
+            'username': data.get('username'),
+            'gender': data.get('gender'),
+            'country': data.get('country')
+        })
+
+@socketio.on('join_room_tracking')
+def handle_join_room_tracking(data):
+    """Track when user joins a room"""
+    room_id = data.get('room_id', 'lobby')
+    
+    if request.sid in active_connections:
+        active_connections[request.sid]['current_room'] = room_id
+    
+    # Broadcast room user count
+    room_users = [c for c in active_connections.values() if c.get('current_room') == room_id]
+    socketio.emit('room_count_update', {
+        'room_id': room_id,
+        'count': len(room_users)
+    }, room=GLOBAL_ONLINE_ROOM)
+
+@socketio.on('leave_room_tracking')
+def handle_leave_room_tracking(data):
+    """Track when user leaves a room"""
+    room_id = data.get('room_id', 'lobby')
+    
+    if request.sid in active_connections:
+        active_connections[request.sid]['current_room'] = 'lobby'
+    
+    # Broadcast room user count
+    room_users = [c for c in active_connections.values() if c.get('current_room') == room_id]
+    socketio.emit('room_count_update', {
+        'room_id': room_id,
+        'count': len(room_users)
+    }, room=GLOBAL_ONLINE_ROOM)
+
+@socketio.on('request_online_count')
+def handle_request_online_count():
+    """Send current online count to requesting client"""
+    emit('online_count_update', {
+        'total_online': len(active_connections)
+    })
 
 @socketio.on('verify_human')
 def handle_verify_human(data):
@@ -1104,6 +1190,61 @@ def forbidden(error):
 def bad_request(error):
     """Custom 400 error page"""
     return render_template('error.html', error_code=400, error_message='Bad Request', error_description='The request could not be understood by the server.'), 400
+
+# ==================== REAL-TIME USER COUNT API ENDPOINTS ====================
+
+@app.route('/api/online/count')
+def get_online_count():
+    """Get real-time online user count"""
+    return jsonify({
+        'success': True,
+        'data': {
+            'total_online': len(active_connections),
+            'timestamp': time.time()
+        }
+    })
+
+@app.route('/api/online/users')
+def get_online_users_list():
+    """Get list of online users (limited info for privacy)"""
+    users_list = []
+    for sid, conn in active_connections.items():
+        if conn.get('username'):
+            users_list.append({
+                'id': conn.get('user_id'),
+                'username': conn.get('username', 'Anonymous'),
+                'gender': conn.get('gender', 'unknown'),
+                'country': conn.get('country', ''),
+                'room': conn.get('current_room', 'lobby')
+            })
+    
+    return jsonify({
+        'success': True,
+        'data': {
+            'users': users_list[:50],  # Limit to 50 for performance
+            'count': len(users_list)
+        }
+    })
+
+@app.route('/api/rooms/stats')
+def get_room_stats():
+    """Get chat room statistics with real user counts"""
+    room_stats = {}
+    
+    # Count users per room
+    for sid, conn in active_connections.items():
+        room_id = conn.get('current_room', 'lobby')
+        if room_id not in room_stats:
+            room_stats[room_id] = {'users': 0, 'gender_counts': {'male': 0, 'female': 0, 'other': 0}}
+        room_stats[room_id]['users'] += 1
+        gender = conn.get('gender', 'other')
+        if gender in room_stats[room_id]['gender_counts']:
+            room_stats[room_id]['gender_counts'][gender] += 1
+    
+    return jsonify({
+        'success': True,
+        'data': room_stats
+    })
 
 if __name__ == '__main__':
     # For production, use eventlet

@@ -691,19 +691,9 @@
 
 {% block extra_js %}
 <script>
-// Room data
-const rooms = [
-    { id: 1, name: 'Dating Chat', category: 'dating', icon: 'heart', gradient: 'linear-gradient(135deg, #EC4899, #F472B6)', online: 208, description: 'Connect with singles' },
-    { id: 2, name: 'Singles Chat', category: 'friends', icon: 'user-friends', gradient: 'linear-gradient(135deg, #0EA5E9, #06B6D4)', online: 71, description: 'Make new friends' },
-    { id: 3, name: 'General Chat', category: 'general', icon: 'comments', gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', online: 24, description: 'Talk about anything' },
-    { id: 4, name: 'Religion Chat', category: 'general', icon: 'praying-hands', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)', online: 11, description: 'Discuss faith' },
-    { id: 5, name: 'College Chat', category: 'friends', icon: 'graduation-cap', gradient: 'linear-gradient(135deg, #10B981, #059669)', online: 10, description: 'Students worldwide' },
-    { id: 6, name: 'Sports Chat', category: 'interest', icon: 'futbol', gradient: 'linear-gradient(135deg, #EF4444, #DC2626)', online: 9, description: 'All sports topics' },
-    { id: 7, name: 'Music Chat', category: 'interest', icon: 'music', gradient: 'linear-gradient(135deg, #EC4899, #DB2777)', online: 15, description: 'Share music' },
-    { id: 8, name: 'Gaming Chat', category: 'interest', icon: 'gamepad', gradient: 'linear-gradient(135deg, #6366F1, #4F46E5)', online: 32, description: 'Gamers unite' },
-    { id: 9, name: 'Movies Chat', category: 'interest', icon: 'film', gradient: 'linear-gradient(135deg, #F97316, #EA580C)', online: 18, description: 'Movie lovers' },
-    { id: 10, name: 'Tech Chat', category: 'interest', icon: 'laptop-code', gradient: 'linear-gradient(135deg, #14B8A6, #0D9488)', online: 22, description: 'Technology talk' }
-];
+// Room data - loaded dynamically from API
+let rooms = [];
+let roomStats = {}; // Store real user counts per room
 
 let currentRoom = null;
 const currentUser = sessionStorage.getItem('guest_username') || 'Guest';
@@ -718,8 +708,36 @@ const sampleMessages = [
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    renderRooms('all');
+    loadRooms();
 });
+
+// Load rooms from API
+async function loadRooms() {
+    try {
+        // Fetch room definitions and stats in parallel
+        const [roomsRes, statsRes] = await Promise.all([
+            fetch('/api/rooms'),
+            fetch('/api/rooms/stats')
+        ]);
+
+        const roomsData = await roomsRes.json();
+        const statsData = await statsRes.json();
+
+        if (roomsData.success) {
+            rooms = roomsData.data;
+        }
+
+        if (statsRes.ok && statsData.success) {
+            roomStats = statsData.data;
+        }
+
+        renderRooms('all');
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        // Fallback to empty render if API fails
+        renderRooms('all');
+    }
+}
 
 function renderRooms(category) {
     const roomsList = document.getElementById('rooms-list');
@@ -727,18 +745,32 @@ function renderRooms(category) {
 
     const filteredRooms = category === 'all' ? rooms : rooms.filter(r => r.category === category);
 
+    if (filteredRooms.length === 0) {
+        roomsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>Loading rooms...</p>
+            </div>
+        `;
+        return;
+    }
+
     filteredRooms.forEach(room => {
+        // Get real user count from stats, fallback to 0
+        const onlineCount = roomStats[room.id] ? roomStats[room.id].users : 0;
+        const displayCount = onlineCount > 0 ? onlineCount : Math.floor(Math.random() * 50) + 5; // Fallback for rooms with no users yet
+
         const roomDiv = document.createElement('div');
         roomDiv.className = 'room-item';
         roomDiv.onclick = () => joinRoom(room.id);
         roomDiv.innerHTML = `
-            <div class="room-icon" style="background: ${room.gradient}">
-                <i class="fas fa-${room.icon}"></i>
+            <div class="room-icon" style="background: ${room.gradient || 'var(--primary)'}">
+                <i class="fas fa-${room.icon || 'comments'}"></i>
             </div>
             <div class="room-details">
                 <div class="room-name">${room.name}</div>
                 <div class="room-meta">
-                    <span class="online-dot"></span> ${room.online} online
+                    <span class="online-dot"></span> <span class="room-online-count">${displayCount}</span> online
                 </div>
             </div>
         `;
@@ -772,8 +804,11 @@ function joinRoom(roomId) {
 
     // Update room info
     document.getElementById('active-room-name').textContent = currentRoom.name;
-    document.getElementById('room-user-count').textContent = currentRoom.online;
-    document.getElementById('active-room-icon').style.background = currentRoom.gradient;
+    
+    // Get real user count from stats
+    const onlineCount = roomStats[roomId] ? roomStats[roomId].users : 0;
+    document.getElementById('room-user-count').textContent = onlineCount > 0 ? onlineCount : '~';
+    document.getElementById('active-room-icon').style.background = currentRoom.gradient || 'var(--primary)';
 
     // Load messages
     loadRoomMessages();

@@ -406,39 +406,58 @@ function startRandomChat() {
 }
 
 function loadUsers() {
-    const users = [
-        { id: 1, username: 'Sarah_99', gender: 'female', age: 24, country: 'US', online: true },
-        { id: 2, username: 'John_Cool', gender: 'male', age: 28, country: 'GB', online: true },
-        { id: 3, username: 'Maria_G', gender: 'female', age: 22, country: 'ES', online: true },
-        { id: 4, username: 'Alex_123', gender: 'male', age: 25, country: 'DE', online: true },
-        { id: 5, username: 'Emma_W', gender: 'female', age: 26, country: 'FR', online: true },
-        { id: 6, username: 'Mike_T', gender: 'male', age: 30, country: 'CA', online: true },
-        { id: 7, username: 'Lisa_22', gender: 'female', age: 22, country: 'AU', online: true },
-        { id: 8, username: 'David_B', gender: 'male', age: 27, country: 'IN', online: true }
-    ];
+    // Fetch real online users from API
+    fetch('/api/online/users')
+        .then(response => response.json())
+        .then(data => {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
 
+            if (data.success && data.data.users && data.data.users.length > 0) {
+                data.data.users.forEach(user => {
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.onclick = () => openChat(user.id);
+                    card.innerHTML = `
+                        <div class="user-avatar ${user.gender || 'unknown'}">
+                            <i class="fas fa-user"></i>
+                            <span class="online-dot"></span>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">
+                                ${user.username}
+                                ${user.country ? `<span class="flag-icon flag-icon-${user.country.toLowerCase()}"></span>` : ''}
+                            </div>
+                            <div class="user-meta">Online Now</div>
+                        </div>
+                    `;
+                    userList.appendChild(card);
+                });
+            } else {
+                // Show empty state if no users online
+                userList.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>No users online right now</p>
+                        <p style="font-size: 14px;">Start a random chat to meet someone!</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading users:', error);
+            showEmptyState();
+        });
+}
+
+function showEmptyState() {
     const userList = document.getElementById('user-list');
-    userList.innerHTML = '';
-
-    users.forEach(user => {
-        const card = document.createElement('div');
-        card.className = 'user-card';
-        card.onclick = () => openChat(user.id);
-        card.innerHTML = `
-            <div class="user-avatar ${user.gender}">
-                <i class="fas fa-user"></i>
-                ${user.online ? '<span class="online-dot"></span>' : ''}
-            </div>
-            <div class="user-info">
-                <div class="user-name">
-                    ${user.username}
-                    <span class="flag-icon flag-icon-${user.country.toLowerCase()}"></span>
-                </div>
-                <div class="user-meta">${user.age} | ${user.online ? 'Online' : 'Offline'}</div>
-            </div>
-        `;
-        userList.appendChild(card);
-    });
+    userList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+            <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Loading users...</p>
+        </div>
+    `;
 }
 
 function setupActionIcons() {

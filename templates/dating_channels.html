@@ -632,71 +632,117 @@
 
 {% block extra_js %}
 <script>
-// Dating channels data
-const datingChannels = [
-    { id: 1, name: 'Dating Chat', icon: 'heart', gradient: 'linear-gradient(135deg, #EC4899, #F472B6)', online: 156, male: 78, female: 78, description: 'Connect with singles' },
-    { id: 2, name: 'Love & Romance', icon: 'glass-cheers', gradient: 'linear-gradient(135deg, #F472B6, #EC4899)', online: 89, male: 40, female: 49, description: 'Find your match' },
-    { id: 3, name: 'Singles Only', icon: 'user-friends', gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', online: 124, male: 60, female: 64, description: 'Meet new people' },
-    { id: 4, name: 'Flirt & Fun', icon: 'comment-dots', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)', online: 67, male: 35, female: 32, description: 'Light & fun chats' },
-    { id: 5, name: 'Long Distance', icon: 'globe-americas', gradient: 'linear-gradient(135deg, #0EA5E9, #06B6D4)', online: 45, male: 22, female: 23, description: 'Global connections' },
-    { id: 6, name: 'Mature Dating', icon: 'wine-glass', gradient: 'linear-gradient(135deg, #6366F1, #4F46E5)', online: 38, male: 20, female: 18, description: 'For mature singles' },
-    { id: 7, name: 'Young Love', icon: 'seedling', gradient: 'linear-gradient(135deg, #10B981, #059669)', online: 52, male: 25, female: 27, description: 'Young & energetic' },
-    { id: 8, name: 'Random Dating', icon: 'shuffle', gradient: 'linear-gradient(135deg, #EF4444, #DC2626)', online: 98, male: 50, female: 48, description: 'Random connections' }
-];
-
-// Online users sample data
-const onlineUsers = [
-    { id: 1, username: 'Sarah_99', gender: 'female', age: 24, country: 'USA', messages: 156, friends: 23 },
-    { id: 2, username: 'John_Cool', gender: 'male', age: 28, country: 'UK', messages: 89, friends: 15 },
-    { id: 3, username: 'Emma_W', gender: 'female', age: 22, country: 'Canada', messages: 234, friends: 45 },
-    { id: 4, username: 'Mike_T', gender: 'male', age: 30, country: 'Australia', messages: 67, friends: 12 },
-    { id: 5, username: 'Lily_Rose', gender: 'female', age: 26, country: 'France', messages: 189, friends: 34 },
-    { id: 6, username: 'David_B', gender: 'male', age: 25, country: 'Germany', messages: 45, friends: 8 },
-    { id: 7, username: 'Cherry_22', gender: 'female', age: 23, country: 'Japan', messages: 312, friends: 56 },
-    { id: 8, username: 'Alex_01', gender: 'male', age: 27, country: 'Spain', messages: 78, friends: 19 },
-    { id: 9, username: 'PinkLady', gender: 'female', age: 25, country: 'Italy', messages: 145, friends: 28 },
-    { id: 10, username: 'Chris_M', gender: 'male', age: 29, country: 'Brazil', messages: 92, friends: 17 },
-    { id: 11, username: 'Angel_UK', gender: 'female', age: 24, country: 'UK', messages: 267, friends: 41 },
-    { id: 12, username: 'Tom_H', gender: 'male', age: 31, country: 'USA', messages: 56, friends: 11 }
-];
+// Dating channels - loaded from API
+let datingChannels = [];
+let roomStats = {}; // Real user counts per room
+let onlineUsersList = []; // Real online users
 
 let selectedUser = null;
 let currentFilter = 'all';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    renderChannels();
-    renderOnlineUsers();
-    updateStats();
+    loadDatingData();
 });
+
+async function loadDatingData() {
+    try {
+        // Fetch channels and stats
+        const [channelsRes, roomsRes, usersRes, countRes] = await Promise.all([
+            fetch('/api/rooms?category=dating'),
+            fetch('/api/rooms/stats'),
+            fetch('/api/online/users'),
+            fetch('/api/online/count')
+        ]);
+
+        const channelsData = await channelsRes.json();
+        const statsData = await roomsRes.json();
+        const usersData = await usersRes.json();
+        const countData = await countRes.json();
+
+        if (channelsData.success) {
+            datingChannels = channelsData.data;
+        }
+        if (statsData.success) {
+            roomStats = statsData.data;
+        }
+        if (usersData.success) {
+            onlineUsersList = usersData.data.users || [];
+        }
+
+        renderChannels();
+        renderOnlineUsers();
+        updateStats();
+    } catch (error) {
+        console.error('Error loading dating data:', error);
+        // Fallback - render empty
+        renderChannels();
+        renderOnlineUsers();
+        updateStats();
+    }
+}
+
+function updateStats() {
+    // Update total counts from real data
+    const totalEl = document.getElementById('total-online');
+    const maleEl = document.getElementById('male-online');
+    const femaleEl = document.getElementById('female-online');
+
+    if (totalEl) {
+        totalEl.textContent = onlineUsersList.length || 0;
+    }
+    if (maleEl) {
+        maleEl.textContent = onlineUsersList.filter(u => u.gender === 'male').length;
+    }
+    if (femaleEl) {
+        femaleEl.textContent = onlineUsersList.filter(u => u.gender === 'female').length;
+    }
+}
 
 function renderChannels() {
     const grid = document.getElementById('channels-grid');
+    if (!grid) return;
+    
     grid.innerHTML = '';
 
+    if (datingChannels.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--bg-500); grid-column: 1/-1;">
+                <i class="fas fa-heart" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>Loading channels...</p>
+            </div>
+        `;
+        return;
+    }
+
     datingChannels.forEach(channel => {
+        // Get real stats
+        const stats = roomStats[channel.id] || { users: 0, gender_counts: { male: 0, female: 0 } };
+        const maleCount = stats.gender_counts?.male || 0;
+        const femaleCount = stats.gender_counts?.female || 0;
+
         const card = document.createElement('div');
         card.className = 'channel-card';
         card.onclick = () => joinChannel(channel.id);
         card.innerHTML = `
             <div class="channel-card-header">
-                <div class="channel-icon" style="background: ${channel.gradient}">
-                    <i class="fas fa-${channel.icon}"></i>
+                <div class="channel-icon" style="background: ${channel.gradient || 'linear-gradient(135deg, #EC4899, #F472B6)'}">
+                    <i class="fas fa-${channel.icon || 'heart'}"></i>
                 </div>
                 <div class="channel-title">
                     <h3>${channel.name}</h3>
-                    <span>${channel.description}</span>
+                    <span>${channel.description || 'Join this channel'}</span>
                 </div>
             </div>
             <div class="channel-stats">
                 <div class="gender-stats">
                     <div class="gender-stat male">
                         <span class="gender-dot male"></span>
-                        <span>${channel.male}</span>
+                        <span>${maleCount}</span>
                     </div>
                     <div class="gender-stat female">
                         <span class="gender-dot female"></span>
-                        <span>${channel.female}</span>
+                        <span>${femaleCount}</span>
                     </div>
                 </div>
                 <button class="channel-action">Join</button>
@@ -708,9 +754,21 @@ function renderChannels() {
 
 function renderOnlineUsers() {
     const grid = document.getElementById('online-users-grid');
+    if (!grid) return;
+    
     grid.innerHTML = '';
 
-    const filtered = currentFilter === 'all' ? onlineUsers : onlineUsers.filter(u => u.gender === currentFilter);
+    const filtered = currentFilter === 'all' ? onlineUsersList : onlineUsersList.filter(u => u.gender === currentFilter);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--bg-500); grid-column: 1/-1;">
+                <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>${currentFilter === 'all' ? 'No users online right now' : 'No ' + currentFilter + ' users online'}</p>
+            </div>
+        `;
+        return;
+    }
 
     filtered.forEach(user => {
         const card = document.createElement('div');
@@ -736,9 +794,9 @@ function filterOnlineUsers(gender) {
 }
 
 function updateStats() {
-    const total = onlineUsers.length;
-    const male = onlineUsers.filter(u => u.gender === 'male').length;
-    const female = onlineUsers.filter(u => u.gender === 'female').length;
+    const total = onlineUsersList.length;
+    const male = onlineUsersList.filter(u => u.gender === 'male').length;
+    const female = onlineUsersList.filter(u => u.gender === 'female').length;
 
     document.getElementById('total-online').textContent = total;
     document.getElementById('male-online').textContent = male;
