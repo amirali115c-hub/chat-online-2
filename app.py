@@ -23,10 +23,6 @@ app.jinja_env.globals['csrf_token'] = generate_csrf_token
 def health():
     return {'status': 'ok'}, 200
 
-@app.route('/')
-def root():
-    return {'status': 'chat-online', 'version': '1.0'}, 200
-
 # Initialize database (with error handling for Koyeb)
 try:
     init_database()
