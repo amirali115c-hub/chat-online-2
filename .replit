@@ -1,0 +1,10 @@
+run = "gunicorn app:app --bind 0.0.0.0:5000 --workers 1"
+modules = ["python-3.11"]
+hidden = [".git"]
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+run = ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:5000"]
+deploymentTarget = "Gunicorn"
