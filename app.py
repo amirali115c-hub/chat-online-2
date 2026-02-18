@@ -2535,62 +2535,67 @@ def api_log_pageview():
 @app.route('/api/online/all')
 def api_online_all():
     """Get all online users including current user - for welcome page user list"""
-    from database import get_user_by_id
-
     online_users = []
+    seen_ids = set()
 
-    # Get current user from session
-    current_user = None
+    # Get all users from session (both guests and logged-in users)
     current_user_id = session.get('user_id')
-    if current_user_id:
+    current_username = session.get('guest_username') or session.get('username')
+    current_gender = session.get('guest_gender') or session.get('gender')
+    current_country = session.get('guest_country') or session.get('country')
+    is_guest = session.get('is_guest', False)
+
+    # Add current user from session if logged in
+    if current_user_id and current_username:
         current_user = {
             'id': current_user_id,
-            'username': session.get('username', 'Guest'),
-            'gender': session.get('gender', ''),
-            'country': session.get('guest_country', session.get('country', '')),
-            'is_guest': session.get('is_guest', False),
+            'username': current_username,
+            'gender': current_gender or '',
+            'country': current_country or '',
+            'is_guest': is_guest,
             'is_online': True,
             'last_seen': datetime.now().isoformat()
         }
+        online_users.append(current_user)
+        seen_ids.add(current_user_id)
 
     # Get all active socket connections (guest users + registered users connected via socket)
     for sid, conn in active_connections.items():
-        user_data = {
-            'id': conn.get('user_id'),
-            'username': conn.get('username', 'Guest'),
-            'gender': conn.get('gender', ''),
-            'country': conn.get('country', ''),
-            'is_guest': conn.get('is_guest', False),
-            'is_online': True,
-            'last_seen': datetime.fromtimestamp(conn.get('connected_at', time.time())).isoformat()
-        }
-        # Avoid duplicates
-        if user_data['id'] not in [u.get('id') for u in online_users]:
+        user_id = conn.get('user_id')
+        if user_id and user_id not in seen_ids:
+            user_data = {
+                'id': user_id,
+                'username': conn.get('username', 'Guest'),
+                'gender': conn.get('gender', ''),
+                'country': conn.get('country', ''),
+                'is_guest': conn.get('is_guest', False),
+                'is_online': True,
+                'last_seen': datetime.fromtimestamp(conn.get('connected_at', time.time())).isoformat()
+            }
             online_users.append(user_data)
+            seen_ids.add(user_id)
 
-    # If current user is not in active_connections (e.g. just logged in via session), add them
-    if current_user and current_user['id'] not in [u.get('id') for u in online_users]:
-        online_users.insert(0, current_user)
-
-    # Get registered users from database who are online
+    # Get registered users from database who are online (not in seen_ids)
     try:
         from database import fetch_all, USE_POSTGRES
         if USE_POSTGRES:
-            registered_online = fetch_all('''
-                SELECT id, username, gender, age, country, state, is_online, last_seen
-                FROM users
-                WHERE is_online = 1
-                ORDER BY last_seen DESC
-                LIMIT 50
-            ''')
-        else:
-            registered_online = fetch_all('''
-                SELECT id, username, gender, age, country, state, is_online, last_seen
-                FROM users
-                WHERE is_online = 1
-                ORDER BY last_seen DESC
-                LIMIT 50
-            ''')
+            # PostgreSQL needs different approach for NOT IN with tuple
+            if seen_ids:
+                registered_online = fetch_all('''
+                    SELECT id, username, gender, age, country, state, is_online, last_seen
+                    FROM users
+                    WHERE is_online = 1 AND id NOT IN %s
+                    ORDER BY last_seen DESC
+                    LIMIT 50
+                ''', (tuple(seen_ids),))
+            else:
+                registered_online = fetch_all('''
+                    SELECT id, username, gender, age, country, state, is_online, last_seen
+                    FROM users
+                    WHERE is_online = 1
+                    ORDER BY last_seen DESC
+                    LIMIT 50
+                ''')
 
         for user in registered_online:
             user_dict = {
@@ -2602,11 +2607,10 @@ def api_online_all():
                 'is_online': True,
                 'last_seen': user.get('last_seen')
             }
-            # Avoid duplicates
-            if user_dict['id'] not in [u.get('id') for u in online_users]:
+            if user_dict['id'] not in seen_ids:
                 online_users.append(user_dict)
     except Exception as e:
-        print(f"Error fetching registered online users: {e}")
+        pass  # Silently fail if DB query errors
 
     return jsonify({
         'success': True,
