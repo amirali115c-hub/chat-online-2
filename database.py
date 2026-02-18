@@ -18,7 +18,7 @@ if USE_POSTGRES:
     try:
         import psycopg2
         from psycopg2.extras import RealDictCursor
-        print("Using PostgreSQL database")
+        # Silent in production
     except ImportError:
         print("WARNING: psycopg2 not installed, falling back to SQLite")
         USE_POSTGRES = False
@@ -30,7 +30,6 @@ else:
         DB_FILE = DATABASE_URL.replace('sqlite://', '').lstrip('/')
     else:
         DB_FILE = DATABASE_URL
-    print(f"Using SQLite database: {DB_FILE}")
 
 # ==================== DATABASE CONNECTION ====================
 
@@ -45,8 +44,12 @@ def get_db():
         finally:
             conn.close()
     else:
-        conn = sqlite3.connect(DB_FILE)
+        # Enable WAL mode and pragmas for better SQLite performance
+        conn = sqlite3.connect(DB_FILE, timeout=30)
         conn.row_factory = sqlite3.Row
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA synchronous=NORMAL')
+        conn.execute('PRAGMA cache_size=-64000')  # 64MB cache
         try:
             yield conn
         finally:

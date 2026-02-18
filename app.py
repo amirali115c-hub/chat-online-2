@@ -17,7 +17,7 @@ from config import get_config
 # Load configuration
 config = get_config()
 
-# Setup logging
+# Setup logging - FILE ONLY for production performance
 os.makedirs('logs', exist_ok=True)
 file_handler = RotatingFileHandler(
     config.LOG_FILE,
@@ -25,25 +25,22 @@ file_handler = RotatingFileHandler(
     backupCount=10,
     encoding='utf-8'
 )
-file_handler.setLevel(logging.INFO)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.INFO if not config.DEBUG else logging.DEBUG)
 
-# Configure logger
+# Configure logger - NO console handler for performance
 logger = logging.getLogger('chat_online')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO if not config.DEBUG else logging.DEBUG)
 formatter = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-logger.addHandler(console_handler)
 
-# Log application startup
-logger.info("=" * 60)
-logger.info("Chat Online Application Starting")
-logger.info("=" * 60)
+# Log application startup ONLY in debug mode
+if config.DEBUG:
+    print("=" * 60)
+    print("Chat Online Application Starting")
+    print("=" * 60)
 
 # Markdown support
 try:
@@ -630,7 +627,10 @@ def handle_connect():
         'total_online': len(active_connections)
     }, room=GLOBAL_ONLINE_ROOM)
     
-    logger.info(f"User connected: {username} (ID: {user_id}) from {client_ip}")
+    # Only log in debug mode
+    if config.DEBUG:
+        logger.info(f"User connected: {username} (ID: {user_id}) from {client_ip}")
+    
     emit('connected', {'user_id': user_id, 'username': username, 'gender': gender, 'is_guest': is_guest})
 
 def cleanup_stale_connections():
@@ -654,17 +654,18 @@ def cleanup_stale_connections():
     
     return len(stale_sids)
 
-# Run cleanup every 5 minutes
+# Run cleanup every 5 minutes - reduced logging
 import threading
 def run_cleanup():
     while True:
         time.sleep(300)  # 5 minutes
         try:
             cleaned = cleanup_stale_connections()
-            if cleaned > 0:
+            if cleaned > 0 and config.DEBUG:
                 print(f"Cleaned up {cleaned} stale connections")
         except Exception as e:
-            print(f"Cleanup error: {e}")
+            if config.DEBUG:
+                print(f"Cleanup error: {e}")
 
 cleanup_thread = threading.Thread(target=run_cleanup, daemon=True)
 cleanup_thread.start()
