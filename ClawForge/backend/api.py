@@ -10,6 +10,7 @@ import os
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +22,18 @@ _current_dir = os.path.dirname(os.path.abspath(__file__))
 if _current_dir not in sys.path:
     sys.path.insert(0, _current_dir)
 
-# Import consolidated features module
+# Add memory module to path for context integration
+MEMORY_DIR = Path(__file__).parent.parent / "memory"
+if str(MEMORY_DIR) not in sys.path:
+    sys.path.insert(0, str(MEMORY_DIR))
+
+# Import context integration
+try:
+    from context_integration import init_context_system, add_context_routes
+    CONTEXT_AVAILABLE = True
+except ImportError:
+    CONTEXT_AVAILABLE = False
+    print("Warning: Context system not available")
 from features import (
     get_memory_stats,
     search_memories,
@@ -63,6 +75,11 @@ async def lifespan(app: FastAPI):
     # Initialize on startup
     from task_manager import TaskManager
     task_manager = TaskManager(broadcast_fn=broadcast)
+    
+    # Initialize context system (conversation continuity)
+    if CONTEXT_AVAILABLE:
+        init_context_system()
+        add_context_routes(app)
     
     print("ClawForge API started")
     print("   Dashboard: http://127.0.0.1:7860")
