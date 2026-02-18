@@ -308,23 +308,23 @@ class ContextManager:
         lines = []
         
         if state.get("current_task"):
-            lines.append(f"📋 Current task: {state['current_task']}")
+            lines.append(f"[TASK] {state['current_task']}")
         
         if state.get("task_status"):
             status_emoji = {
-                "planning": "📝",
-                "executing": "⚙️",
-                "waiting": "⏳",
-                "completed": "✅"
+                "planning": "[PLANNING]",
+                "executing": "[EXECUTING]",
+                "waiting": "[WAITING]",
+                "completed": "[COMPLETED]"
             }
-            emoji = status_emoji.get(state["task_status"], "📌")
+            emoji = status_emoji.get(state["task_status"], "[STATUS]")
             lines.append(f"{emoji} Status: {state['task_status']}")
         
         if state.get("where_we_left_off"):
-            lines.append(f"🛑 Where we left off: {state['where_we_left_off']}")
+            lines.append(f"[PAUSED] {state['where_we_left_off']}")
         
         if state.get("next_steps"):
-            lines.append(f"👉 Next steps:")
+            lines.append("[NEXT] Next steps:")
             for step in state["next_steps"][:3]:  # Show max 3
                 lines.append(f"   - {step}")
         

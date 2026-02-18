@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from memory.context_manager import (
+from context_manager import (
     get_context_manager,
     start_session,
     update_context,

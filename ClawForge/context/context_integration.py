@@ -8,10 +8,10 @@ Loads conversation continuity on startup.
 import sys
 from pathlib import Path
 
-# Add memory module to path
-MEMORY_DIR = Path(__file__).parent.parent / "memory"
-if str(MEMORY_DIR) not in sys.path:
-    sys.path.insert(0, str(MEMORY_DIR))
+# Add context module to path
+CONTEXT_DIR = Path(__file__).parent  # context/ is already in path via api.py
+if str(CONTEXT_DIR) not in sys.path:
+    sys.path.insert(0, str(CONTEXT_DIR))
 
 
 def init_context_system():
@@ -20,6 +20,7 @@ def init_context_system():
     Call this from your main.py or api.py startup.
     """
     try:
+        # Import directly since context/ is in sys.path
         from context_manager import get_context_manager
         
         # Get singleton instance (loads state from disk)
@@ -41,16 +42,19 @@ def init_context_system():
 
 def add_context_routes(app):
     """Add context API routes to FastAPI app."""
+    import sys
     try:
         from context_api import router as context_router
         
         # Include context routes
         app.include_router(context_router)
         
-        print("   Context API routes: /context/*")
+        sys.stderr.write("   Context API routes: /context/*\n")
+        sys.stderr.flush()
         
     except Exception as e:
-        print(f"Warning: Could not add context routes: {e}")
+        sys.stderr.write(f"Warning: Could not add context routes: {e}\n")
+        sys.stderr.flush()
 
 
 # Auto-initialize when imported

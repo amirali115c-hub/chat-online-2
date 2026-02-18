@@ -4,13 +4,13 @@ A privacy-first memory system for ClawForge that works like my own memory does.
 
 ## Features
 
-### 🔄 Conversation Continuity
+### Conversation Continuity
 - **Auto-save/restore** - Remembers where you left off between sessions
 - **Task tracking** - Knows what was being worked on
 - **Next steps** - Remembers upcoming tasks
 - **Session history** - Keeps context of what happened
 
-### 🔒 Privacy Protection Layers
+### Privacy Protection Layers
 
 | Layer | Description |
 |-------|-------------|
@@ -20,7 +20,7 @@ A privacy-first memory system for ClawForge that works like my own memory does.
 | **Auto-cleanup** | Removes logs older than 30 days |
 | **Retention Controls** | Session-only or persistent storage options |
 
-### 📊 Privacy Levels
+### Privacy Levels
 
 - **public** - No restrictions
 - **standard** - Basic protection (default)
@@ -32,7 +32,7 @@ A privacy-first memory system for ClawForge that works like my own memory does.
 ### Python Usage
 
 ```python
-from memory.context_manager import start_session, update_context, get_resume_context, end_session
+from context.context_manager import start_session, update_context, get_resume_context, end_session
 
 # Start a new session
 conversation_id = start_session(user_context={"name": "Amir"})
@@ -48,10 +48,10 @@ update_context(
 # Later - get context for resuming
 resume_context = get_resume_context()
 # Output:
-# 📋 Current task: Fixing login bug
-# ⚙️ Status: executing
-# 🛑 Where we left off: Found the issue in auth.py line 42
-# 👉 Next steps:
+# [TASK] Fixing login bug
+# [EXECUTING] Status: executing
+# [PAUSED] Found the issue in auth.py line 42
+# [NEXT] Next steps:
 #    - Fix the token validation
 #    - Test the fix
 
@@ -85,16 +85,19 @@ curl http://localhost:8000/context/privacy/status
 ## File Structure
 
 ```
-memory/
-├── context_manager.py      # Main continuity system
-├── context_api.py         # FastAPI endpoints
-├── conversation_state.json # Current state (active session)
-├── conversation_state.example.json # Template
-├── .key                   # Encryption key (auto-generated)
-└── daily_logs/
-    ├── 2026-02-19.jsonl
-    ├── 2026-02-18.jsonl
-    └── ...
+ClawForge/
+├── context/                    # Conversation continuity system
+│   ├── context_manager.py      # Core system
+│   ├── context_api.py         # FastAPI endpoints
+│   ├── context_integration.py # API integration
+│   ├── conversation_state.json # Current state (active session)
+│   ├── conversation_state.example.json # Template
+│   ├── .key                   # Encryption key (auto-generated)
+│   └── daily_logs/
+│       ├── 2026-02-19.jsonl
+│       ├── 2026-02-18.jsonl
+│       └── ...
+└── ...
 ```
 
 ## Privacy Rules
@@ -122,7 +125,7 @@ memory/
 To integrate with ClawForge's main agent, add this to your agent's session handling:
 
 ```python
-from memory.context_manager import get_context_manager
+from context.context_manager import get_context_manager
 
 class ClawForgeAgent:
     def __init__(self):

@@ -22,18 +22,19 @@ _current_dir = os.path.dirname(os.path.abspath(__file__))
 if _current_dir not in sys.path:
     sys.path.insert(0, _current_dir)
 
-# Add memory module to path for context integration
-MEMORY_DIR = Path(__file__).parent.parent / "memory"
-if str(MEMORY_DIR) not in sys.path:
-    sys.path.insert(0, str(MEMORY_DIR))
+# Add context module to path for context integration
+CONTEXT_DIR = Path(__file__).parent.parent / "context"
+if str(CONTEXT_DIR) not in sys.path:
+    sys.path.insert(0, str(CONTEXT_DIR))
 
 # Import context integration
 try:
     from context_integration import init_context_system, add_context_routes
     CONTEXT_AVAILABLE = True
-except ImportError:
+    print("[CONTEXT] Context integration module loaded successfully")
+except ImportError as e:
     CONTEXT_AVAILABLE = False
-    print("Warning: Context system not available")
+    print(f"Warning: Context system not available: {e}")
 from features import (
     get_memory_stats,
     search_memories,
@@ -78,8 +79,20 @@ async def lifespan(app: FastAPI):
     
     # Initialize context system (conversation continuity)
     if CONTEXT_AVAILABLE:
-        init_context_system()
-        add_context_routes(app)
+        try:
+            import sys
+            sys.stderr.write("[CONTEXT] Initializing context system...\n")
+            sys.stderr.flush()
+            init_context_system()
+            sys.stderr.write("[CONTEXT] Adding context routes...\n")
+            sys.stderr.flush()
+            add_context_routes(app)
+            sys.stderr.write("[CONTEXT] Context system ready\n")
+            sys.stderr.flush()
+        except Exception as e:
+            import sys
+            sys.stderr.write(f"[CONTEXT] Error: {e}\n")
+            sys.stderr.flush()
     
     print("ClawForge API started")
     print("   Dashboard: http://127.0.0.1:7860")
