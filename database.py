@@ -24,9 +24,10 @@ if USE_POSTGRES:
         USE_POSTGRES = False
         DB_FILE = 'chat_online.db'
 else:
-    # Parse SQLite URL (sqlite:///filename.db)
+    # Parse SQLite URL (sqlite:///filename.db or just filename.db)
     if DATABASE_URL.startswith('sqlite://'):
-        DB_FILE = DATABASE_URL.replace('sqlite://', '').replace('/', '')
+        # Remove sqlite:// prefix and any leading slashes
+        DB_FILE = DATABASE_URL.replace('sqlite://', '').lstrip('/')
     else:
         DB_FILE = DATABASE_URL
     print(f"Using SQLite database: {DB_FILE}")

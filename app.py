@@ -2531,6 +2531,90 @@ def api_log_pageview():
     )
     return jsonify({'success': True})
 
+@app.route('/api/online/all')
+def api_online_all():
+    """Get all online users including current user - for welcome page user list"""
+    from database import get_user_by_id
+
+    online_users = []
+
+    # Get current user from session
+    current_user = None
+    current_user_id = session.get('user_id')
+    if current_user_id:
+        current_user = {
+            'id': current_user_id,
+            'username': session.get('username', 'Guest'),
+            'gender': session.get('gender', ''),
+            'country': session.get('guest_country', session.get('country', '')),
+            'is_guest': session.get('is_guest', False),
+            'is_online': True,
+            'last_seen': datetime.now().isoformat()
+        }
+
+    # Get all active socket connections (guest users + registered users connected via socket)
+    for sid, conn in active_connections.items():
+        user_data = {
+            'id': conn.get('user_id'),
+            'username': conn.get('username', 'Guest'),
+            'gender': conn.get('gender', ''),
+            'country': conn.get('country', ''),
+            'is_guest': conn.get('is_guest', False),
+            'is_online': True,
+            'last_seen': datetime.fromtimestamp(conn.get('connected_at', time.time())).isoformat()
+        }
+        # Avoid duplicates
+        if user_data['id'] not in [u.get('id') for u in online_users]:
+            online_users.append(user_data)
+
+    # If current user is not in active_connections (e.g. just logged in via session), add them
+    if current_user and current_user['id'] not in [u.get('id') for u in online_users]:
+        online_users.insert(0, current_user)
+
+    # Get registered users from database who are online
+    try:
+        from database import fetch_all, USE_POSTGRES
+        if USE_POSTGRES:
+            registered_online = fetch_all('''
+                SELECT id, username, gender, age, country, state, is_online, last_seen
+                FROM users
+                WHERE is_online = 1
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''')
+        else:
+            registered_online = fetch_all('''
+                SELECT id, username, gender, age, country, state, is_online, last_seen
+                FROM users
+                WHERE is_online = 1
+                ORDER BY last_seen DESC
+                LIMIT 50
+            ''')
+
+        for user in registered_online:
+            user_dict = {
+                'id': user.get('id'),
+                'username': user.get('username'),
+                'gender': user.get('gender', ''),
+                'country': user.get('country', ''),
+                'is_guest': False,
+                'is_online': True,
+                'last_seen': user.get('last_seen')
+            }
+            # Avoid duplicates
+            if user_dict['id'] not in [u.get('id') for u in online_users]:
+                online_users.append(user_dict)
+    except Exception as e:
+        print(f"Error fetching registered online users: {e}")
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'users': online_users,
+            'count': len(online_users)
+        }
+    })
+
 @app.route('/admin/health/pages')
 def admin_health_pages():
     """Page views"""

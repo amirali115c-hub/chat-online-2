@@ -21,7 +21,11 @@ class Config:
     
     # SQLite specific
     if not USE_POSTGRES:
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+        # Parse SQLite URL properly
+        if DATABASE_URL.startswith('sqlite://'):
+            SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE_URL.replace('sqlite://', '').lstrip('/')
+        else:
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     

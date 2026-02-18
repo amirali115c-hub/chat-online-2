@@ -453,7 +453,7 @@ function startRandomChat() {
 }
 
 function loadUsers() {
-    // Fetch all online users (registered + guests)
+    // Fetch all online users (registered + guests + current user)
     fetch('/api/online/all')
         .then(response => response.json())
         .then(data => {
@@ -461,7 +461,15 @@ function loadUsers() {
             userList.innerHTML = '';
 
             if (data.success && data.data.users && data.data.users.length > 0) {
+                // Get current user info
+                var currentUsername = localStorage.getItem('chat_tab_' + getTabId() + '_username') || '{{ session.get("guest_username", "Guest") }}';
+
                 data.data.users.forEach(user => {
+                    // Skip showing current user in the list (they see themselves in the main welcome area)
+                    if (user.username === currentUsername && user.is_guest) {
+                        return; // Skip current guest user
+                    }
+
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.onclick = () => openChat(user.id);
@@ -471,21 +479,19 @@ function loadUsers() {
                             <span class="online-dot"></span>
                         </div>
                         <div class="user-info">
-                            <div class="user-name">${user.username} ${user.country ? '<span class="flag-icon flag-icon-' + user.country.toLowerCase() + '"></span>' : ''}</div>
+                            <div class="user-name">${user.username} ${user.country ? '<span class="flag-icon">📍</span>' : ''}</div>
                             <div class="user-meta">${user.is_guest ? 'Guest' : 'Online'}</div>
                         </div>
                     `;
                     userList.appendChild(card);
                 });
+
+                // Show empty state if no other users
+                if (userList.children.length === 0) {
+                    showEmptyState();
+                }
             } else {
-                // Show empty state if no users online
-                userList.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
-                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
-                        <p>No users online right now</p>
-                        <p style="font-size: 14px;">Start a random chat to meet someone!</p>
-                    </div>
-                `;
+                showEmptyState();
             }
         })
         .catch(error => {
