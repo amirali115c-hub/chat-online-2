@@ -1,0 +1,144 @@
+# Long-Term Memory
+
+## Project Shahzada - ClawForge AI Agent System
+
+### Overview
+A comprehensive AI agent system implementation project. ClawForge is a production-grade autonomous AI agent framework designed for full-stack operations including planning, execution, tool usage, computer control, content writing, coding, debugging, and document management.
+
+### Project Status
+- **Phase:** Backend Modules Installed (14 modules)
+- **Implementation:** Pending user "Start" command
+- **Total Files:** 14 backend modules + memory documentation
+- **Modules Installed:** identity, file_manager, planner, ollama_client, tools, memory, task_manager, api, blog_writer, code_runner, office_modules, risk_analyzer, permissions, security
+- **Status:** ALL TESTED AND WORKING
+
+### Security Layer (Just Installed)
+**PermissionManager** (`permissions.py`):
+- 10 permission categories (terminal, download, screen control, etc.)
+- Explicit YES/NO approval required
+- Risk levels + risk point tracking
+- Persistent logging (logs/approvals.jsonl)
+
+**Security Engine** (`security.py`) - 5 Defense Systems:
+1. MalwareDefenseLayer - Extension/signature/size scanning
+2. DataExfiltrationPrevention - Blocks sensitive paths (Win/Linux/Mac)
+3. PromptInjectionProtector - Detects 20+ injection patterns
+4. QuarantineSystem - Isolates suspicious files with manifest
+5. RiskScoringEngine - Cumulative risk, threshold alerts (25/50/100)
+
+**Risk Thresholds:**
+- Warning: 25 points
+- Pause: 50 points (requires approval)
+- Critical: 100 points (security block)
+
+### System Architecture
+
+#### Backend (Python)
+- **API Server:** FastAPI on http://127.0.0.1:8000
+- **Dashboard:** React on http://127.0.0.1:7860
+- **Communication:** WebSocket for real-time updates
+
+#### Security System
+- **Modes:** LOCKED (default), SAFE, DEVELOPER
+- **Risk Engine:** Point-based scoring (threshold: 50)
+- **Kill Switch:** Emergency stop via API endpoint
+- **Quarantine:** Suspicious file isolation
+- **Blocked Commands:** rm -rf, del /s, format, shutdown, reg add/delete, taskkill, Invoke-Expression, certutil, bitsadmin, curl | bash
+
+#### Task Management
+- **Statuses:** PLANNED, RUNNING, WAITING_APPROVAL, COMPLETED, FAILED, SECURITY_BLOCKED
+- **Lifecycle:** Create → Plan → Execute → Validate → Deliver → Log
+
+### Key Components
+
+#### Tools System (26 tools)
+1. **File Tools:** read_file, write_file, create_folder, move_file, delete_file
+2. **Terminal Tools:** run_command, list_processes, check_disk_usage
+3. **UI Tools:** take_screenshot, click, type_text, scroll, open_app, switch_window, copy_paste
+4. **Browser Tools:** open_url, extract_text, download_file
+5. **Code Tools:** run_python, run_node, lint_code
+6. **Office Tools:** create_docx, create_pdf, create_excel, update_excel, analyze_excel
+
+#### Memory System
+- **Short-Term:** Per-task session memory
+- **Long-Term:** Persists in user_profile.json
+- **Context Management:** Prevents context window overload
+
+#### Model Integration
+- **Ollama Support:** llama3, mistral, qwen2.5, deepseek-coder, codellama, phi3, mixtral
+- **Model Routing:** Auto-selects model based on task category
+
+### Workspace Structure
+```
+./workspace/
+├── tasks/           # Task folders with outputs
+├── downloads/       # Downloaded files
+├── output/          # Generated deliverables
+├── quarantine/      # Suspicious files
+├── logs/            # Execution logs
+└── memory/          # User profile and preferences
+```
+
+### Copywriting Rules (For Content Tasks)
+When user requests SEO/blog/email/copywriting:
+1. Read COPYWRITING_REMINDER.md
+2. Combine SEO structure with Amir's voice
+3. Personal experience ("I've seen...")
+4. Honest frustration, no sugarcoating
+5. Fragments for impact
+6. 95%+ contractions
+7. Casual sentence starters (Look, So, And, But...)
+8. Simple contrasts
+
+### Project Files Reference
+- `memory/project-shahzada.md` - Complete specification
+- `memory/shahzada-task1.md` - Phase 1 code documentation
+- `memory/shahzada-startup-scripts.md` - Startup scripts
+- `memory/shahzada-part4-part5.md` - Security + delivery pipeline
+- `memory/2026-02-18.md` - Implementation session notes
+
+### Implementation Trigger
+User command: **"Start"**
+- Creates full project structure
+- Writes all backend files
+- Writes frontend files
+- Sets up workspace directories
+- Generates configuration files
+
+### User Preferences
+- **Name:** Amir Ali
+- **Role:** Content writer/copywriter from Lahore, Pakistan
+- **No em dash** in answers
+- **Always commit to GitHub** after code changes
+- **Follow copywriting rules 100%** for writing tasks
+
+---
+
+*Last Updated: 2026-02-18*
+
+
+---
+
+## User Communication Preference (Added 2026-02-19)
+
+### Long-Running Task Updates
+If a task is taking more than **10 minutes** to complete, I MUST:
+
+1. **Update every 10 minutes** with progress
+2. **Report what I'm currently working on**
+3. **Estimate time remaining** if possible
+4. **Ask if they want to continue** waiting or make changes
+
+### Examples:
+- 'Still working on your request... (10 min elapsed)'
+- 'Processing your task... I've been at it for 20 minutes, about 5 more to go'
+- 'Almost done! Just finishing up the last step...'
+
+### Where to report:
+- In the current chat/conversation
+- With a clear progress update
+- No need to ask permission to update - just inform
+
+---
+
+*Last Updated: 2026-02-19 02:15 GMT+5*

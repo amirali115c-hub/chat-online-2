@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "created_at": null,
+  "last_updated": "2026-02-18T17:42:50.986479",
+  "user_preferences": {
+    "language": "English",
+    "output_verbosity": "standard",
+    "auto_save": true
+  },
+  "writing_tone": "professional",
+  "frequently_used_templates": [],
+  "common_workflows": [],
+  "task_history": [
+    {
+      "task_id": "test_task_001",
+      "goal": "",
+      "status": "COMPLETED",
+      "risk_score": 3,
+      "completed_at": "2026-02-18T17:42:10.045954"
+    },
+    {
+      "task_id": "test_task_001",
+      "goal": "",
+      "status": "COMPLETED",
+      "risk_score": 3,
+      "completed_at": "2026-02-18T17:42:50.986471"
+    }
+  ],
+  "saved_snippets": {},
+  "blocked_domains": [],
+  "allowed_domains": [],
+  "security_mode": "LOCKED"
+}

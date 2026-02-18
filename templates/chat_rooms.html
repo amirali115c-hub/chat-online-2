@@ -1,0 +1,1060 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Rooms - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-rooms-container {
+    display: flex;
+    height: calc(100vh - 70px - 60px);
+}
+
+/* Room List Sidebar */
+.rooms-sidebar {
+    width: 350px;
+    background: var(--white);
+    border-right: 1px solid var(--bg-200);
+    display: flex;
+    flex-direction: column;
+}
+
+.rooms-sidebar-header {
+    padding: var(--space-4) var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.rooms-sidebar-header h2 {
+    font-size: var(--text-xl);
+    color: var(--bg-800);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.rooms-sidebar-header h2 i {
+    color: var(--primary);
+}
+
+.category-filters {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--bg-100);
+    overflow-x: auto;
+}
+
+.category-btn {
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-50);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--bg-600);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-base);
+}
+
+.category-btn:hover, .category-btn.active {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.rooms-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-2);
+}
+
+.room-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    margin-bottom: var(--space-1);
+}
+
+.room-item:hover, .room-item.active {
+    background: var(--primary-lightest);
+}
+
+.room-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.room-icon i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.room-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.room-name {
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.room-meta {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.online-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+}
+
+/* Main Chat Area */
+.rooms-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-50);
+}
+
+.welcome-to-room {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-8);
+}
+
+.welcome-to-room i {
+    font-size: 80px;
+    color: var(--primary);
+    margin-bottom: var(--space-4);
+}
+
+.welcome-to-room h2 {
+    font-size: var(--text-2xl);
+    color: var(--bg-800);
+    margin-bottom: var(--space-2);
+}
+
+.welcome-to-room p {
+    color: var(--bg-500);
+    font-size: var(--text-lg);
+}
+
+/* Active Room Chat */
+.room-chat {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+}
+
+.room-chat.active {
+    display: flex;
+}
+
+.room-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    background: var(--white);
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.room-header-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.room-header-title h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+}
+
+.room-header-title span {
+    font-size: var(--text-xs);
+    color: var(--success);
+}
+
+.room-users-count {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--bg-600);
+    font-size: var(--text-sm);
+}
+
+.room-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.room-message {
+    max-width: 70%;
+    display: flex;
+    gap: var(--space-2);
+}
+
+.room-message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.room-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.room-message-avatar i {
+    color: var(--white);
+    font-size: var(--text-sm);
+}
+
+.room-message-content {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+.room-message.sent .room-message-content {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.room-message-user {
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--primary);
+    margin-bottom: var(--space-1);
+}
+
+.room-message.sent .room-message-user {
+    color: rgba(255,255,255,0.8);
+}
+
+.room-message-text {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.room-message-time {
+    font-size: var(--text-xs);
+    color: var(--bg-400);
+    margin-top: var(--space-1);
+}
+
+.room-message.sent .room-message-time {
+    text-align: right;
+    color: rgba(255,255,255,0.6);
+}
+
+.room-input-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    background: var(--white);
+    border-top: 1px solid var(--bg-200);
+}
+
+.room-input-area input {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    font-size: var(--text-base);
+    outline: none;
+    transition: all var(--transition-base);
+}
+
+.room-input-area input:focus {
+    border-color: var(--primary);
+}
+
+.room-input-area button {
+    padding: var(--space-3) var(--space-6);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.room-input-area button:hover {
+    transform: scale(1.05);
+}
+
+/* Online Users Panel */
+.online-users-panel {
+    width: 280px;
+    background: var(--white);
+    border-left: 1px solid var(--bg-200);
+    display: none;
+    flex-direction: column;
+}
+
+.online-users-panel.active {
+    display: flex;
+}
+
+.online-users-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.online-users-header h3 {
+    font-size: var(--text-base);
+    color: var(--bg-800);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.online-users-header h3 i {
+    color: var(--success);
+    animation: pulse 2s infinite;
+}
+
+.online-count {
+    font-size: var(--text-sm);
+    color: var(--bg-500);
+}
+
+.online-users-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-2);
+}
+
+.online-user-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.online-user-item:hover {
+    background: var(--bg-50);
+}
+
+.online-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.online-user-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.online-user-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.online-user-avatar i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.online-user-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.online-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.online-user-name {
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.online-user-meta {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+/* User Profile Modal */
+.user-profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-profile-modal.active {
+    display: flex;
+}
+
+.user-profile-card {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    width: 350px;
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+}
+
+.user-profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+}
+
+.user-profile-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.user-profile-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.user-profile-avatar i {
+    color: var(--white);
+    font-size: 40px;
+}
+
+.user-profile-name {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--bg-800);
+    margin-bottom: var(--space-2);
+}
+
+.user-profile-info {
+    color: var(--bg-500);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+}
+
+.user-profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-6);
+    margin-bottom: var(--space-4);
+    padding: var(--space-4);
+    background: var(--bg-50);
+    border-radius: var(--radius-lg);
+}
+
+.user-profile-stat {
+    text-align: center;
+}
+
+.user-profile-stat-num {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--primary);
+}
+
+.user-profile-stat-label {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+.user-profile-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+}
+
+.user-profile-actions button {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-message {
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+}
+
+.btn-message:hover {
+    transform: scale(1.05);
+}
+
+.btn-close {
+    background: var(--bg-100);
+    color: var(--bg-600);
+    border: none;
+}
+
+.btn-close:hover {
+    background: var(--bg-200);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Create Room Modal -->
+<div id="create-room-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px; padding: 30px; background: white; border-radius: 20px; margin: auto;">
+        <h2 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Create Private Room</h2>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Room Name</label>
+            <input type="text" id="new-room-name" placeholder="Enter room name" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Room Type</label>
+            <select id="new-room-type" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px;">
+                <option value="public">Public Room</option>
+                <option value="private">Private Room</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Invite Friends (optional)</label>
+            <input type="text" id="invite-friends" placeholder="Enter usernames separated by comma" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px;">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="createRoom()" class="btn btn-primary" style="flex: 1;">Create Room</button>
+            <button onclick="closeCreateRoomModal()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-rooms-container">
+    <!-- Sidebar with Room List -->
+    <aside class="rooms-sidebar">
+        <div class="rooms-sidebar-header">
+            <h2><i class="fas fa-comments"></i> Chat Rooms</h2>
+            <button class="btn btn-primary btn-sm" onclick="showCreateRoomModal()" style="margin-top: 10px;">
+                <i class="fas fa-plus"></i> Create Room
+            </button>
+        </div>
+
+        <div class="category-filters">
+            <button class="category-btn active" onclick="filterRooms('all')">All</button>
+            <button class="category-btn" onclick="filterRooms('dating')">Dating</button>
+            <button class="category-btn" onclick="filterRooms('friends')">Friends</button>
+            <button class="category-btn" onclick="filterRooms('general')">General</button>
+            <button class="category-btn" onclick="filterRooms('interest')">Interest</button>
+        </div>
+
+        <div class="rooms-list" id="rooms-list">
+            <!-- Rooms will be populated here -->
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="rooms-main">
+        <!-- Welcome Screen -->
+        <div class="welcome-to-room" id="welcome-screen">
+            <i class="fas fa-comments"></i>
+            <h2>Welcome to Chat Rooms!</h2>
+            <p>Select a room from the left to start chatting with others</p>
+        </div>
+
+        <!-- Room Chat Interface -->
+        <div class="room-chat" id="room-chat">
+            <div class="room-header">
+                <div class="room-header-info">
+                    <div class="room-icon" id="active-room-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="room-header-title">
+                        <h3 id="active-room-name">Room Name</h3>
+                        <span><span class="online-dot"></span> Online</span>
+                    </div>
+                </div>
+                <div class="room-users-count" onclick="toggleOnlineUsers()">
+                    <i class="fas fa-users"></i>
+                    <span id="room-user-count">0</span> users
+                </div>
+            </div>
+
+            <div class="room-messages" id="room-messages">
+                <!-- Messages will appear here -->
+            </div>
+
+            <div class="room-input-area">
+                <input type="text" id="room-message-input" placeholder="Type a message..." onkeypress="handleRoomMessage(event)">
+                <button onclick="sendRoomMessage()">Send</button>
+            </div>
+        </div>
+
+        <!-- Online Users Panel -->
+        <aside class="online-users-panel" id="online-users-panel">
+            <div class="online-users-header">
+                <h3><i class="fas fa-circle"></i> Online Users</h3>
+                <span class="online-count" id="online-count">0</span>
+            </div>
+            <div class="online-users-list" id="online-users-list">
+                <!-- Users will be populated here -->
+            </div>
+        </aside>
+
+        <!-- User Profile Modal -->
+        <div class="user-profile-modal" id="user-profile-modal">
+            <div class="user-profile-card">
+                <div class="user-profile-avatar" id="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-profile-name" id="profile-name">User Name</div>
+                <div class="user-profile-info" id="profile-info">Age | Country</div>
+                <div class="user-profile-stats">
+                    <div class="user-profile-stat">
+                        <div class="user-profile-stat-num" id="profile-messages">0</div>
+                        <div class="user-profile-stat-label">Messages</div>
+                    </div>
+                    <div class="user-profile-stat">
+                        <div class="user-profile-stat-num" id="profile-friends">0</div>
+                        <div class="user-profile-stat-label">Friends</div>
+                    </div>
+                </div>
+                <div class="user-profile-actions">
+                    <button class="btn-message" onclick="sendPrivateMessage()">
+                        <i class="fas fa-envelope"></i> Message
+                    </button>
+                    <button class="btn-message" onclick="addAsFriend()">
+                        <i class="fas fa-user-plus"></i> Add Friend
+                    </button>
+                    <button class="btn-close" onclick="closeUserProfile()">Close</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Room data - loaded dynamically from API
+let rooms = [];
+let roomStats = {}; // Store real user counts per room
+
+let currentRoom = null;
+const currentUser = sessionStorage.getItem('guest_username') || 'Guest';
+
+// Sample messages
+const sampleMessages = [
+    { user: 'Sarah_99', text: 'Hey everyone! How are you all doing today?' },
+    { user: 'John_Cool', text: 'Pretty good! Just hanging out here.' },
+    { user: 'Emma_W', text: 'Hello! New here, nice to meet you all!' },
+    { user: 'Mike_T', text: 'Welcome Emma! This is a great community.' }
+];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification for guest users
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (isGuest === 'true') {
+        const ageVerified = sessionStorage.getItem('age_verified');
+        if (!ageVerified) {
+            window.location.href = '/';
+            return;
+        }
+    }
+
+    loadRooms();
+});
+
+// Load rooms from API
+async function loadRooms() {
+    try {
+        // Fetch room definitions and stats in parallel
+        const [roomsRes, statsRes] = await Promise.all([
+            fetch('/api/rooms'),
+            fetch('/api/rooms/stats')
+        ]);
+
+        const roomsData = await roomsRes.json();
+        const statsData = await statsRes.json();
+
+        if (roomsData.success) {
+            rooms = roomsData.data;
+        }
+
+        if (statsRes.ok && statsData.success) {
+            roomStats = statsData.data;
+        }
+
+        renderRooms('all');
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        // Fallback to empty render if API fails
+        renderRooms('all');
+    }
+}
+
+function renderRooms(category) {
+    const roomsList = document.getElementById('rooms-list');
+    roomsList.innerHTML = '';
+
+    const filteredRooms = category === 'all' ? rooms : rooms.filter(r => r.category === category);
+
+    if (filteredRooms.length === 0) {
+        roomsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>Loading rooms...</p>
+            </div>
+        `;
+        return;
+    }
+
+    filteredRooms.forEach(room => {
+        // Get real user count from stats, fallback to 0
+        const onlineCount = roomStats[room.id] ? roomStats[room.id].users : 0;
+        const displayCount = onlineCount > 0 ? onlineCount : Math.floor(Math.random() * 50) + 5; // Fallback for rooms with no users yet
+
+        const roomDiv = document.createElement('div');
+        roomDiv.className = 'room-item';
+        roomDiv.onclick = () => joinRoom(room.id);
+        roomDiv.innerHTML = `
+            <div class="room-icon" style="background: ${room.gradient || 'var(--primary)'}">
+                <i class="fas fa-${room.icon || 'comments'}"></i>
+            </div>
+            <div class="room-details">
+                <div class="room-name">${room.name}</div>
+                <div class="room-meta">
+                    <span class="online-dot"></span> <span class="room-online-count">${displayCount}</span> online
+                </div>
+            </div>
+        `;
+        roomsList.appendChild(roomDiv);
+    });
+}
+
+function filterRooms(category) {
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    renderRooms(category);
+}
+
+function joinRoom(roomId) {
+    // Check if logged in
+    if (!sessionStorage.getItem('is_guest')) {
+        alert('Please login first!');
+        window.location.href = '/';
+        return;
+    }
+
+    currentRoom = rooms.find(r => r.id === roomId);
+
+    // Update UI
+    document.querySelectorAll('.room-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // Show chat interface
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('room-chat').classList.add('active');
+
+    // Update room info
+    document.getElementById('active-room-name').textContent = currentRoom.name;
+    
+    // Get real user count from stats
+    const onlineCount = roomStats[roomId] ? roomStats[roomId].users : 0;
+    document.getElementById('room-user-count').textContent = onlineCount > 0 ? onlineCount : '~';
+    document.getElementById('active-room-icon').style.background = currentRoom.gradient || 'var(--primary)';
+
+    // Load messages
+    loadRoomMessages();
+}
+
+function loadRoomMessages() {
+    const messagesContainer = document.getElementById('room-messages');
+    messagesContainer.innerHTML = '';
+
+    sampleMessages.forEach(msg => {
+        addRoomMessage(msg.user, msg.text);
+    });
+}
+
+function sendRoomMessage() {
+    const input = document.getElementById('room-message-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    addRoomMessage(currentUser, message);
+    input.value = '';
+
+    // Simulate response
+    setTimeout(() => {
+        const responses = [
+            'That\'s interesting!',
+            'Haha yeah!',
+            'I agree!',
+            'Nice one!',
+            'LOL',
+            'True that!'
+        ];
+        const randomUser = 'User_' + Math.floor(Math.random() * 1000);
+        addRoomMessage(randomUser, responses[Math.floor(Math.random() * responses.length)]);
+    }, 1500);
+}
+
+function addRoomMessage(user, text) {
+    const container = document.getElementById('room-messages');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isSent = user === currentUser;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'room-message ' + (isSent ? 'sent' : 'received');
+    messageDiv.innerHTML = `
+        <div class="room-message-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="room-message-content">
+            ${!isSent ? `<div class="room-message-user">${user}</div>` : ''}
+            <div class="room-message-text">${escapeHtml(text)}</div>
+            <div class="room-message-time">${time}</div>
+        </div>
+    `;
+
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function handleRoomMessage(e) {
+    if (e.key === 'Enter') {
+        sendRoomMessage();
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Create Room Functions
+function showCreateRoomModal() {
+    if (!sessionStorage.getItem('is_guest')) {
+        alert('Please login first!');
+        window.location.href = '/';
+        return;
+    }
+    document.getElementById('create-room-modal').style.display = 'flex';
+}
+
+function closeCreateRoomModal() {
+    document.getElementById('create-room-modal').style.display = 'none';
+}
+
+function createRoom() {
+    const roomName = document.getElementById('new-room-name').value.trim();
+    const roomType = document.getElementById('new-room-type').value;
+    const invites = document.getElementById('invite-friends').value.trim();
+
+    if (!roomName) {
+        alert('Please enter a room name');
+        return;
+    }
+
+    // Create new room
+    const newRoom = {
+        id: rooms.length + 1,
+        name: roomName,
+        category: roomType === 'private' ? 'private' : 'general',
+        icon: 'lock' + (roomType === 'private' ? '-open' : ''),
+        gradient: 'linear-gradient(135deg, #EC4899, #F472B6)',
+        online: 1,
+        description: 'Private room',
+        isPrivate: roomType === 'private',
+        owner: currentUser,
+        members: [currentUser]
+    };
+
+    // Add to rooms array
+    rooms.unshift(newRoom);
+
+    // Re-render rooms list
+    renderRooms('all');
+
+    // Close modal
+    closeCreateRoomModal();
+
+    // Reset form
+    document.getElementById('new-room-name').value = '';
+    document.getElementById('invite-friends').value = '';
+    document.getElementById('new-room-type').value = 'public';
+
+    // Join the new room
+    alert('Room created successfully!');
+
+    // Trigger join
+    const roomDiv = document.querySelector('.room-item');
+    if (roomDiv) {
+        roomDiv.click();
+    }
+}
+
+// My Rooms section
+function showMyRooms() {
+    const myRooms = rooms.filter(r => r.owner === currentUser || (r.members && r.members.includes(currentUser)));
+    alert('My Rooms: ' + myRooms.map(r => r.name).join(', '));
+}
+
+// Sample online users in the room with gender
+const roomOnlineUsers = [
+    { id: 1, username: 'Sarah_99', gender: 'female', age: 24, country: 'USA', messages: 156, friends: 23 },
+    { id: 2, username: 'John_Cool', gender: 'male', age: 28, country: 'UK', messages: 89, friends: 15 },
+    { id: 3, username: 'Emma_W', gender: 'female', age: 22, country: 'Canada', messages: 234, friends: 45 },
+    { id: 4, username: 'Mike_T', gender: 'male', age: 30, country: 'Australia', messages: 67, friends: 12 },
+    { id: 5, username: 'Lily_Rose', gender: 'female', age: 26, country: 'France', messages: 189, friends: 34 },
+    { id: 6, username: 'David_B', gender: 'male', age: 25, country: 'Germany', messages: 45, friends: 8 },
+    { id: 7, username: 'Cherry_22', gender: 'female', age: 23, country: 'Japan', messages: 312, friends: 56 },
+    { id: 8, username: 'Alex_01', gender: 'male', age: 27, country: 'Spain', messages: 78, friends: 19 }
+];
+
+let selectedRoomUser = null;
+
+function toggleOnlineUsers() {
+    const panel = document.getElementById('online-users-panel');
+    panel.classList.toggle('active');
+
+    if (panel.classList.contains('active')) {
+        renderOnlineUsers();
+    }
+}
+
+function renderOnlineUsers() {
+    const list = document.getElementById('online-users-list');
+    const count = document.getElementById('online-count');
+    list.innerHTML = '';
+
+    count.textContent = roomOnlineUsers.length;
+
+    roomOnlineUsers.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'online-user-item';
+        item.onclick = () => showRoomUserProfile(user);
+        item.innerHTML = `
+            <div class="online-user-avatar ${user.gender}">
+                <i class="fas fa-user"></i>
+                <div class="online-user-status"></div>
+            </div>
+            <div class="online-user-info">
+                <div class="online-user-name">${user.username}</div>
+                <div class="online-user-meta">${user.age} | ${user.country}</div>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function showRoomUserProfile(user) {
+    selectedRoomUser = user;
+
+    // Update modal content
+    const avatar = document.getElementById('profile-avatar');
+    avatar.className = 'user-profile-avatar ' + user.gender;
+
+    document.getElementById('profile-name').textContent = user.username;
+    document.getElementById('profile-info').textContent = `${user.age} years old | ${user.country}`;
+    document.getElementById('profile-messages').textContent = user.messages;
+    document.getElementById('profile-friends').textContent = user.friends;
+
+    // Show modal
+    document.getElementById('user-profile-modal').classList.add('active');
+}
+
+function closeUserProfile() {
+    document.getElementById('user-profile-modal').classList.remove('active');
+    selectedRoomUser = null;
+}
+
+function sendPrivateMessage() {
+    if (!selectedRoomUser) return;
+
+    const currentUser = sessionStorage.getItem('guest_username') || 'Guest';
+
+    if (!currentUser || currentUser === 'Guest') {
+        alert('Please login first to send messages!');
+        return;
+    }
+
+    // Redirect to inbox with user info
+    sessionStorage.setItem('message_to_user', JSON.stringify(selectedRoomUser));
+    window.location.href = '/inbox';
+}
+
+function addAsFriend() {
+    if (!selectedRoomUser) return;
+
+    const currentUser = sessionStorage.getItem('guest_username') || 'Guest';
+
+    if (!currentUser || currentUser === 'Guest') {
+        alert('Please login first to add friends!');
+        return;
+    }
+
+    alert(`Friend request sent to ${selectedRoomUser.username}!`);
+    closeUserProfile();
+}
+</script>
+{% endblock %}

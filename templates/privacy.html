@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - Chat Online{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-lock"></i> Privacy Policy</h1>
+        <p>How we protect your privacy</p>
+    </div>
+    <div class="content-page-content">
+        <h2>Information We Collect</h2>
+        <p>We collect minimal information needed to provide our service - username, gender, age, and country. No personal email or phone required for basic use.</p>
+
+        <h2>How We Use Your Information</h2>
+        <ul>
+            <li>To provide chat services</li>
+            <li>To improve user experience</li>
+            <li>To enforce our terms and policies</li>
+        </ul>
+
+        <h2>Data Protection</h2>
+        <p>We implement industry-standard security measures to protect your data. However, no method of transmission over the internet is 100% secure.</p>
+
+        <h2>Third Parties</h2>
+        <p>We do not sell, trade, or otherwise transfer your information to outside parties.</p>
+
+        <h2>Cookies</h2>
+        <p>We use cookies to enhance your experience. You can disable cookies in your browser settings.</p>
+
+        <h2>Contact Us</h2>
+        <p>If you have questions about this policy, please <a href="{{ url_for('contact_page') }}">contact us</a>.</p>
+    </div>
+</div>
+{% endblock %}

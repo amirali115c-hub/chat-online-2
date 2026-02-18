@@ -1,0 +1,14 @@
+{
+  "project_name": "TestFastAPI",
+  "packaged_at": "2026-02-18T18:16:53.254870",
+  "total_files": 6,
+  "total_dirs": 6,
+  "files": [
+    ".env.example",
+    ".gitignore",
+    "config.yaml",
+    "main.py",
+    "README.md",
+    "requirements.txt"
+  ]
+}

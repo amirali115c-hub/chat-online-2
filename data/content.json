@@ -1,0 +1,38 @@
+{
+  "faqs": [
+    {
+      "question": "Is Chat Online free?",
+      "answer": "Yes! Chat Online is completely free to use. No registration required for guest users. Simply enter a username, select your details, and start chatting instantly.",
+      "icon": "fa-question-circle"
+    },
+    {
+      "question": "How do I start chatting?",
+      "answer": "Simply enter a username, select your gender and age, choose your country, and click \"Start Chatting\" to begin. No registration required - you can start chatting immediately as a guest user.",
+      "icon": "fa-comment"
+    },
+    {
+      "question": "Is this site safe?",
+      "answer": "We take safety seriously with content moderation and anti-bot protection to ensure a safe environment. However, always practice safe chatting habits and never share personal information with strangers.",
+      "icon": "fa-shield-alt"
+    },
+    {
+      "question": "Can I chat with specific gender?",
+      "answer": "Yes! Use the gender filter in random chat settings to find users of a specific gender. This helps you have conversations with the type of people you're interested in meeting.",
+      "icon": "fa-venus-mars"
+    }
+  ],
+  "blogs": [
+    {
+      "title": "How to Stay Safe Online",
+      "category": "Safety",
+      "date": "2026-02-15",
+      "content": "Essential tips for protecting yourself while chatting with strangers online.\n\n## 1. Protect Your Personal Information\n\nNever share your:\n- Full name and address\n- Phone number\n- Email address\n- Social media profiles\n- Financial information\n\n## 2. Use a Username, Not Your Real Name\n\nCreate a unique username that doesn't reveal your identity.\n\n## 3. Be Cautious with Links\n\nNever click on suspicious links shared by strangers.\n\n## 4. Report Suspicious Behavior\n\nIf someone makes you uncomfortable, use the report button immediately.\n\nStay safe and enjoy chatting responsibly!"
+    },
+    {
+      "title": "Making Friends Through Chat",
+      "category": "Community",
+      "date": "2026-02-12",
+      "content": "How to make meaningful connections in chat rooms.\n\n## Be Genuine\n\nAuthenticity attracts people. Be yourself and others will respond positively.\n\n## Show Interest\n\nAsk questions about the other person's interests, hobbies, and experiences.\n\n## Share About Yourself\n\nDon't just ask - share about yourself too.\n\n## Be Patient\n\nBuilding friendships takes time. Don't rush things."
+    }
+  ]
+}

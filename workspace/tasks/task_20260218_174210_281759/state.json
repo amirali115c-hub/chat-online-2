@@ -1,0 +1,19 @@
+{
+  "task_id": "task_20260218_174210_281759",
+  "goal": "Test task for demonstration",
+  "category": "general",
+  "status": "PLANNED",
+  "progress": 0,
+  "current_step": "",
+  "created_at": "2026-02-18T17:42:10.046660",
+  "started_at": null,
+  "completed_at": null,
+  "risk_score": 0,
+  "pending_approvals": [],
+  "files_created": [],
+  "logs_count": 1,
+  "error": null,
+  "result": null,
+  "paused": false,
+  "cancelled": false
+}

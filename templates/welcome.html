@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.welcome-page {
+    min-height: calc(100vh - 70px - 60px);
+    display: flex;
+    background: linear-gradient(135deg, var(--bg-50) 0%, var(--white) 100%);
+}
+
+.welcome-sidebar {
+    width: 300px;
+    background: var(--white);
+    border-right: 1px solid var(--bg-200);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.welcome-sidebar-header {
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.welcome-sidebar-header h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+    margin-bottom: var(--space-1);
+}
+
+.welcome-sidebar-header p {
+    font-size: var(--text-sm);
+    color: var(--bg-500);
+}
+
+.random-chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.random-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.action-icons-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+}
+
+.action-icon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    background: var(--bg-50);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--bg-600);
+    font-size: var(--text-xs);
+}
+
+.action-icon-btn:hover, .action-icon-btn.active {
+    background: var(--primary-lightest);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.action-icon-btn i {
+    font-size: var(--text-xl);
+}
+
+.action-icon-btn .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--error);
+    color: var(--white);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: var(--font-bold);
+}
+
+.gender-filter-row {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.filter-btn {
+    flex: 1;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-50);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--bg-600);
+    transition: all var(--transition-base);
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.user-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--white);
+    border: 2px solid var(--bg-100);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.user-card:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.user-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.user-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.user-avatar i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.user-meta {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+.welcome-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8);
+    text-align: center;
+}
+
+.welcome-icon-large {
+    width: 150px;
+    height: 150px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-8);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.welcome-icon-large i {
+    font-size: 64px;
+    color: var(--white);
+}
+
+.welcome-title {
+    font-size: var(--text-3xl);
+    color: var(--bg-800);
+    margin-bottom: var(--space-4);
+}
+
+.welcome-title span {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-subtitle {
+    font-size: var(--text-lg);
+    color: var(--bg-500);
+    max-width: 600px;
+    margin-bottom: var(--space-8);
+}
+
+.welcome-features {
+    display: flex;
+    gap: var(--space-8);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.welcome-feature {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.welcome-feature i {
+    font-size: var(--text-2xl);
+    color: var(--primary);
+}
+
+.welcome-note {
+    margin-top: var(--space-8);
+    padding: var(--space-4) var(--space-6);
+    background: #FEF3C7;
+    border-radius: var(--radius-lg);
+    color: #78350F;
+    font-size: var(--text-sm);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-page">
+    <!-- Left Sidebar -->
+    <aside class="welcome-sidebar">
+        <div class="welcome-sidebar-header">
+            <h3>Find Someone to Chat</h3>
+            <p>Browse online users</p>
+        </div>
+
+        <!-- Random Chat Button -->
+        <button class="random-chat-btn" onclick="startRandomChat()">
+            <i class="fas fa-dice"></i>
+            Random Chat
+        </button>
+
+        <!-- Action Icons -->
+        <div class="action-icons-grid">
+            <button class="action-icon-btn active" title="Online">
+                <i class="fas fa-circle"></i>
+                <span>Online</span>
+            </button>
+            <button class="action-icon-btn" title="Gender Filter">
+                <i class="fas fa-venus-mars"></i>
+                <span>Gender</span>
+            </button>
+            <button class="action-icon-btn" title="History">
+                <i class="fas fa-history"></i>
+                <span>History</span>
+            </button>
+            <button class="action-icon-btn" title="Search">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </button>
+            <button class="action-icon-btn" title="Inbox">
+                <i class="fas fa-envelope"></i>
+                <span>Inbox</span>
+                <span class="badge">7</span>
+            </button>
+            <button class="action-icon-btn" title="Friends">
+                <i class="fas fa-heart"></i>
+                <span>Friends</span>
+            </button>
+            <button class="action-icon-btn" title="Random">
+                <i class="fas fa-random"></i>
+                <span>Random</span>
+            </button>
+            <button class="action-icon-btn" title="Settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </div>
+
+        <!-- Gender Filter -->
+        <div class="gender-filter-row">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn"><i class="fas fa-male"></i></button>
+            <button class="filter-btn"><i class="fas fa-female"></i></button>
+        </div>
+
+        <!-- User List -->
+        <div class="user-list" id="user-list">
+            <!-- Users will be populated by JavaScript -->
+        </div>
+    </aside>
+
+    <!-- Main Welcome Panel -->
+    <main class="welcome-main">
+        <div class="welcome-icon-large">
+            <i class="fas fa-comments"></i>
+        </div>
+
+        <h1 class="welcome-title">
+            Welcome <span id="username-display">User</span> among us!
+        </h1>
+
+        <p class="welcome-subtitle">
+            Chat Online is the best place to find new people to talk to.
+            Chat with strangers or make new friends from around the world.
+        </p>
+
+        <div class="welcome-features">
+            <div class="welcome-feature">
+                <i class="fas fa-shield-alt"></i>
+                <span>Safe & Moderated</span>
+            </div>
+            <div class="welcome-feature">
+                <i class="fas fa-globe"></i>
+                <span>Global Community</span>
+            </div>
+            <div class="welcome-feature">
+                <i class="fas fa-clock"></i>
+                <span>24/7 Available</span>
+            </div>
+            <div class="welcome-feature">
+                <i class="fas fa-ban"></i>
+                <span>100% Free</span>
+            </div>
+        </div>
+
+        <div class="welcome-note">
+            <i class="fas fa-exclamation-triangle"></i>
+            If you are inactive for more than 3 minutes, you will be automatically logged out.
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Generate unique tab ID if not exists
+function getTabId() {
+    var tabId = localStorage.getItem('chat_tab_id');
+    if (!tabId) {
+        tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('chat_tab_id', tabId);
+    }
+    return tabId;
+}
+
+// Load user data
+document.addEventListener('DOMContentLoaded', function() {
+    // Check URL parameter first
+    var urlParams = new URLSearchParams(window.location.search);
+    var verified = urlParams.get('verified');
+    var tabId = getTabId();
+    
+    // Set localStorage from URL param (per-tab)
+    if (verified === '1') {
+        localStorage.setItem('chat_tab_' + tabId + '_age_verified', 'true');
+        localStorage.setItem('chat_tab_' + tabId + '_username', '{{ session.get("guest_username", "Guest") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_gender', '{{ session.get("guest_gender", "") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_country', '{{ session.get("guest_country", "") }}');
+        localStorage.setItem('chat_tab_' + tabId + '_is_guest', '{{ "true" if session.get("is_guest") else "false" }}');
+    }
+    
+    // Check age verification (per-tab)
+    var ageVerified = localStorage.getItem('chat_tab_' + tabId + '_age_verified');
+    
+    if (!ageVerified) {
+        // User hasn't agreed to terms, redirect to home
+        window.location.href = '/';
+        return;
+    }
+
+    var username = localStorage.getItem('chat_tab_' + tabId + '_username') || 'Guest';
+    document.getElementById('username-display').textContent = username;
+
+    // Initialize socket connection if not already connected
+    if (typeof initializeSocket === 'function') {
+        if (!socket || !socket.connected) {
+            initializeSocket();
+        }
+    }
+
+    // Load online users after a short delay to ensure socket is connected
+    setTimeout(function() {
+        loadUsers();
+    }, 500);
+
+    // Setup action icon clicks
+    setupActionIcons();
+    
+    // Refresh users every 10 seconds
+    setInterval(function() {
+        loadUsers();
+    }, 10000);
+});
+
+function startRandomChat() {
+    window.location.href = '{{ url_for("random_chat") }}';
+}
+
+function loadUsers() {
+    // Fetch all online users (registered + guests + current user)
+    fetch('/api/online/all')
+        .then(response => response.json())
+        .then(data => {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+
+            if (data.success && data.data.users && data.data.users.length > 0) {
+                // Get current user info
+                var currentUsername = localStorage.getItem('chat_tab_' + getTabId() + '_username') || '{{ session.get("guest_username", "Guest") }}';
+
+                data.data.users.forEach(user => {
+                    // Check if this is the current user
+                    var isCurrentUser = (user.username === currentUsername);
+                    
+                    // Show all users including current user
+                    const card = document.createElement('div');
+                    card.className = 'user-card' + (isCurrentUser ? ' current-user' : '');
+                    card.onclick = () => openChat(user.id);
+                    
+                    var userLabel = isCurrentUser ? '(You)' : (user.is_guest ? 'Guest' : 'Online');
+
+                    card.innerHTML = `
+                        <div class="user-avatar ${user.gender || 'unknown'}">
+                            <i class="fas fa-user"></i>
+                            <span class="online-dot"></span>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">${user.username} ${isCurrentUser ? '<span style="color: var(--primary); font-size: 10px;">(You)</span>' : ''} ${user.country ? '<span class="flag-icon">📍</span>' : ''}</div>
+                            <div class="user-meta">${userLabel}</div>
+                        </div>
+                    `;
+                    userList.appendChild(card);
+                });
+            } else {
+                // Show empty state if no users online
+                userList.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>No users online right now</p>
+                        <p style="font-size: 14px;">Start a random chat to meet someone!</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading users:', error);
+            showEmptyState();
+        });
+}
+
+function showEmptyState() {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+            <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Loading users...</p>
+        </div>
+    `;
+}
+
+function setupActionIcons() {
+    document.querySelectorAll('.action-icon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const title = this.getAttribute('title');
+
+            switch(title) {
+                case 'Inbox':
+                    window.location.href = '{{ url_for("inbox_page") }}';
+                    break;
+                case 'Friends':
+                    window.location.href = '{{ url_for("friends_page") }}';
+                    break;
+                case 'History':
+                    window.location.href = '{{ url_for("history_page") }}';
+                    break;
+                case 'Settings':
+                    window.location.href = '{{ url_for("settings_page") }}';
+                    break;
+                case 'Random':
+                    window.location.href = '{{ url_for("random_chat") }}';
+                    break;
+            }
+        });
+    });
+}
+
+function openChat(userId) {
+    window.location.href = '{{ url_for("chat_1on1_page") }}?user=' + userId;
+}
+</script>
+{% endblock %}

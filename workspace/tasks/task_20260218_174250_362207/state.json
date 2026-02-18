@@ -1,0 +1,19 @@
+{
+  "task_id": "task_20260218_174250_362207",
+  "goal": "Test task for demonstration",
+  "category": "general",
+  "status": "COMPLETED",
+  "progress": 100,
+  "current_step": "Halfway done",
+  "created_at": "2026-02-18T17:42:50.996254",
+  "started_at": "2026-02-18T17:42:50.999292",
+  "completed_at": "2026-02-18T17:42:51.000688",
+  "risk_score": 0,
+  "pending_approvals": [],
+  "files_created": [],
+  "logs_count": 3,
+  "error": null,
+  "result": "Test completed successfully",
+  "paused": false,
+  "cancelled": false
+}

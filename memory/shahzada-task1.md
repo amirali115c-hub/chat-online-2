@@ -1176,6 +1176,121 @@ def get_stats(self) -> dict:
 
 ---
 
+## api.py - FastAPI Backend
+
+**File:** `api.py`
+
+### Purpose
+FastAPI backend for ClawForge dashboard.
+Host: http://127.0.0.1:7860
+
+### Endpoints
+
+#### Health
+```
+GET  /                       → Health check
+GET  /api/status             → System status (dashboard home)
+```
+
+#### Tasks
+```
+POST /api/tasks              → Create task
+GET  /api/tasks              → List all tasks
+GET  /api/tasks/{id}         → Get task
+POST /api/tasks/{id}/start   → Start task
+POST /api/tasks/{id}/pause   → Pause task
+POST /api/ttasks/{id}/resume → Resume task
+POST /api/tasks/{id}/cancel  → Cancel task
+POST /api/tasks/{id}/approve → Grant approval
+POST /api/tasks/{id}/deny    → Deny approval
+```
+
+#### Approvals
+```
+GET  /api/approvals          → Get all pending approvals
+```
+
+#### Kill Switch
+```
+POST /api/kill               → Activate kill switch
+POST /api/kill/reset         → Reset kill switch
+```
+
+#### Logs
+```
+GET  /api/logs               → Get recent log entries
+```
+
+#### File Explorer
+```
+GET  /api/files              → List workspace directory
+```
+
+#### Models
+```
+GET  /api/models             → Get available models
+POST /api/models/select      → Change active model
+```
+
+#### Security
+```
+GET  /api/security           → Get security status
+POST /api/security/mode       → Change security mode
+```
+
+#### WebSocket
+```
+WS   /ws/logs               → Real-time log streaming
+```
+
+### Status Response
+Returns:
+- agent name and version
+- security mode
+- active model
+- risk score
+- kill switch status
+- CPU/RAM usage
+- task statistics
+- active task
+- pending approvals
+- Ollama status
+- timestamp
+
+### Task Creation Request
+```python
+class CreateTaskRequest(BaseModel):
+    goal: str
+    category: str = "general"
+```
+
+### WebSocket Events
+- task_created
+- task_started
+- task_paused
+- task_resumed
+- task_cancelled
+- approval_granted
+- approval_denied
+- kill_switch_activated
+- kill_switch_reset
+- model_changed
+- security_mode_changed
+- connected
+
+### App Startup
+- Ensures workspace folders exist
+- Prints agent info and dashboard URL
+
+### Entry Point
+```python
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("api:app", host="127.0.0.1", port=7860, reload=True)
+```
+
+---
+
 ## Confirmation
 
 **Phase 1 Code Received:**
@@ -1187,7 +1302,8 @@ def get_stats(self) -> dict:
 - ✅ tools.py
 - ✅ memory.py
 - ✅ task_manager.py
+- ✅ api.py
 
-**Total Lines:** ~2,400+
+**Total Lines:** ~3,400+
 **Status:** Saved to memory
 **Ready for:** More code or "Start" command

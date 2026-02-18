@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}
+
+{% block content %}
+<!-- Three Column Layout -->
+<div class="entry-three-columns">
+    <!-- LEFT: Content Box -->
+    <div class="entry-left-content">
+        <div class="content-box gradient-border-card">
+            <h3><i class="fas fa-info-circle"></i> About Chat Online</h3>
+            <p>Welcome to Chat Online - the best platform to meet new people from around the world!</p>
+            <ul>
+                <li><i class="fas fa-check"></i> 100% Free to use</li>
+                <li><i class="fas fa-check"></i> Chat with strangers instantly</li>
+                <li><i class="fas fa-check"></i> Make new friends worldwide</li>
+                <li><i class="fas fa-check"></i> Random chat feature</li>
+                <li><i class="fas fa-check"></i> Join chat rooms</li>
+                <li><i class="fas fa-check"></i> Private messaging</li>
+            </ul>
+            <div class="content-features">
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safe & Secure</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Friendly</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Global Community</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER: Welcome Box with Form -->
+    <div class="entry-center">
+        <div class="welcome-box">
+            <div class="welcome-logo">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <h1>Welcome to Chat Online</h1>
+            <p class="welcome-subtitle">18+ Free Chat Rooms</p>
+
+            <form action="/guest-login" method="POST" id="entry-form" class="entry-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" name="username" placeholder="Choose a username" maxlength="20" required>
+                    <span class="username-hint">Letters, numbers, underscores only</span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-venus-mars"></i> I am</label>
+                    <div class="gender-selector gender-selector-three">
+                        <label class="gender-box male">
+                            <input type="radio" name="gender" value="male" required>
+                            <div class="gender-content">
+                                <i class="fas fa-male"></i>
+                                <span>Male</span>
+                            </div>
+                        </label>
+                        <label class="gender-box female">
+                            <input type="radio" name="gender" value="female">
+                            <div class="gender-content">
+                                <i class="fas fa-female"></i>
+                                <span>Female</span>
+                            </div>
+                        </label>
+                        <label class="gender-box">
+                            <input type="radio" name="gender" value="other">
+                            <div class="gender-content">
+                                <i class="fas fa-user"></i>
+                                <span>Other</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-birthday-cake"></i> Age</label>
+                        <select name="age" id="guest-age" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Country</label>
+                        <select name="country" id="guest-country" required></select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="state-group" style="display: none;">
+                    <label><i class="fas fa-map-marker-alt"></i> State</label>
+                    <select name="state" id="guest-state"></select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large">
+                    <i class="fas fa-sign-in-alt"></i> Start Chatting
+                </button>
+            </form>
+
+            <div class="entry-footer-links">
+                <a href="{{ url_for('login_page') }}" class="nav-link">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Published Blogs -->
+    <div class="entry-right-blogs">
+        <div class="blogs-section">
+            <h3><i class="fas fa-blog"></i> Latest Blogs</h3>
+            <div class="blog-list">
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>How to Stay Safe Online</h4>
+                        <span class="blog-date">Feb 15, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Making Friends Through Chat</h4>
+                        <span class="blog-date">Feb 12, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Chat Room Etiquette</h4>
+                        <span class="blog-date">Feb 10, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Best Topics to Discuss</h4>
+                        <span class="blog-date">Feb 8, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Random Chat Tips</h4>
+                        <span class="blog-date">Feb 5, 2026</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Generate unique tab ID
+function getTabId() {
+    var tabId = localStorage.getItem('chat_tab_id');
+    if (!tabId) {
+        tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('chat_tab_id', tabId);
+    }
+    return tabId;
+}
+
+// Age dropdown
+var ageSelect = document.getElementById('guest-age');
+for (var i = 18; i <= 100; i++) {
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    if (i === 18) opt.selected = true;
+    ageSelect.appendChild(opt);
+}
+
+// Countries
+var countries = [
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'PE', name: 'Peru' },
+    { code: 'VE', name: 'Venezuela' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'EG', name: 'Egypt' },
+    { code: 'NG', name: 'Nigeria' },
+    { code: 'KE', name: 'Kenya' },
+    { code: 'IN', name: 'India' },
+    { code: 'PK', name: 'Pakistan' },
+    { code: 'BD', name: 'Bangladesh' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'CN', name: 'China' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'TW', name: 'Taiwan' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'AT', name: 'Austria' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'RU', name: 'Russia' },
+    { code: 'UA', name: 'Ukraine' },
+    { code: 'TR', name: 'Turkey' },
+    { code: 'IL', name: 'Israel' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'AE', name: 'UAE' },
+    { code: 'QA', name: 'Qatar' },
+    { code: 'Other', name: 'Other' }
+];
+
+// US States
+var usStates = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
+    { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
+    { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
+    { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
+    { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
+    { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
+    { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
+    { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
+    { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
+    { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
+    { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
+    { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
+    { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
+    { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' },
+    { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+];
+
+var countrySelect = document.getElementById('guest-country');
+var stateSelect = document.getElementById('guest-state');
+var stateGroup = document.getElementById('state-group');
+
+// Populate countries
+countries.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c.code;
+    opt.textContent = c.name;
+    if (c.code === 'US') opt.selected = true;
+    countrySelect.appendChild(opt);
+});
+
+// Initialize states
+function initStates(states) {
+    stateSelect.innerHTML = '<option value="">Select State</option>';
+    states.forEach(function(s) {
+        var opt = document.createElement('option');
+        opt.value = s.code;
+        opt.textContent = s.name;
+        stateSelect.appendChild(opt);
+    });
+}
+
+initStates(usStates);
+
+// Country change
+countrySelect.addEventListener('change', function() {
+    if (this.value === 'US') {
+        stateGroup.style.display = 'block';
+        initStates(usStates);
+    } else if (this.value === 'CA') {
+        stateGroup.style.display = 'block';
+        initStates([
+            { code: 'ON', name: 'Ontario' }, { code: 'QC', name: 'Quebec' },
+            { code: 'BC', name: 'British Columbia' }, { code: 'AB', name: 'Alberta' },
+            { code: 'MB', name: 'Manitoba' }, { code: 'SK', name: 'Saskatchewan' },
+            { code: 'NS', name: 'Nova Scotia' }, { code: 'NB', name: 'New Brunswick' }
+        ]);
+    } else if (this.value === 'AU') {
+        stateGroup.style.display = 'block';
+        initStates([
+            { code: 'NSW', name: 'New South Wales' }, { code: 'VIC', name: 'Victoria' },
+            { code: 'QLD', name: 'Queensland' }, { code: 'WA', name: 'Western Australia' },
+            { code: 'SA', name: 'South Australia' }, { code: 'TAS', name: 'Tasmania' }
+        ]);
+    } else {
+        stateGroup.style.display = 'none';
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+    }
+});
+
+// Form submission - store data in localStorage
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    var username = document.querySelector('input[name="username"]').value.trim();
+    var gender = document.querySelector('input[name="gender"]:checked');
+    var age = document.querySelector('select[name="age"]').value;
+    var country = document.querySelector('select[name="country"]').value;
+    var state = document.querySelector('select[name="state"]').value;
+    
+    var tabId = getTabId();
+    
+    localStorage.setItem('chat_tab_' + tabId + '_username', username);
+    localStorage.setItem('chat_tab_' + tabId + '_gender', gender ? gender.value : '');
+    localStorage.setItem('chat_tab_' + tabId + '_age', age);
+    localStorage.setItem('chat_tab_' + tabId + '_country', country);
+    localStorage.setItem('chat_tab_' + tabId + '_state', state || '');
+    localStorage.setItem('chat_tab_' + tabId + '_is_guest', 'true');
+    localStorage.setItem('chat_tab_' + tabId + '_age_verified', 'true');
+    localStorage.setItem('chat_tab_' + tabId + '_agreed_at', new Date().toISOString());
+    
+    return true;
+});
+</script>
+{% endblock %}

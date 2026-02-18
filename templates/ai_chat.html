@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chat - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.ai-chat-page {
+    display: flex;
+    height: calc(100vh - 70px - 60px);
+}
+
+.ai-sidebar {
+    width: 300px;
+    background: var(--white);
+    border-right: 1px solid var(--bg-200);
+    padding: var(--space-4);
+}
+
+.ai-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+    margin-bottom: var(--space-4);
+}
+
+.ai-sidebar-header h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+}
+
+.new-chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.new-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.chat-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.chat-history-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--bg-50);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.chat-history-item:hover {
+    background: var(--primary-lightest);
+}
+
+.chat-history-item i {
+    color: var(--primary);
+}
+
+.ai-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.ai-chat-header h2 {
+    font-size: var(--text-xl);
+    color: var(--bg-800);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.ai-chat-header h2 i {
+    color: var(--primary);
+}
+
+.ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.ai-message {
+    display: flex;
+    gap: var(--space-3);
+    max-width: 80%;
+}
+
+.ai-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.ai-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ai-avatar.bot {
+    background: var(--gradient);
+}
+
+.ai-avatar.user {
+    background: var(--bg-200);
+}
+
+.ai-avatar i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.ai-message-content {
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    background: var(--bg-50);
+    color: var(--bg-800);
+    line-height: 1.6;
+}
+
+.ai-message.user .ai-message-content {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.ai-input-area {
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.ai-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--bg-50);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2) var(--space-3);
+    transition: all var(--transition-base);
+}
+
+.ai-input-wrapper:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+}
+
+.ai-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: var(--space-2);
+    font-size: var(--text-base);
+    outline: none;
+}
+
+.ai-input-wrapper button {
+    padding: var(--space-2) var(--space-4);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.ai-input-wrapper button:hover {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-chat-page">
+    <!-- Sidebar -->
+    <aside class="ai-sidebar">
+        <div class="ai-sidebar-header">
+            <h3><i class="fas fa-robot"></i> AI Chat</h3>
+        </div>
+
+        <button class="new-chat-btn" onclick="newChat()">
+            <i class="fas fa-plus"></i> New Chat
+        </button>
+
+        <div style="margin-top: var(--space-4);">
+            <h4 style="font-size: var(--text-sm); color: var(--bg-500); margin-bottom: var(--space-2);">Recent Chats</h4>
+            <div class="chat-history-list">
+                <div class="chat-history-item" onclick="loadChat(1)">
+                    <i class="fas fa-comment"></i>
+                    <span>Conversation 1</span>
+                </div>
+                <div class="chat-history-item" onclick="loadChat(2)">
+                    <i class="fas fa-comment"></i>
+                    <span>Conversation 2</span>
+                </div>
+                <div class="chat-history-item" onclick="loadChat(3)">
+                    <i class="fas fa-comment"></i>
+                    <span>Conversation 3</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="ai-main">
+        <div class="ai-chat-header">
+            <h2><i class="fas fa-robot"></i> AI Assistant</h2>
+            <span style="color: var(--success);"><i class="fas fa-circle"></i> Online</span>
+        </div>
+
+        <div class="ai-messages" id="ai-messages">
+            <div class="ai-message">
+                <div class="ai-avatar bot">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="ai-message-content">
+                    Hello! I'm your AI chat assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-input-area">
+            <div class="ai-input-wrapper">
+                <input type="text" id="ai-message-input" placeholder="Type your message..." onkeypress="handleAIKeypress(event)">
+                <button onclick="sendAIMessage()">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleAIKeypress(e) {
+    if (e.key === 'Enter') {
+        sendAIMessage();
+    }
+}
+
+function sendAIMessage() {
+    const input = document.getElementById('ai-message-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    // Add user message
+    addAIMessage(message, 'user');
+    input.value = '';
+
+    // Simulate AI response
+    setTimeout(() => {
+        const responses = [
+            "That's an interesting question! Let me think about it...",
+            "I understand. Here's what I can tell you...",
+            "Great point! Here's my thoughts on that...",
+            "Thanks for sharing! I'd be happy to help with that.",
+            "That's a fascinating topic. Let me provide some insights..."
+        ];
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        addAIMessage(randomResponse, 'bot');
+    }, 1000);
+}
+
+function addAIMessage(text, sender) {
+    const container = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    div.className = `ai-message ${sender}`;
+    div.innerHTML = `
+        <div class="ai-avatar ${sender}">
+            <i class="fas fa-${sender === 'bot' ? 'robot' : 'user'}"></i>
+        </div>
+        <div class="ai-message-content">${text}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function newChat() {
+    document.getElementById('ai-messages').innerHTML = `
+        <div class="ai-message">
+            <div class="ai-avatar bot">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="ai-message-content">
+                Hello! I'm your AI chat assistant. How can I help you today?
+            </div>
+        </div>
+    `;
+}
+
+function loadChat(id) {
+    newChat();
+    addAIMessage('This is a sample conversation ' + id, 'bot');
+}
+</script>
+{% endblock %}

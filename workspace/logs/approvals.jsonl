@@ -1,0 +1,2 @@
+{"timestamp": "2026-02-18T18:37:59.760475", "task_id": "test", "category": "terminal_command", "action_detail": "ls -la ./workspace", "outcome": "granted", "user_response": "YES", "risk_points": 4}
+{"timestamp": "2026-02-18T18:37:59.761005", "task_id": "test", "category": "download_file", "action_detail": "Download file.pdf", "outcome": "denied", "user_response": "NO", "risk_points": 5}

@@ -1,0 +1,3 @@
+{"timestamp": "2026-02-18T18:41:59.705433", "task_id": "global", "event_type": "file_write", "detail": "test.txt", "points": 1, "cumulative_score": 1}
+{"timestamp": "2026-02-18T18:41:59.706323", "task_id": "global", "event_type": "terminal_command", "detail": "ls -la", "points": 4, "cumulative_score": 5}
+{"timestamp": "2026-02-18T18:41:59.708681", "task_id": "test", "event_type": "terminal_command", "detail": "ls -la", "points": 4, "cumulative_score": 4}

@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Inbox - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.inbox-container { max-width: 900px; margin: 0 auto; padding: var(--space-6); }
+.inbox-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); }
+.inbox-header h1 { font-size: var(--text-2xl); color: var(--bg-800); display: flex; align-items: center; gap: var(--space-3); }
+.inbox-header h1 i { color: var(--primary); }
+.inbox-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-6); }
+.inbox-tab { padding: var(--space-3) var(--space-6); background: var(--bg-100); border: none; border-radius: var(--radius-xl); font-weight: var(--font-semibold); color: var(--bg-600); cursor: pointer; transition: all var(--transition-base); }
+.inbox-tab:hover { background: var(--bg-200); }
+.inbox-tab.active { background: var(--gradient); color: var(--white); }
+.inbox-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.inbox-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--white); border-radius: var(--radius-xl); cursor: pointer; transition: all var(--transition-base); box-shadow: var(--shadow-sm); border: 2px solid transparent; }
+.inbox-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+.inbox-item.unread { background: var(--primary-lightest); border-left: 4px solid var(--primary); }
+.inbox-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+.inbox-avatar.male { background: linear-gradient(135deg, #0EA5E9, #06B6D4); }
+.inbox-avatar.female { background: linear-gradient(135deg, #EC4899, #F472B6); }
+.inbox-avatar.other { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+.inbox-avatar i { color: var(--white); font-size: var(--text-xl); }
+.inbox-content { flex: 1; min-width: 0; }
+.inbox-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-1); }
+.inbox-header h4 { font-size: var(--text-base); color: var(--bg-800); font-weight: var(--font-semibold); }
+.inbox-time { font-size: var(--text-xs); color: var(--bg-400); }
+.inbox-preview { font-size: var(--text-sm); color: var(--bg-500); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unread-badge { width: 24px; height: 24px; background: var(--primary); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-bold); flex-shrink: 0; }
+.auth-required { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-12); }
+.auth-required i { font-size: 64px; color: var(--primary); margin-bottom: var(--space-4); }
+.auth-required h3 { font-size: var(--text-xl); color: var(--bg-800); margin-bottom: var(--space-2); }
+.auth-required p { color: var(--bg-500); margin-bottom: var(--space-4); }
+.auth-required .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-6); background: var(--gradient); color: var(--white); border: none; border-radius: var(--radius-xl); font-weight: var(--font-semibold); cursor: pointer; text-decoration: none; transition: all var(--transition-base); }
+.auth-required .btn:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); }
+.loading-state i { font-size: 32px; color: var(--primary); animation: spin 1s linear infinite; }
+.loading-state p { margin-top: var(--space-3); color: var(--bg-500); }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); text-align: center; }
+.empty-state i { font-size: 48px; color: var(--bg-300); margin-bottom: var(--space-3); }
+.empty-state h3 { font-size: var(--text-lg); color: var(--bg-700); margin-bottom: var(--space-2); }
+.empty-state p { color: var(--bg-500); }
+.message-view { display: none; flex-direction: column; height: calc(100vh - 70px - 60px); }
+.message-view.active { display: flex; }
+.message-view-header { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-6); background: var(--white); border-bottom: 1px solid var(--bg-200); }
+.back-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--bg-100); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-base); }
+.back-btn:hover { background: var(--primary-lightest); }
+.back-btn i { color: var(--bg-600); }
+.message-conversation { flex: 1; overflow-y: auto; padding: var(--space-4) var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
+.message-bubble { max-width: 70%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-xl); background: var(--bg-100); }
+.message-bubble.sent { align-self: flex-end; background: var(--gradient); color: var(--white); }
+.message-bubble p { margin: 0; font-size: var(--text-sm); }
+.message-time { font-size: var(--text-xs); opacity: 0.7; margin-top: var(--space-1); display: block; }
+.message-input-area { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: 1px solid var(--bg-200); background: var(--white); }
+.message-input-area input { flex: 1; padding: var(--space-3) var(--space-4); border: 2px solid var(--bg-200); border-radius: var(--radius-xl); font-size: var(--text-base); transition: all var(--transition-base); }
+.message-input-area input:focus { outline: none; border-color: var(--primary); }
+.message-input-area button { padding: var(--space-3) var(--space-5); background: var(--gradient); color: var(--white); border: none; border-radius: var(--radius-xl); font-weight: var(--font-semibold); cursor: pointer; transition: all var(--transition-base); }
+.message-input-area button:hover { transform: scale(1.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inbox-container">
+    <div class="inbox-header">
+        <h1><i class="fas fa-comment-dots"></i> Inbox</h1>
+    </div>
+    <div class="inbox-tabs">
+        <button class="inbox-tab active" onclick="switchTab('received')">Received</button>
+        <button class="inbox-tab" onclick="switchTab('sent')">Sent</button>
+    </div>
+    <div id="auth-required" class="auth-required" style="display: none;">
+        <i class="fas fa-lock"></i>
+        <h3>Login Required</h3>
+        <p>Please login to view your messages</p>
+        <a href="/login" class="btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <p style="margin-top: var(--space-3); font-size: var(--text-sm);">Don't have an account?</p>
+        <a href="/register" class="btn" style="background: var(--bg-100); color: var(--bg-700);"><i class="fas fa-user-plus"></i> Register</a>
+    </div>
+    <div id="loading-state" class="loading-state" style="display: none;">
+        <i class="fas fa-spinner"></i>
+        <p>Loading messages...</p>
+    </div>
+    <div id="empty-inbox" class="empty-state" style="display: none;">
+        <i class="fas fa-envelope-open"></i>
+        <h3>No messages yet</h3>
+        <p>When you receive messages, they'll show up here</p>
+    </div>
+    <div class="inbox-list" id="inbox-list"></div>
+    <div class="message-view" id="message-view">
+        <div class="message-view-header">
+            <button class="back-btn" onclick="closeConversation()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="inbox-avatar" id="conversation-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <h3 id="conversation-name">User</h3>
+                <span class="inbox-time" id="conversation-time"></span>
+            </div>
+        </div>
+        <div class="message-conversation" id="message-conversation"></div>
+        <div class="message-input-area">
+            <input type="text" id="quick-message-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendQuickMessage()">
+            <button onclick="sendQuickMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTab = 'received';
+let currentConversation = null;
+let messages = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('auth_token');
+    if (!token || !localStorage.getItem('user_data')) {
+        document.getElementById('auth-required').style.display = 'flex';
+        return;
+    }
+    loadMessages();
+});
+
+function loadMessages() {
+    const token = localStorage.getItem('auth_token');
+    document.getElementById('loading-state').style.display = 'flex';
+    fetch('/api/messages?type=' + currentTab, {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        showLoading: false
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('loading-state').style.display = 'none';
+        if (data.success) messages = data.data || [];
+        renderMessages();
+    })
+    .catch(() => {
+        document.getElementById('loading-state').style.display = 'none';
+        showError('Failed to connect');
+    });
+}
+
+function renderMessages() {
+    const list = document.getElementById('inbox-list');
+    const empty = document.getElementById('empty-inbox');
+    const userId = getUserId();
+    
+    let filtered = currentTab === 'received' 
+        ? messages.filter(m => m.receiver_id === userId)
+        : messages.filter(m => m.sender_id === userId);
+
+    if (filtered.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'flex';
+        empty.querySelector('h3').textContent = currentTab === 'received' ? 'No received messages' : 'No sent messages';
+        return;
+    }
+
+    empty.style.display = 'none';
+    list.innerHTML = '';
+
+    filtered.forEach(msg => {
+        const isUnread = !msg.is_read && currentTab === 'received';
+        const isReceived = currentTab === 'received';
+        const username = isReceived ? msg.sender_username : msg.receiver_username || 'Unknown';
+        const gender = (isReceived ? msg.sender_gender : msg.receiver_gender) || 'other';
+        
+        const item = document.createElement('div');
+        item.className = 'inbox-item' + (isUnread ? ' unread' : '');
+        item.onclick = () => openConversation(msg);
+        item.innerHTML = `
+            <div class="inbox-avatar ${gender}"><i class="fas fa-user"></i></div>
+            <div class="inbox-content">
+                <div class="inbox-header-row">
+                    <h4>${escapeHtml(username)}</h4>
+                    <span class="inbox-time">${formatTime(msg.created_at)}</span>
+                </div>
+                <p class="inbox-preview">${escapeHtml(msg.content)}</p>
+            </div>
+            ${isUnread ? '<span class="unread-badge">1</span>' : ''}
+        `;
+        list.appendChild(item);
+    });
+}
+
+function openConversation(msg) {
+    currentConversation = msg;
+    const isReceived = msg.receiver_id === getUserId();
+    const username = isReceived ? msg.sender_username : msg.receiver_username || 'Unknown';
+    const gender = (isReceived ? msg.sender_gender : msg.receiver_gender) || 'other';
+    
+    document.getElementById('inbox-list').style.display = 'none';
+    document.getElementById('empty-inbox').style.display = 'none';
+    document.getElementById('message-view').classList.add('active');
+    document.getElementById('conversation-name').textContent = username;
+    document.getElementById('conversation-time').textContent = formatTime(msg.created_at);
+    document.getElementById('conversation-avatar').className = 'inbox-avatar ' + gender;
+    renderConversation();
+}
+
+function closeConversation() {
+    currentConversation = null;
+    document.getElementById('message-view').classList.remove('active');
+    document.getElementById('inbox-list').style.display = 'flex';
+}
+
+function renderConversation() {
+    const conv = document.getElementById('message-conversation');
+    if (!currentConversation) return;
+    
+    const isReceived = currentConversation.receiver_id === getUserId();
+    const otherId = isReceived ? currentConversation.sender_id : currentConversation.receiver_id;
+    
+    const convMessages = messages.filter(m =>
+        (m.sender_id === otherId && m.receiver_id === getUserId()) ||
+        (m.sender_id === getUserId() && m.receiver_id === otherId)
+    ).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    if (convMessages.length === 0) {
+        conv.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>No messages yet. Say hello!</p></div>';
+        return;
+    }
+
+    conv.innerHTML = convMessages.map(msg => {
+        const isSent = msg.sender_id === getUserId();
+        return `<div class="message-bubble ${isSent ? 'sent' : 'received'}"><p>${escapeHtml(msg.content)}</p><span class="message-time">${formatTime(msg.created_at)}</span></div>`;
+    }).join('');
+    conv.scrollTop = conv.scrollHeight;
+}
+
+function sendQuickMessage() {
+    const input = document.getElementById('quick-message-input');
+    const message = input.value.trim();
+    if (!message || !currentConversation) return;
+
+    const token = localStorage.getItem('auth_token');
+    const isReceived = currentConversation.receiver_id === getUserId();
+    const receiverId = isReceived ? currentConversation.sender_id : currentConversation.receiver_id;
+
+    fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiver_id: receiverId, content: message }),
+        showLoading: true
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            messages.unshift({ id: data.data.id, sender_id: getUserId(), receiver_id: receiverId, content: message, created_at: new Date().toISOString(), is_read: true });
+            input.value = '';
+            renderConversation();
+            renderMessages();
+        } else {
+            alert(data.error?.message || 'Failed to send');
+        }
+    })
+    .catch(() => alert('Failed to send message'));
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.inbox-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    loadMessages();
+}
+
+function getUserId() {
+    try { return JSON.parse(localStorage.getItem('user_data') || '{}').id; } catch { return null; }
+}
+
+function formatTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts), now = new Date(), diff = now - d;
+    const m = Math.floor(diff / 60000), h = Math.floor(diff / 3600000), days = Math.floor(diff / 86400000);
+    if (m < 1) return 'Just now';
+    if (m < 60) return m + ' min ago';
+    if (h < 24) return h + ' hour' + (h > 1 ? 's' : '') + ' ago';
+    if (days < 7) return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+    return d.toLocaleDateString();
+}
+
+function escapeHtml(t) {
+    if (!t) return '';
+    const div = document.createElement('div');
+    div.textContent = t;
+    return div.innerHTML;
+}
+
+function showError(msg) {
+    document.getElementById('inbox-list').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error</h3><p>' + escapeHtml(msg) + '</p></div>';
+}
+
+window.switchTab = switchTab;
+</script>
+{% endblock %}

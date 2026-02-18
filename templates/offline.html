@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Offline - Chat Online{% endblock %}
+
+{% block content %}
+<style>
+    .offline-container {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: var(--space-4);
+    }
+
+    .offline-icon {
+        font-size: 80px;
+        color: var(--bg-400);
+        margin-bottom: var(--space-4);
+    }
+
+    .offline-title {
+        font-size: var(--text-2xl);
+        color: var(--bg-700);
+        margin-bottom: var(--space-2);
+    }
+
+    .offline-text {
+        color: var(--bg-500);
+        margin-bottom: var(--space-4);
+        max-width: 400px;
+    }
+
+    .retry-btn {
+        background: var(--gradient);
+        color: var(--white);
+        padding: var(--space-3) var(--space-6);
+        border-radius: var(--radius-lg);
+        border: none;
+        cursor: pointer;
+        font-size: var(--text-base);
+        transition: transform 0.2s;
+    }
+
+    .retry-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="offline-container">
+    <div class="offline-icon">
+        <i class="fas fa-wifi"></i>
+    </div>
+    <h1 class="offline-title">You're Offline</h1>
+    <p class="offline-text">
+        Don't worry! Your messages will be sent once you're back online.
+        You can still browse cached pages.
+    </p>
+    <button class="retry-btn" onclick="window.location.reload()">
+        <i class="fas fa-sync"></i> Try Again
+    </button>
+</div>
+{% endblock %}

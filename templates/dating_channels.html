@@ -1,0 +1,909 @@
+{% extends "base.html" %}
+
+{% block title %}Dating Channels - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.dating-channels-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.dating-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.dating-header h1 {
+    font-size: var(--text-3xl);
+    color: var(--bg-800);
+    margin-bottom: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.dating-header h1 i {
+    color: #EC4899;
+}
+
+.dating-header p {
+    color: var(--bg-500);
+    font-size: var(--text-lg);
+}
+
+/* Stats Bar */
+.stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
+    padding: var(--space-4);
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+}
+
+.stat-value.male {
+    color: #0EA5E9;
+}
+
+.stat-value.female {
+    color: #EC4899;
+}
+
+.stat-value.total {
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: var(--text-sm);
+    color: var(--bg-500);
+}
+
+/* Channel Grid */
+.channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-4);
+}
+
+.channel-card {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-5);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+    box-shadow: var(--shadow-sm);
+}
+
+.channel-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: #EC4899;
+}
+
+.channel-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.channel-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.channel-icon i {
+    color: var(--white);
+    font-size: var(--text-xl);
+}
+
+.channel-title {
+    flex: 1;
+}
+
+.channel-title h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+    margin-bottom: var(--space-1);
+}
+
+.channel-title span {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+.channel-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--bg-100);
+}
+
+.gender-stats {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.gender-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.gender-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.gender-dot.male {
+    background: #0EA5E9;
+}
+
+.gender-dot.female {
+    background: #EC4899;
+}
+
+.gender-stat span {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.gender-stat.male span {
+    color: #0EA5E9;
+}
+
+.gender-stat.female span {
+    color: #EC4899;
+}
+
+.channel-action {
+    padding: var(--space-2) var(--space-4);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.channel-action:hover {
+    transform: scale(1.05);
+}
+
+/* Online Users Panel */
+.online-panel {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-5);
+    margin-top: var(--space-6);
+    box-shadow: var(--shadow-md);
+}
+
+.online-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--bg-100);
+}
+
+.online-panel-header h2 {
+    font-size: var(--text-xl);
+    color: var(--bg-800);
+}
+
+.online-filters {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.filter-btn {
+    padding: var(--space-2) var(--space-4);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background: var(--bg-100);
+    color: var(--bg-600);
+}
+
+.filter-btn.active {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.online-users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-3);
+}
+
+.online-user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background: var(--bg-50);
+}
+
+.online-user-card:hover {
+    background: var(--primary-lightest);
+    transform: scale(1.05);
+}
+
+.online-user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-2);
+    position: relative;
+}
+
+.online-user-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.online-user-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.online-user-avatar i {
+    color: var(--white);
+    font-size: var(--text-2xl);
+}
+
+.online-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    background: #10B981;
+    border-radius: 50%;
+    border: 3px solid var(--bg-50);
+}
+
+.online-user-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    text-align: center;
+    margin-bottom: var(--space-1);
+}
+
+.online-user-meta {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+/* User Profile Modal */
+.user-profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-profile-modal.active {
+    display: flex;
+}
+
+.user-profile-card {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    width: 380px;
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+}
+
+.profile-avatar-large.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.profile-avatar-large.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.profile-avatar-large i {
+    color: var(--white);
+    font-size: 48px;
+}
+
+.profile-name {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--bg-800);
+    margin-bottom: var(--space-2);
+}
+
+.profile-info {
+    color: var(--bg-500);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-4);
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-8);
+    margin-bottom: var(--space-5);
+    padding: var(--space-4);
+    background: var(--bg-50);
+    border-radius: var(--radius-xl);
+}
+
+.profile-stat-num {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--primary);
+}
+
+.profile-stat-label {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+}
+
+.profile-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+.profile-btn {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.btn-inbox {
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+}
+
+.btn-inbox:hover {
+    transform: scale(1.05);
+}
+
+.btn-close-profile {
+    background: var(--bg-100);
+    color: var(--bg-600);
+    border: none;
+}
+
+.btn-close-profile:hover {
+    background: var(--bg-200);
+}
+
+/* Send Message Modal */
+.send-message-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-message-modal.active {
+    display: flex;
+}
+
+.send-message-card {
+    background: var(--white);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    width: 400px;
+    box-shadow: var(--shadow-xl);
+}
+
+.send-message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.send-message-header h3 {
+    font-size: var(--text-xl);
+    color: var(--bg-800);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: var(--text-xl);
+    cursor: pointer;
+    color: var(--bg-500);
+}
+
+.send-message-textarea {
+    width: 100%;
+    height: 150px;
+    padding: var(--space-4);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    font-size: var(--text-base);
+    resize: none;
+    margin-bottom: var(--space-4);
+    font-family: inherit;
+}
+
+.send-message-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.send-message-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+.send-message-actions button {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-send {
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+}
+
+.btn-send:hover {
+    transform: scale(1.05);
+}
+
+.btn-cancel {
+    background: var(--bg-100);
+    color: var(--bg-600);
+    border: none;
+}
+
+.btn-cancel:hover {
+    background: var(--bg-200);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dating-channels-container">
+    <!-- Header -->
+    <div class="dating-header">
+        <h1><i class="fas fa-heart"></i> Dating Channels</h1>
+        <p>Connect with singles in dating chat rooms</p>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value total" id="total-online">0</div>
+            <div class="stat-label">Total Online</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value male" id="male-online">0</div>
+            <div class="stat-label">Males</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value female" id="female-online">0</div>
+            <div class="stat-label">Females</div>
+        </div>
+    </div>
+
+    <!-- Channel Cards -->
+    <div class="channels-grid" id="channels-grid">
+        <!-- Channels will be populated by JavaScript -->
+    </div>
+
+    <!-- Online Users Panel -->
+    <div class="online-panel">
+        <div class="online-panel-header">
+            <h2><i class="fas fa-users"></i> Who's Online Now</h2>
+            <div class="online-filters">
+                <button class="filter-btn active" onclick="filterOnlineUsers('all')">All</button>
+                <button class="filter-btn" onclick="filterOnlineUsers('male')">Males</button>
+                <button class="filter-btn" onclick="filterOnlineUsers('female')">Females</button>
+            </div>
+        </div>
+        <div class="online-users-grid" id="online-users-grid">
+            <!-- Users will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- User Profile Modal -->
+<div class="user-profile-modal" id="user-profile-modal">
+    <div class="user-profile-card">
+        <div class="profile-avatar-large" id="profile-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="profile-name" id="profile-name">User Name</div>
+        <div class="profile-info" id="profile-info">Age | Country</div>
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-num" id="profile-messages">0</div>
+                <div class="profile-stat-label">Messages</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-num" id="profile-friends">0</div>
+                <div class="profile-stat-label">Friends</div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-btn btn-inbox" onclick="showSendMessageModal()">
+                <i class="fas fa-envelope"></i> Send Message
+            </button>
+            <button class="profile-btn btn-close-profile" onclick="closeUserProfile()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Send Message Modal -->
+<div class="send-message-modal" id="send-message-modal">
+    <div class="send-message-card">
+        <div class="send-message-header">
+            <h3>Send Message to <span id="message-to-name"></span></h3>
+            <button class="close-modal" onclick="closeSendMessageModal()">&times;</button>
+        </div>
+        <textarea class="send-message-textarea" id="private-message-text" placeholder="Write your message here..."></textarea>
+        <div class="send-message-actions">
+            <button class="send-message-actions btn-cancel" onclick="closeSendMessageModal()">Cancel</button>
+            <button class="send-message-actions btn-send" onclick="sendPrivateMessage()">
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dating channels - loaded from API
+let datingChannels = [];
+let roomStats = {}; // Real user counts per room
+let onlineUsersList = []; // Real online users
+
+let selectedUser = null;
+let currentFilter = 'all';
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification for guest users
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (isGuest === 'true') {
+        const ageVerified = sessionStorage.getItem('age_verified');
+        if (!ageVerified) {
+            window.location.href = '/';
+            return;
+        }
+    }
+
+    loadDatingData();
+});
+
+async function loadDatingData() {
+    try {
+        // Fetch channels and stats
+        const [channelsRes, roomsRes, usersRes, countRes] = await Promise.all([
+            fetch('/api/rooms?category=dating'),
+            fetch('/api/rooms/stats'),
+            fetch('/api/online/users'),
+            fetch('/api/online/count')
+        ]);
+
+        const channelsData = await channelsRes.json();
+        const statsData = await roomsRes.json();
+        const usersData = await usersRes.json();
+        const countData = await countRes.json();
+
+        if (channelsData.success) {
+            datingChannels = channelsData.data;
+        }
+        if (statsData.success) {
+            roomStats = statsData.data;
+        }
+        if (usersData.success) {
+            onlineUsersList = usersData.data.users || [];
+        }
+
+        renderChannels();
+        renderOnlineUsers();
+        updateStats();
+    } catch (error) {
+        console.error('Error loading dating data:', error);
+        // Fallback - render empty
+        renderChannels();
+        renderOnlineUsers();
+        updateStats();
+    }
+}
+
+function updateStats() {
+    // Update total counts from real data
+    const totalEl = document.getElementById('total-online');
+    const maleEl = document.getElementById('male-online');
+    const femaleEl = document.getElementById('female-online');
+
+    if (totalEl) {
+        totalEl.textContent = onlineUsersList.length || 0;
+    }
+    if (maleEl) {
+        maleEl.textContent = onlineUsersList.filter(u => u.gender === 'male').length;
+    }
+    if (femaleEl) {
+        femaleEl.textContent = onlineUsersList.filter(u => u.gender === 'female').length;
+    }
+}
+
+function renderChannels() {
+    const grid = document.getElementById('channels-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+
+    if (datingChannels.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--bg-500); grid-column: 1/-1;">
+                <i class="fas fa-heart" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>Loading channels...</p>
+            </div>
+        `;
+        return;
+    }
+
+    datingChannels.forEach(channel => {
+        // Get real stats
+        const stats = roomStats[channel.id] || { users: 0, gender_counts: { male: 0, female: 0 } };
+        const maleCount = stats.gender_counts?.male || 0;
+        const femaleCount = stats.gender_counts?.female || 0;
+
+        const card = document.createElement('div');
+        card.className = 'channel-card';
+        card.onclick = () => joinChannel(channel.id);
+        card.innerHTML = `
+            <div class="channel-card-header">
+                <div class="channel-icon" style="background: ${channel.gradient || 'linear-gradient(135deg, #EC4899, #F472B6)'}">
+                    <i class="fas fa-${channel.icon || 'heart'}"></i>
+                </div>
+                <div class="channel-title">
+                    <h3>${channel.name}</h3>
+                    <span>${channel.description || 'Join this channel'}</span>
+                </div>
+            </div>
+            <div class="channel-stats">
+                <div class="gender-stats">
+                    <div class="gender-stat male">
+                        <span class="gender-dot male"></span>
+                        <span>${maleCount}</span>
+                    </div>
+                    <div class="gender-stat female">
+                        <span class="gender-dot female"></span>
+                        <span>${femaleCount}</span>
+                    </div>
+                </div>
+                <button class="channel-action">Join</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function renderOnlineUsers() {
+    const grid = document.getElementById('online-users-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+
+    const filtered = currentFilter === 'all' ? onlineUsersList : onlineUsersList.filter(u => u.gender === currentFilter);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--bg-500); grid-column: 1/-1;">
+                <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p>${currentFilter === 'all' ? 'No users online right now' : 'No ' + currentFilter + ' users online'}</p>
+            </div>
+        `;
+        return;
+    }
+
+    filtered.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'online-user-card';
+        card.onclick = () => showUserProfile(user);
+        card.innerHTML = `
+            <div class="online-user-avatar ${user.gender}">
+                <i class="fas fa-user"></i>
+                <div class="online-status"></div>
+            </div>
+            <div class="online-user-name">${user.username}</div>
+            <div class="online-user-meta">${user.age} | ${user.country}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function filterOnlineUsers(gender) {
+    currentFilter = gender;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    renderOnlineUsers();
+}
+
+function updateStats() {
+    const total = onlineUsersList.length;
+    const male = onlineUsersList.filter(u => u.gender === 'male').length;
+    const female = onlineUsersList.filter(u => u.gender === 'female').length;
+
+    document.getElementById('total-online').textContent = total;
+    document.getElementById('male-online').textContent = male;
+    document.getElementById('female-online').textContent = female;
+}
+
+function joinChannel(channelId) {
+    const channel = datingChannels.find(c => c.id === channelId);
+    if (channel) {
+        // Store selected channel and redirect to chat rooms
+        sessionStorage.setItem('selected_channel', JSON.stringify(channel));
+        window.location.href = '/chat-rooms';
+    }
+}
+
+function showUserProfile(user) {
+    selectedUser = user;
+
+    // Update modal content
+    document.getElementById('profile-avatar').className = 'profile-avatar-large ' + user.gender;
+    document.getElementById('profile-name').textContent = user.username;
+    document.getElementById('profile-info').textContent = `${user.age} years old | ${user.country}`;
+    document.getElementById('profile-messages').textContent = user.messages;
+    document.getElementById('profile-friends').textContent = user.friends;
+
+    // Show modal
+    document.getElementById('user-profile-modal').classList.add('active');
+}
+
+function closeUserProfile() {
+    document.getElementById('user-profile-modal').classList.remove('active');
+    selectedUser = null;
+}
+
+function showSendMessageModal() {
+    if (!selectedUser) return;
+
+    const currentUser = sessionStorage.getItem('guest_username');
+    if (!currentUser) {
+        alert('Please login first to send messages!');
+        return;
+    }
+
+    document.getElementById('message-to-name').textContent = selectedUser.username;
+    document.getElementById('send-message-modal').classList.add('active');
+}
+
+function closeSendMessageModal() {
+    document.getElementById('send-message-modal').classList.remove('active');
+    document.getElementById('private-message-text').value = '';
+}
+
+function sendPrivateMessage() {
+    const message = document.getElementById('private-message-text').value.trim();
+
+    if (!message) {
+        alert('Please write a message first!');
+        return;
+    }
+
+    if (!selectedUser) {
+        alert('No user selected!');
+        return;
+    }
+
+    // Simulate sending message (in real app, this would go to backend)
+    const currentUser = sessionStorage.getItem('guest_username') || 'Guest';
+
+    // Save to localStorage for demo
+    let inboxMessages = JSON.parse(localStorage.getItem('inbox_messages') || '[]');
+    inboxMessages.unshift({
+        id: Date.now(),
+        from: currentUser,
+        to: selectedUser.username,
+        message: message,
+        gender: 'male', // Current user gender
+        time: new Date().toISOString(),
+        read: false
+    });
+    localStorage.setItem('inbox_messages', JSON.stringify(inboxMessages));
+
+    alert(`Message sent to ${selectedUser.username}! Check your inbox.`);
+    closeSendMessageModal();
+    closeUserProfile();
+}
+
+// Close modals on outside click
+document.getElementById('user-profile-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeUserProfile();
+    }
+});
+
+document.getElementById('send-message-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSendMessageModal();
+    }
+});
+</script>
+{% endblock %}

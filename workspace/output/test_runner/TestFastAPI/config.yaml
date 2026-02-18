@@ -1,0 +1,9 @@
+# TestFastAPI Configuration
+project:
+  name: TestFastAPI
+  version: 1.0.0
+  description: Build a FastAPI REST API
+
+app:
+  debug: false
+  log_level: INFO

@@ -1,0 +1,957 @@
+{% extends "base.html" %}
+
+{% block title %}1-on-1 Chat - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-1on1-page {
+    display: flex;
+    height: calc(100vh - 70px - 60px);
+}
+
+.chat-1on1-sidebar {
+    width: 320px;
+    background: var(--white);
+    border-right: 1px solid var(--bg-200);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-1on1-sidebar-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.chat-1on1-sidebar-header h3 {
+    font-size: var(--text-lg);
+    color: var(--bg-800);
+}
+
+.chat-1on1-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--bg-200);
+}
+
+.sidebar-tab {
+    flex: 1;
+    padding: var(--space-3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--bg-500);
+    transition: all var(--transition-base);
+    border-bottom: 2px solid transparent;
+}
+
+.sidebar-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.sidebar-tab:hover {
+    color: var(--primary);
+}
+
+.chat-1on1-user-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-2);
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    margin-bottom: var(--space-1);
+}
+
+.user-card:hover, .user-card.active {
+    background: var(--primary-lightest);
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.user-avatar.male {
+    background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+.user-avatar.female {
+    background: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+.user-avatar.other {
+    background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+}
+
+.user-avatar i {
+    color: var(--white);
+    font-size: var(--text-lg);
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.offline-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--bg-400);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: var(--font-semibold);
+    color: var(--bg-800);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-status {
+    font-size: var(--text-xs);
+    color: var(--bg-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-meta {
+    font-size: var(--text-xs);
+    color: var(--bg-400);
+}
+
+.chat-1on1-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.chat-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.chat-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-user-avatar i {
+    color: var(--white);
+    font-size: var(--text-xl);
+}
+
+.chat-user-details h4 {
+    font-size: var(--text-base);
+    color: var(--bg-800);
+}
+
+.chat-user-details span {
+    font-size: var(--text-xs);
+    color: var(--success);
+}
+
+.chat-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.chat-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-50);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    color: var(--bg-600);
+}
+
+.chat-action-btn:hover {
+    background: var(--primary-lightest);
+    color: var(--primary);
+}
+
+.chat-action-btn.heart.active {
+    background: #FFF1F2;
+    color: #EC4899;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.message {
+    display: flex;
+    gap: var(--space-2);
+    max-width: 70%;
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.message-avatar i {
+    color: var(--white);
+    font-size: var(--text-sm);
+}
+
+.message.sent .message-avatar {
+    background: var(--primary);
+}
+
+.message-content {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-xl);
+    background: var(--bg-50);
+    color: var(--bg-800);
+}
+
+.message.sent .message-content {
+    background: var(--gradient);
+    color: var(--white);
+}
+
+.message-time {
+    font-size: var(--text-xs);
+    color: var(--bg-400);
+    margin-top: var(--space-1);
+}
+
+.message.sent .message-time {
+    text-align: right;
+}
+
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--bg-200);
+    background: var(--white);
+}
+
+.message-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--bg-50);
+    border: 2px solid var(--bg-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2) var(--space-3);
+    transition: all var(--transition-base);
+}
+
+.message-input-wrapper:focus-within {
+    border-color: var(--primary);
+}
+
+.message-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: var(--space-2);
+    font-size: var(--text-base);
+    outline: none;
+}
+
+.input-actions {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.input-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    color: var(--bg-500);
+    font-size: var(--text-lg);
+}
+
+.input-action-btn:hover {
+    color: var(--primary);
+    background: var(--primary-lightest);
+}
+
+.send-btn {
+    padding: var(--space-3) var(--space-5);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+/* Auth required state */
+.auth-required {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: var(--space-8);
+}
+
+.auth-required i {
+    font-size: 64px;
+    color: var(--primary);
+    margin-bottom: var(--space-4);
+}
+
+.auth-required h3 {
+    font-size: var(--text-xl);
+    color: var(--bg-800);
+    margin-bottom: var(--space-2);
+}
+
+.auth-required p {
+    color: var(--bg-500);
+    margin-bottom: var(--space-4);
+}
+
+.auth-required .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    background: var(--gradient);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-base);
+}
+
+.auth-required .btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+/* Loading state */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8);
+}
+
+.loading-state i {
+    font-size: 32px;
+    color: var(--primary);
+    animation: spin 1s linear infinite;
+}
+
+.loading-state p {
+    margin-top: var(--space-3);
+    color: var(--bg-500);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8);
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--bg-300);
+    margin-bottom: var(--space-3);
+}
+
+.empty-state p {
+    color: var(--bg-500);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-1on1-page">
+    <!-- Sidebar -->
+    <aside class="chat-1on1-sidebar">
+        <div class="chat-1on1-sidebar-header">
+            <h3>Messages</h3>
+        </div>
+        <div class="chat-1on1-sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="all">All</button>
+            <button class="sidebar-tab" data-tab="online">Online</button>
+            <button class="sidebar-tab" data-tab="friends">Friends</button>
+        </div>
+        <div class="chat-1on1-user-list" id="user-list">
+            <!-- Users populated by JS -->
+        </div>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="chat-1on1-main">
+        <div class="chat-header">
+            <div class="chat-user-info">
+                <div class="chat-user-avatar" id="chat-user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="chat-user-details">
+                    <h4 id="chat-partner-name">Select a user</h4>
+                    <span><span class="online-dot"></span> <span id="chat-partner-status">Online</span></span>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn heart" id="heart-btn" title="Like">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button class="chat-action-btn" title="More">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages populated by JS -->
+        </div>
+
+        <div class="chat-input-area">
+            <div class="message-input-wrapper">
+                <input type="text" id="message-input" placeholder="Type a message..." maxlength="1000" disabled>
+                <div class="input-actions">
+                    <button class="input-action-btn" title="Emoji"><i class="far fa-smile"></i></button>
+                    <button class="input-action-btn" title="GIF">GIF</button>
+                    <button class="input-action-btn" title="Image"><i class="far fa-image"></i></button>
+                </div>
+            </div>
+            <button class="send-btn" id="send-btn" disabled>
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global state
+let currentUser = null;
+let onlineUsers = [];
+let friendsList = [];
+let selectedUser = null;
+let currentTab = 'all';
+
+// Country code to name mapping
+const countryNames = {
+    'US': 'United States', 'GB': 'United Kingdom', 'CA': 'Canada', 'AU': 'Australia',
+    'DE': 'Germany', 'FR': 'France', 'ES': 'Spain', 'IT': 'Italy', 'BR': 'Brazil',
+    'MX': 'Mexico', 'JP': 'Japan', 'KR': 'South Korea', 'CN': 'China', 'IN': 'India',
+    'PK': 'Pakistan', 'BD': 'Bangladesh', 'NG': 'Nigeria', 'ZA': 'South Africa',
+    'AE': 'UAE', 'SA': 'Saudi Arabia', 'SG': 'Singapore', 'MY': 'Malaysia',
+    'PH': 'Philippines', 'ID': 'Indonesia', 'TH': 'Thailand', 'VN': 'Vietnam',
+    'RU': 'Russia', 'UA': 'Ukraine', 'PL': 'Poland', 'NL': 'Netherlands',
+    'BE': 'Belgium', 'SE': 'Sweden', 'NO': 'Norway', 'DK': 'Denmark',
+    'FI': 'Finland', 'CH': 'Switzerland', 'AT': 'Austria', 'IE': 'Ireland',
+    'NZ': 'New Zealand', 'IL': 'Israel', 'TR': 'Turkey', 'GR': 'Greece',
+    'PT': 'Portugal', 'CZ': 'Czech Republic', 'HU': 'Hungary', 'RO': 'Romania',
+    'AR': 'Argentina', 'CL': 'Chile', 'CO': 'Colombia', 'PE': 'Peru',
+    'VE': 'Venezuela', 'EG': 'Egypt', 'MA': 'Morocco', 'KE': 'Kenya'
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check age verification for guest users
+    const isGuest = sessionStorage.getItem('is_guest');
+    if (isGuest === 'true') {
+        const ageVerified = sessionStorage.getItem('age_verified');
+        if (!ageVerified) {
+            window.location.href = '/';
+            return;
+        }
+    }
+
+    checkAuth();
+    setupEventListeners();
+
+    // Update online status when page becomes visible
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && currentUser) {
+            updateOnlineStatus(true);
+        }
+    });
+
+    // Update online status when window gains focus
+    window.addEventListener('focus', function() {
+        if (currentUser) {
+            updateOnlineStatus(true);
+        }
+    });
+
+    // Update online status when window loses focus
+    window.addEventListener('blur', function() {
+        if (currentUser) {
+            updateOnlineStatus(false);
+        }
+    });
+});
+
+function updateOnlineStatus(isOnline) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    fetch('/api/users/online', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_online: isOnline }),
+        showLoading: false
+    }).catch(() => {
+        // Silent fail for status updates
+    });
+}
+
+function checkAuth() {
+    // Check if user is logged in via JWT token
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+
+    if (token && userData) {
+        try {
+            currentUser = JSON.parse(userData);
+            // Verify token is still valid
+            fetch('/api/auth/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                showLoading: false
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentUser = data.data;
+                    localStorage.setItem('user_data', JSON.stringify(currentUser));
+                    loadOnlineUsers();
+                } else {
+                    // Token invalid, clear storage
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_data');
+                    showAuthRequired();
+                }
+            })
+            .catch(() => {
+                showAuthRequired();
+            });
+        } catch (e) {
+            console.error('Error parsing user data:', e);
+            showAuthRequired();
+        }
+    } else {
+        showAuthRequired();
+    }
+}
+
+function showAuthRequired() {
+    const userList = document.getElementById('user-list');
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Show auth required message in sidebar
+    userList.innerHTML = `
+        <div class="auth-required" style="padding: var(--space-4);">
+            <i class="fas fa-lock" style="font-size: 32px;"></i>
+            <p style="font-size: var(--text-sm);">Please login to see users</p>
+        </div>
+    `;
+
+    // Show auth required in chat area
+    messagesContainer.innerHTML = `
+        <div class="auth-required" style="flex: 1;">
+            <i class="fas fa-comments"></i>
+            <h3>Login Required</h3>
+            <p>Please login to start chatting with other users</p>
+            <a href="/login" class="btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <p style="margin-top: var(--space-3); font-size: var(--text-sm);">Don't have an account?</p>
+            <a href="/register" class="btn" style="background: var(--bg-100); color: var(--bg-700);"><i class="fas fa-user-plus"></i> Register</a>
+        </div>
+    `;
+
+    messageInput.disabled = true;
+    sendBtn.disabled = true;
+}
+
+function setupEventListeners() {
+    // Tab switching
+    document.querySelectorAll('.sidebar-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentTab = this.dataset.tab;
+            renderUserList();
+        });
+    });
+
+    // Heart button toggle
+    document.getElementById('heart-btn').addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+
+    // Send message
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+}
+
+function loadOnlineUsers() {
+    const token = localStorage.getItem('auth_token');
+
+    fetch('/api/users/online', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        showLoading: true
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            onlineUsers = data.data.users || [];
+            loadFriends();
+        } else {
+            showError('Failed to load users');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading users:', error);
+        showError('Failed to connect to server');
+    });
+}
+
+function loadFriends() {
+    const token = localStorage.getItem('auth_token');
+
+    fetch('/api/friends', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        showLoading: false
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            friendsList = data.data || [];
+            renderUserList();
+        } else {
+            // If friends endpoint fails, still render online users
+            renderUserList();
+        }
+    })
+    .catch(() => {
+        // If friends endpoint fails, still render online users
+        renderUserList();
+    });
+}
+
+function renderUserList() {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+
+    let usersToShow = [];
+
+    if (currentTab === 'all') {
+        usersToShow = onlineUsers;
+    } else if (currentTab === 'online') {
+        usersToShow = onlineUsers.filter(u => u.is_online);
+    } else if (currentTab === 'friends') {
+        usersToShow = friendsList.filter(f => f.is_online);
+        // Also add offline friends
+        const offlineFriends = friendsList.filter(f => !f.is_online);
+        usersToShow = [...usersToShow, ...offlineFriends];
+    }
+
+    if (usersToShow.length === 0) {
+        userList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <p>No users found</p>
+            </div>
+        `;
+        return;
+    }
+
+    usersToShow.forEach(user => {
+        const card = createUserCard(user);
+        userList.appendChild(card);
+    });
+}
+
+function createUserCard(user) {
+    const card = document.createElement('div');
+    card.className = 'user-card';
+    card.onclick = () => selectUser(user);
+
+    const genderClass = user.gender ? user.gender.toLowerCase() : 'other';
+    const countryName = countryNames[user.country] || user.country || '';
+    const statusText = user.is_online ? 'Online' : 'Offline';
+    const statusClass = user.is_online ? 'online-indicator' : 'offline-indicator';
+
+    // Get last message or user info
+    let lastInfo = '';
+    if (user.age && countryName) {
+        lastInfo = `${user.age} | ${countryName}`;
+    } else if (countryName) {
+        lastInfo = countryName;
+    } else if (user.age) {
+        lastInfo = `${user.age} years old`;
+    }
+
+    card.innerHTML = `
+        <div class="user-avatar ${genderClass}">
+            <i class="fas fa-user"></i>
+            <span class="${statusClass}"></span>
+        </div>
+        <div class="user-info">
+            <div class="user-name">${escapeHtml(user.username)}</div>
+            <div class="user-status">${lastInfo}</div>
+        </div>
+    `;
+
+    return card;
+}
+
+function selectUser(user) {
+    selectedUser = user;
+
+    // Update active state
+    document.querySelectorAll('.user-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // Update chat header
+    const genderClass = user.gender ? user.gender.toLowerCase() : 'other';
+    document.getElementById('chat-user-avatar').className = `chat-user-avatar ${genderClass}`;
+    document.getElementById('chat-partner-name').textContent = user.username;
+    document.getElementById('chat-partner-status').textContent = user.is_online ? 'Online' : 'Offline';
+    document.getElementById('chat-partner-status').style.color = user.is_online ? 'var(--success)' : 'var(--bg-500)';
+
+    // Enable input
+    document.getElementById('message-input').disabled = false;
+    document.getElementById('send-btn').disabled = false;
+
+    // Load chat messages
+    loadChatMessages(user);
+}
+
+function loadChatMessages(user) {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = `
+        <div class="loading-state">
+            <i class="fas fa-spinner"></i>
+            <p>Loading messages...</p>
+        </div>
+    `;
+
+    // For now, show a welcome message
+    // In a full implementation, you'd fetch previous messages from the API
+    setTimeout(() => {
+        messagesContainer.innerHTML = `
+            <div class="message received">
+                <div class="message-avatar"><i class="fas fa-user"></i></div>
+                <div class="message-content">
+                    Hello! How are you doing today?
+                    <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            </div>
+        `;
+    }, 500);
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+    if (!selectedUser) {
+        showToast('Please select a user first', 'error');
+        return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        showToast('Please login to send messages', 'error');
+        return;
+    }
+
+    // Send message via API
+    fetch('/api/messages/send', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            receiver_id: selectedUser.id,
+            content: message
+        }),
+        showLoading: true
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add message to UI
+            const messagesContainer = document.getElementById('chat-messages');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            messagesContainer.innerHTML += `
+                <div class="message sent">
+                    <div class="message-avatar"><i class="fas fa-user"></i></div>
+                    <div class="message-content">
+                        ${escapeHtml(message)}
+                        <div class="message-time">${time}</div>
+                    </div>
+                </div>
+            `;
+
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+            showToast(data.error?.message || 'Failed to send message', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        showToast('Failed to send message', 'error');
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showError(message) {
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>${escapeHtml(message)}</p>
+        </div>
+    `;
+}
+
+function showToast(message, type = 'info') {
+    // Use the base template's toast function if available
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, message);
+    } else {
+        // Fallback: create a simple toast
+        const container = document.getElementById('toast-container') || document.body;
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.style.cssText = 'position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--bg-800); color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999;';
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+}
+</script>
+{% endblock %}

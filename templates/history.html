@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}History - Chat Online{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-history-list { max-width: 800px; margin: 0 auto; }
+.history-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--white); border-radius: var(--radius-xl); margin-bottom: var(--space-3); cursor: pointer; transition: all var(--transition-base); box-shadow: var(--shadow-sm); }
+.history-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.history-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.history-avatar.male { background: linear-gradient(135deg, #0EA5E9, #06B6D4); }
+.history-avatar.female { background: linear-gradient(135deg, #EC4899, #F472B6); }
+.history-avatar.other { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+.history-avatar i { color: var(--white); font-size: var(--text-xl); }
+.history-info { flex: 1; }
+.history-info h4 { font-size: var(--text-base); color: var(--bg-800); margin-bottom: var(--space-1); display: flex; align-items: center; gap: var(--space-2); }
+.history-time { font-size: var(--text-xs); color: var(--bg-400); font-weight: var(--font-normal); margin-left: var(--space-2); }
+.history-info p { font-size: var(--text-sm); color: var(--bg-500); margin: 0; }
+.auth-required { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-12); }
+.auth-required i { font-size: 64px; color: var(--primary); margin-bottom: var(--space-4); }
+.auth-required h3 { font-size: var(--text-xl); color: var(--bg-800); margin-bottom: var(--space-2); }
+.auth-required p { color: var(--bg-500); margin-bottom: var(--space-4); }
+.auth-required .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-6); background: var(--gradient); color: var(--white); border: none; border-radius: var(--radius-xl); font-weight: var(--font-semibold); cursor: pointer; text-decoration: none; }
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); }
+.loading-state i { font-size: 32px; color: var(--primary); animation: spin 1s linear infinite; }
+.loading-state p { margin-top: var(--space-3); color: var(--bg-500); }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); text-align: center; }
+.empty-state i { font-size: 48px; color: var(--bg-300); margin-bottom: var(--space-3); }
+.empty-state h3 { font-size: var(--text-lg); color: var(--bg-700); margin-bottom: var(--space-2); }
+.empty-state p { color: var(--bg-500); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-page-container">
+    <div class="content-page-header">
+        <h1><i class="fas fa-history"></i> Chat History</h1>
+        <p>View your past conversations</p>
+    </div>
+
+    <!-- Auth Required -->
+    <div id="auth-required" class="auth-required" style="display: none;">
+        <i class="fas fa-lock"></i>
+        <h3>Login Required</h3>
+        <p>Please login to view your chat history</p>
+        <a href="/login" class="btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <p style="margin-top: var(--space-3); font-size: var(--text-sm);">Don't have an account?</p>
+        <a href="/register" class="btn" style="background: var(--bg-100); color: var(--bg-700);"><i class="fas fa-user-plus"></i> Register</a>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-state" class="loading-state" style="display: none;">
+        <i class="fas fa-spinner"></i>
+        <p>Loading chat history...</p>
+    </div>
+
+    <!-- Empty -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <i class="fas fa-history"></i>
+        <h3>No chat history</h3>
+        <p>Start chatting to see your conversations here</p>
+    </div>
+
+    <!-- History List -->
+    <div class="chat-history-list" id="history-list"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let messages = [];
+const usersMap = new Map();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('auth_token');
+    if (!token || !localStorage.getItem('user_data')) {
+        document.getElementById('auth-required').style.display = 'flex';
+        return;
+    }
+    loadHistory();
+});
+
+function loadHistory() {
+    const token = localStorage.getItem('auth_token');
+    document.getElementById('loading-state').style.display = 'flex';
+
+    Promise.all([
+        fetch('/api/messages?type=received', { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.json()),
+        fetch('/api/messages?type=sent', { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.json())
+    ])
+    .then(([received, sent]) => {
+        document.getElementById('loading-state').style.display = 'none';
+
+        const allMessages = [...(received.data || []), ...(sent.data || [])];
+        
+        // Group by conversation partner
+        const conversations = new Map();
+        const userId = getUserId();
+
+        allMessages.forEach(msg => {
+            const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+            const partnerName = msg.sender_id === userId ? msg.receiver_username : msg.sender_username;
+            const partnerGender = msg.sender_id === userId ? msg.receiver_gender : msg.sender_gender;
+
+            if (!conversations.has(partnerId)) {
+                conversations.set(partnerId, {
+                    username: partnerName || 'Unknown',
+                    gender: partnerGender || 'other',
+                    lastMessage: msg.content,
+                    lastTime: msg.created_at
+                });
+            } else {
+                const conv = conversations.get(partnerId);
+                if (new Date(msg.created_at) > new Date(conv.lastTime)) {
+                    conv.lastMessage = msg.content;
+                    conv.lastTime = msg.created_at;
+                }
+            }
+        });
+
+        messages = Array.from(conversations.entries()).map(([id, conv]) => ({
+            userId: id,
+            ...conv
+        })).sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+
+        renderHistory();
+    })
+    .catch(() => {
+        document.getElementById('loading-state').style.display = 'none';
+        showError('Failed to load chat history');
+    });
+}
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    const empty = document.getElementById('empty-state');
+
+    if (messages.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'flex';
+        return;
+    }
+
+    empty.style.display = 'none';
+    list.innerHTML = '';
+
+    messages.forEach(conv => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.onclick = () => window.location.href = '/inbox';
+
+        const gender = (conv.gender || 'other').toLowerCase();
+        item.innerHTML = `
+            <div class="history-avatar ${gender}">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="history-info">
+                <h4>${escapeHtml(conv.username)} <span class="history-time">${formatTime(conv.lastMessage)}</span></h4>
+                <p>${escapeHtml(conv.lastMessage)}</p>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function getUserId() {
+    try { return JSON.parse(localStorage.getItem('user_data') || '{}').id; } catch { return null; }
+}
+
+function formatTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts), now = new Date(), diff = now - d;
+    const h = Math.floor(diff / 3600000), days = Math.floor(diff / 86400000);
+    if (h < 1) return 'Just now';
+    if (h < 24) return h + 'h ago';
+    if (days < 7) return days + 'd ago';
+    return d.toLocaleDateString();
+}
+
+function escapeHtml(t) {
+    if (!t) return '';
+    const div = document.createElement('div');
+    div.textContent = t;
+    return div.innerHTML;
+}
+
+function showError(msg) {
+    document.getElementById('empty-state').style.display = 'flex';
+    document.getElementById('empty-state').innerHTML = '<i class="fas fa-exclamation-triangle"></i><h3>Error</h3><p>' + escapeHtml(msg) + '</p>';
+}
+</script>
+{% endblock %}
