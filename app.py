@@ -263,6 +263,12 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
+# Session optimization - faster cookie handling
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+
 # Initialize Sentry for error tracking (optional - set SENTRY_DSN env var to enable)
 SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
 if SENTRY_DSN:
@@ -495,15 +501,15 @@ def guest_login():
     if not username or not gender or not age or not country:
         return render_template('index.html')
     
-    # Store in session
+    # Store minimal session data - only what's needed
     session['guest_username'] = username
     session['guest_gender'] = gender
-    session['guest_age'] = age
     session['guest_country'] = country
-    session['guest_state'] = state or ''
     session['is_guest'] = True
     session['age_verified'] = True
-    session['agreed_at'] = time.time()
+    
+    # Use permanent session for longer login persistence
+    session.permanent = True
     
     # Redirect with verified parameter
     return app.redirect('/welcome?verified=1', code=302)
