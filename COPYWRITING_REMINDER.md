@@ -1,11 +1,32 @@
 # COPYWRITING REMINDER - READ THIS FIRST
 
 **Priority: MANDATORY**
-**When user mentions: "copywriting", "write", "content", "blog", "landing page", "SEO"**
+**When user mentions: "copywriting", "write", "content", "blog", "landing page", "SEO", "email", "service page"**
 
 ---
 
-## QUICK RULES (Always Follow)
+## 🚨 CRITICAL RULE - COMBINE BOTH SYSTEMS
+
+**ALWAYS combine both systems - NEVER use one without the other:**
+
+### 1. SEO Structure (from ultimate-seo-content-mastery-prompt.md)
+- Semantic keywords
+- Entity-Attribute-Value mapping
+- HCU compliance
+- Schema-ready content
+- H2/H3 headings, FAQ section
+
+### 2. Amir's Voice (from amir-writing-soul-strict.md + amir-writing-bible.md)
+- Personal experience: "I've seen..."
+- Honest frustration, no sugarcoating
+- Fragments for impact: "And most of it? Wasted."
+- 95%+ contractions (don't, can't, I've, it's)
+- Casual starters: Look, So, And, But, Well
+- Simple contrasts: "Their budgets grow. Their results do not."
+
+---
+
+## Quick Rules (Always Follow)
 
 ### ❌ NEVER USE:
 - Formal connectors: "Despite", "Nevertheless", "Furthermore", "Moreover"

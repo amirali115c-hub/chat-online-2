@@ -14,6 +14,27 @@ _Learn about the person you're helping. Update this as you go._
 - **IMPORTANT:** Always commit and push changes to GitHub after every edit
 - GitHub repo: https://github.com/amirali115c-hub/chat-online-2
 
+---
+
+## 🚨 CRITICAL COPYWRITING RULE
+
+**When user asks for SEO, blog, email, copywriting, landing page, service page:**
+
+> **COMBINE BOTH SYSTEMS - NEVER USE ONE WITHOUT THE OTHER**
+
+1. **SEO Structure** (from ultimate-seo-content-mastery-prompt.md)
+   - Semantic keywords, entities, HCU compliance, schema-ready
+
+2. **Amir's Voice** (from amir-writing-soul-strict.md + amir-writing-bible.md)
+   - Personal experience ("I've seen...")
+   - Honest frustration, no sugarcoating
+   - Fragments for impact
+   - 95%+ contractions
+   - Casual sentence starters (Look, So, And, But...)
+   - Simple contrasts
+
+---
+
 ## Context
 
 - Looking for copywriting freelance work or a full-time role
