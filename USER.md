@@ -30,11 +30,16 @@ _Learn about the person you're helping. Update this as you go._
 - ✅ Always: Personal experience, honest frustration, simple contrasts, fragments
 - ✅ Before output: Check sounds human, not AI
 
+### For SEO Content:
+- Read memory/ultimate-seo-content-mastery-prompt.md (THE ULTIMATE SEO CONTENT MASTERY PROMPT v2.0)
+- Includes: Semantic SEO, HCU, E-E-A-T, undetectable human writing
+
 Files to reference:
 - memory/amir-complete-writing-checklist.md
 - memory/amir-writing-soul-strict.md
 - memory/amir-writing-bible.md
 - memory/copywriting-skills.md
+- memory/ultimate-seo-content-mastery-prompt.md
 
 
 ---

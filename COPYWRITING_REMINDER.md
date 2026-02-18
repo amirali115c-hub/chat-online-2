@@ -36,11 +36,11 @@
 **When user asks for SEO content, READ THIS FIRST:**
 - memory/ultimate-seo-content-mastery-prompt.md
 
-This file contains THE ULTIMATE SEO CONTENT MASTERY PROMPT v2.0 with:
+This file contains **THE ULTIMATE SEO CONTENT MASTERY PROMPT v2.0** with:
 - 9 phases of SEO content creation
 - Semantic SEO + HCU compliance
 - Undetectable human writing techniques
-- Entity-Attribute-Value mapping
+- Entity-Attribute-Value (EAV) mapping
 - Banned language list
 - Quality assurance protocol
 
@@ -71,4 +71,3 @@ Check:
 **If it sounds like Amir wrote it → RIGHT**
 
 ---
-**Copywriting files saved to memory. Ready to use.**
