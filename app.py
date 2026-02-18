@@ -250,7 +250,6 @@ def handle_file_upload(file):
     return None
 import uuid
 import time
-import hashlib
 import re
 import os
 from collections import defaultdict
