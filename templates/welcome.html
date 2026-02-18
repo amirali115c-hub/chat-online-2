@@ -465,33 +465,37 @@ function loadUsers() {
                 var currentUsername = localStorage.getItem('chat_tab_' + getTabId() + '_username') || '{{ session.get("guest_username", "Guest") }}';
 
                 data.data.users.forEach(user => {
-                    // Skip showing current user in the list (they see themselves in the main welcome area)
-                    if (user.username === currentUsername && user.is_guest) {
-                        return; // Skip current guest user
-                    }
-
+                    // Check if this is the current user
+                    var isCurrentUser = (user.username === currentUsername);
+                    
+                    // Show all users including current user
                     const card = document.createElement('div');
-                    card.className = 'user-card';
+                    card.className = 'user-card' + (isCurrentUser ? ' current-user' : '');
                     card.onclick = () => openChat(user.id);
+                    
+                    var userLabel = isCurrentUser ? '(You)' : (user.is_guest ? 'Guest' : 'Online');
+
                     card.innerHTML = `
                         <div class="user-avatar ${user.gender || 'unknown'}">
                             <i class="fas fa-user"></i>
                             <span class="online-dot"></span>
                         </div>
                         <div class="user-info">
-                            <div class="user-name">${user.username} ${user.country ? '<span class="flag-icon">📍</span>' : ''}</div>
-                            <div class="user-meta">${user.is_guest ? 'Guest' : 'Online'}</div>
+                            <div class="user-name">${user.username} ${isCurrentUser ? '<span style="color: var(--primary); font-size: 10px;">(You)</span>' : ''} ${user.country ? '<span class="flag-icon">📍</span>' : ''}</div>
+                            <div class="user-meta">${userLabel}</div>
                         </div>
                     `;
                     userList.appendChild(card);
                 });
-
-                // Show empty state if no other users
-                if (userList.children.length === 0) {
-                    showEmptyState();
-                }
             } else {
-                showEmptyState();
+                // Show empty state if no users online
+                userList.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
+                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>No users online right now</p>
+                        <p style="font-size: 14px;">Start a random chat to meet someone!</p>
+                    </div>
+                `;
             }
         })
         .catch(error => {

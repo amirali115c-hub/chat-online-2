@@ -2545,8 +2545,12 @@ def api_online_all():
     current_country = session.get('guest_country') or session.get('country')
     is_guest = session.get('is_guest', False)
 
-    # Add current user from session if logged in
-    if current_user_id and current_username:
+    # Add current user from session if we have username
+    if current_username:
+        # Generate a temporary ID if no user_id in session
+        if not current_user_id:
+            current_user_id = 'guest_' + hashlib.md5(current_username.encode()).hexdigest()[:12]
+        
         current_user = {
             'id': current_user_id,
             'username': current_username,
