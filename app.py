@@ -263,12 +263,6 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
-# Session optimization - faster cookie handling
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-
 # Initialize Sentry for error tracking (optional - set SENTRY_DSN env var to enable)
 SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
 if SENTRY_DSN:
