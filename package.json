@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "docx": "^9.5.2",
+    "mammoth": "^1.11.0",
+    "puppeteer-core": "^24.37.2"
+  }
+}

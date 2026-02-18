@@ -1,0 +1,23 @@
+{"timestamp": "2026-02-13 21:26:54", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:26:54", "level": "INFO", "message": "Leo Voice Assistant Starting..."}
+{"timestamp": "2026-02-13 21:26:54", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:26:54", "level": "INFO", "message": "Initializing Leo Voice Assistant..."}
+{"timestamp": "2026-02-13 21:26:54", "level": "ERROR", "message": "STT init error: No module named 'speech_recognition'"}
+{"timestamp": "2026-02-13 21:26:59", "level": "WARNING", "message": "Ollama not available - using fallback parser"}
+{"timestamp": "2026-02-13 21:27:00", "level": "INFO", "message": "Leo Voice Assistant ready!"}
+{"timestamp": "2026-02-13 21:32:25", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:32:25", "level": "INFO", "message": "Leo Voice Assistant Starting..."}
+{"timestamp": "2026-02-13 21:32:25", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:32:25", "level": "INFO", "message": "Initializing Leo Voice Assistant..."}
+{"timestamp": "2026-02-13 21:32:25", "level": "ERROR", "message": "STT init error: No module named 'speech_recognition'"}
+{"timestamp": "2026-02-13 21:32:29", "level": "WARNING", "message": "Ollama not available - using fallback parser"}
+{"timestamp": "2026-02-13 21:32:30", "level": "INFO", "message": "Leo Voice Assistant ready!"}
+{"timestamp": "2026-02-13 21:35:33", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:35:33", "level": "INFO", "message": "Leo Voice Assistant Starting..."}
+{"timestamp": "2026-02-13 21:35:33", "level": "INFO", "message": "=================================================="}
+{"timestamp": "2026-02-13 21:35:33", "level": "INFO", "message": "Initializing Leo Voice Assistant..."}
+{"timestamp": "2026-02-13 21:35:33", "level": "ERROR", "message": "STT init error: No module named 'speech_recognition'"}
+{"timestamp": "2026-02-13 21:35:37", "level": "WARNING", "message": "Ollama not available - using fallback parser"}
+{"timestamp": "2026-02-13 21:35:38", "level": "INFO", "message": "Leo Voice Assistant ready!"}
+{"timestamp": "2026-02-13 21:35:38", "level": "WARNING", "message": "Tray setup failed: No module named 'pystray'"}
+{"timestamp": "2026-02-13 21:45:47", "level": "INFO", "message": "Minimized to tray"}

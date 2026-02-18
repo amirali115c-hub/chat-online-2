@@ -1,0 +1,766 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Age Verification Modal Styles - SMALLER VERSION */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    max-width: 380px; /* REDUCED from 520px */
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.age-modal .modal-header {
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+    padding: var(--space-4);
+    text-align: center;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.age-modal .modal-header h2 {
+    color: var(--white);
+    font-size: var(--text-lg);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.age-modal .modal-body {
+    padding: var(--space-4);
+    text-align: center;
+}
+
+.warning-icon {
+    width: 60px; /* REDUCED from 90px */
+    height: 60px;
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+    box-shadow: 0 6px 15px -5px rgba(220, 38, 38, 0.4);
+}
+
+.warning-icon i {
+    font-size: 28px;
+    color: var(--white);
+}
+
+.age-modal h3 {
+    font-size: 20px; /* REDUCED from 28px */
+    color: #DC2626;
+    margin-bottom: var(--space-2);
+    font-weight: 700;
+}
+
+.warning-text {
+    font-size: var(--text-sm);
+    color: var(--bg-600);
+    margin-bottom: var(--space-4);
+}
+
+.terms-box {
+    background: #FEF2F2;
+    border: 2px solid #FECACA;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    text-align: left;
+    margin-bottom: var(--space-4);
+}
+
+.terms-box h4 {
+    font-size: var(--text-sm);
+    color: #991B1B;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+}
+
+.terms-box p {
+    font-size: 12px;
+    color: #7F1D1D;
+    margin-bottom: var(--space-2);
+}
+
+.terms-box ul {
+    margin: 0;
+    padding-left: var(--space-4);
+    font-size: 12px;
+    color: #991B1B;
+}
+
+.terms-box li {
+    margin-bottom: var(--space-1);
+}
+
+.agreement-checkbox {
+    margin-bottom: var(--space-3);
+}
+
+.agreement-checkbox label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    cursor: pointer;
+    padding: var(--space-3);
+    background: var(--bg-50);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--bg-200);
+    transition: all var(--transition-base);
+}
+
+.agreement-checkbox label:hover {
+    border-color: var(--primary);
+    background: var(--primary-lightest);
+}
+
+.agreement-checkbox label.checked {
+    border-color: var(--primary);
+    background: var(--primary-lightest);
+}
+
+.agreement-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    cursor: pointer;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.agreement-checkbox span {
+    font-size: 13px;
+    color: var(--bg-700);
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.age-modal .modal-footer {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+.age-modal .btn {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+}
+
+.age-modal .btn-secondary {
+    background: var(--bg-100);
+    color: var(--bg-600);
+    border: none;
+}
+
+.age-modal .btn-secondary:hover {
+    background: var(--bg-200);
+}
+
+.age-modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+    color: var(--white);
+    border: none;
+}
+
+.age-modal .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -5px rgba(139, 92, 246, 0.4);
+}
+
+.age-modal .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Three Column Layout -->
+<div class="entry-three-columns">
+    <!-- LEFT: Content Box -->
+    <div class="entry-left-content">
+        <div class="content-box gradient-border-card">
+            <h3><i class="fas fa-info-circle"></i> About Chat Online</h3>
+            <p>Welcome to Chat Online - the best platform to meet new people from around the world!</p>
+            <ul>
+                <li><i class="fas fa-check"></i> 100% Free to use</li>
+                <li><i class="fas fa-check"></i> Chat with strangers instantly</li>
+                <li><i class="fas fa-check"></i> Make new friends worldwide</li>
+                <li><i class="fas fa-check"></i> Random chat feature</li>
+                <li><i class="fas fa-check"></i> Join chat rooms</li>
+                <li><i class="fas fa-check"></i> Private messaging</li>
+            </ul>
+            <div class="content-features">
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Safe & Secure</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Friendly</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Global Community</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER: Welcome Box with Form -->
+    <div class="entry-center">
+        <div class="welcome-box">
+            <div class="welcome-logo">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h1>Welcome to Chat Online</h1>
+            <p class="welcome-subtitle">18+ Free Chat Rooms</p>
+
+            <form id="entry-form" class="entry-form">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="guest-username" placeholder="Choose a username" maxlength="20" required>
+                    <span class="username-hint">Letters, numbers, underscores only</span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-venus-mars"></i> I am</label>
+                    <div class="gender-selector gender-selector-three">
+                        <label class="gender-box male">
+                            <input type="radio" name="guest_gender" value="male">
+                            <div class="gender-content">
+                                <i class="fas fa-male"></i>
+                                <span>Male</span>
+                            </div>
+                        </label>
+                        <label class="gender-box female">
+                            <input type="radio" name="guest_gender" value="female">
+                            <div class="gender-content">
+                                <i class="fas fa-female"></i>
+                                <span>Female</span>
+                            </div>
+                        </label>
+                        <label class="gender-box">
+                            <input type="radio" name="guest_gender" value="other">
+                            <div class="gender-content">
+                                <i class="fas fa-user"></i>
+                                <span>Other</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-birthday-cake"></i> Age</label>
+                        <select id="guest-age" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Country</label>
+                        <select id="guest-country" required></select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="state-group" style="display: none;">
+                    <label><i class="fas fa-map-marker-alt"></i> State</label>
+                    <select id="guest-state"></select>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-large" id="startBtn">
+                    <i class="fas fa-sign-in-alt"></i> Start Chatting
+                </button>
+            </form>
+
+            <div class="entry-footer-links">
+                <a href="{{ url_for('login_page') }}" class="nav-link">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Published Blogs -->
+    <div class="entry-right-blogs">
+        <div class="blogs-section">
+            <h3><i class="fas fa-blog"></i> Latest Blogs</h3>
+            <div class="blog-list">
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>How to Stay Safe Online</h4>
+                        <span class="blog-date">Feb 15, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Making Friends Through Chat</h4>
+                        <span class="blog-date">Feb 12, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Chat Room Etiquette</h4>
+                        <span class="blog-date">Feb 10, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Best Topics to Discuss</h4>
+                        <span class="blog-date">Feb 8, 2026</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('blog_page') }}" class="blog-item">
+                    <div class="blog-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="blog-info">
+                        <h4>Random Chat Tips</h4>
+                        <span class="blog-date">Feb 5, 2026</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Age dropdown generation
+const ageSelect = document.getElementById('guest-age');
+for (let i = 18; i <= 100; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    if (i === 18) option.selected = true;
+    ageSelect.appendChild(option);
+}
+
+// Country dropdown
+const countrySelect = document.getElementById('guest-country');
+const stateSelect = document.getElementById('guest-state');
+const stateGroup = document.getElementById('state-group');
+
+const countries = [
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'FR', name: 'France' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'PE', name: 'Peru' },
+    { code: 'VE', name: 'Venezuela' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'EG', name: 'Egypt' },
+    { code: 'NG', name: 'Nigeria' },
+    { code: 'KE', name: 'Kenya' },
+    { code: 'IN', name: 'India' },
+    { code: 'PK', name: 'Pakistan' },
+    { code: 'BD', name: 'Bangladesh' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'VN', name: 'Vietnam' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'CN', name: 'China' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'TW', name: 'Taiwan' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'AT', name: 'Austria' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'RU', name: 'Russia' },
+    { code: 'UA', name: 'Ukraine' },
+    { code: 'TR', name: 'Turkey' },
+    { code: 'IL', name: 'Israel' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'AE', name: 'UAE' },
+    { code: 'QA', name: 'Qatar' },
+    { code: 'Other', name: 'Other' }
+];
+
+// US States
+const usStates = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
+    { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
+    { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
+    { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
+    { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
+    { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
+    { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
+    { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
+    { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
+    { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
+    { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
+    { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
+    { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
+    { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' },
+    { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+];
+
+// Show/hide state dropdown based on country
+countrySelect.addEventListener('change', function() {
+    if (this.value === 'US' || this.value === 'CA' || this.value === 'AU') {
+        stateGroup.style.display = 'block';
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+
+        let states;
+        if (this.value === 'US') states = usStates;
+        else if (this.value === 'CA') states = [
+            { code: 'ON', name: 'Ontario' }, { code: 'QC', name: 'Quebec' },
+            { code: 'BC', name: 'British Columbia' }, { code: 'AB', name: 'Alberta' },
+            { code: 'MB', name: 'Manitoba' }, { code: 'SK', name: 'Saskatchewan' },
+            { code: 'NS', name: 'Nova Scotia' }, { code: 'NB', name: 'New Brunswick' }
+        ];
+        else if (this.value === 'AU') states = [
+            { code: 'NSW', name: 'New South Wales' }, { code: 'VIC', name: 'Victoria' },
+            { code: 'QLD', name: 'Queensland' }, { code: 'WA', name: 'Western Australia' },
+            { code: 'SA', name: 'South Australia' }, { code: 'TAS', name: 'Tasmania' }
+        ];
+
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state.code;
+            option.textContent = state.name;
+            stateSelect.appendChild(option);
+        });
+    } else {
+        stateGroup.style.display = 'none';
+        stateSelect.value = '';
+    }
+});
+
+// Initialize US states on load
+stateSelect.innerHTML = '<option value="">Select State</option>';
+usStates.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state.code;
+    option.textContent = state.name;
+    stateSelect.appendChild(option);
+});
+
+countries.forEach(country => {
+    const option = document.createElement('option');
+    option.value = country.code;
+    option.textContent = country.name;
+    if (country.code === 'US') option.selected = true;
+    countrySelect.appendChild(option);
+});
+
+// State dropdown logic
+const usStates = [
+    { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
+    { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
+    { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+    { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
+    { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
+    { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+    { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
+    { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
+    { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+    { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
+    { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
+    { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+    { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
+    { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
+    { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+    { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
+    { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
+    { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+    { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
+    { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
+    { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+    { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' },
+    { code: 'VT', name: 'Vermont' }, { code: 'VA', name: 'Virginia' },
+    { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+    { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }
+];
+
+// Populate US states
+usStates.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state.code;
+    option.textContent = state.name;
+    stateSelect.appendChild(option);
+});
+
+// Show/hide state dropdown based on country
+countrySelect.addEventListener('change', function() {
+    if (this.value === 'US' || this.value === 'CA') {
+        stateGroup.style.display = 'block';
+    } else {
+        stateGroup.style.display = 'none';
+    }
+});
+
+// Form submission
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('guest-username').value.trim();
+    const gender = document.querySelector('input[name="guest_gender"]:checked')?.value;
+    const age = document.getElementById('guest-age').value;
+    const country = document.getElementById('guest-country').value;
+    const state = document.getElementById('guest-state').value;
+
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    // Store in sessionStorage for chat.js to use
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('is_guest', 'true');
+
+    // Show age verification modal
+});
+</script>
+
+<script>
+document.getElementById('startBtn').addEventListener('click', function() {
+    var username = document.getElementById('guest-username').value.trim();
+    var gender = document.querySelector('input[name="guest_gender"]:checked');
+    var age = document.getElementById('guest-age').value;
+    var country = document.getElementById('guest-country').value;
+    var state = document.getElementById('guest-state').value;
+
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender.value);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state);
+    sessionStorage.setItem('is_guest', 'true');
+
+    // Show age verification modal
+    showAgeVerificationModal();
+});
+
+function showAgeVerificationModal() {
+    // Remove any existing modal first
+    const existingModal = document.getElementById('age-verification-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'age-verification-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content age-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Age Verification</h2>
+            </div>
+            <div class="modal-body">
+                <div class="warning-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3>18+ Only</h3>
+                <p class="warning-text">This chat platform is for users aged 18 and above only.</p>
+                
+                <div class="terms-box">
+                    <h4>Terms of Service Agreement</h4>
+                    <p>By using Chat Online, you agree to:</p>
+                    <ul>
+                        <li>Be at least 18 years old</li>
+                        <li>Not share personal information</li>
+                        <li>Follow chat rules & respect others</li>
+                    </ul>
+                </div>
+
+                <div class="agreement-checkbox">
+                    <label id="label-terms">
+                        <input type="checkbox" id="agree-terms">
+                        <span>I am 18+ and agree to Terms</span>
+                    </label>
+                </div>
+
+                <div class="agreement-checkbox">
+                    <label id="label-rules">
+                        <input type="checkbox" id="agree-rules">
+                        <span>I understand and will follow the rules</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="handleDecline()">
+                    <i class="fas fa-times"></i> Under 18
+                </button>
+                <button class="btn btn-primary" id="agree-btn" onclick="handleAccept()" disabled>
+                    <i class="fas fa-check"></i> I Agree & Enter
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Get elements
+    const agreeTerms = document.getElementById('agree-terms');
+    const agreeRules = document.getElementById('agree-rules');
+    const agreeBtn = document.getElementById('agree-btn');
+    const labelTerms = document.getElementById('label-terms');
+    const labelRules = document.getElementById('label-rules');
+    
+    // Add visual feedback for checkboxes
+    agreeTerms.addEventListener('change', function() {
+        if (this.checked) {
+            labelTerms.classList.add('checked');
+        } else {
+            labelTerms.classList.remove('checked');
+        }
+        updateButton();
+    });
+    
+    agreeRules.addEventListener('change', function() {
+        if (this.checked) {
+            labelRules.classList.add('checked');
+        } else {
+            labelRules.classList.remove('checked');
+        }
+        updateButton();
+    });
+    
+    function updateButton() {
+        if (agreeTerms.checked && agreeRules.checked) {
+            agreeBtn.disabled = false;
+            agreeBtn.style.opacity = '1';
+        } else {
+            agreeBtn.disabled = true;
+            agreeBtn.style.opacity = '0.5';
+        }
+    }
+    
+    // Prevent modal close on overlay click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            // Don't close - user must decide
+        }
+    });
+}
+
+function handleAccept() {
+    const agreeTerms = document.getElementById('agree-terms');
+    const agreeRules = document.getElementById('agree-rules');
+    
+    if (!agreeTerms.checked || !agreeRules.checked) {
+        alert('Please check both boxes to continue');
+        return;
+    }
+    
+    // Store all data in sessionStorage
+    const username = document.getElementById('guest-username').value.trim();
+    const gender = document.querySelector('input[name="guest_gender"]:checked');
+    const age = document.getElementById('guest-age').value;
+    const country = document.getElementById('guest-country').value;
+    const state = document.getElementById('guest-state').value;
+    
+    if (!username || !gender || !age || !country) {
+        alert('Please fill in all fields first');
+        const modal = document.getElementById('age-verification-modal');
+        if (modal) modal.remove();
+        return;
+    }
+    
+    sessionStorage.setItem('guest_username', username);
+    sessionStorage.setItem('guest_gender', gender.value);
+    sessionStorage.setItem('guest_age', age);
+    sessionStorage.setItem('guest_country', country);
+    sessionStorage.setItem('guest_state', state || '');
+    sessionStorage.setItem('is_guest', 'true');
+    sessionStorage.setItem('age_verified', 'true');
+    sessionStorage.setItem('agreed_at', new Date().toISOString());
+    
+    // Close modal
+    const modal = document.getElementById('age-verification-modal');
+    if (modal) modal.remove();
+    
+    // Redirect to welcome page
+    window.location.href = '/welcome';
+}
+
+function handleDecline() {
+    const modal = document.getElementById('age-verification-modal');
+    if (modal) modal.remove();
+    
+    alert('Sorry, you must be 18 or older to use this chat platform.');
+    // Optionally redirect or just close
+}
+</script>
+{% endblock %}

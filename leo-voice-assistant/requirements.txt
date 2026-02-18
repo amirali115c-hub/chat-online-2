@@ -1,0 +1,10 @@
+# Leo Voice Assistant - Requirements
+
+# Core - Voice Recognition & TTS
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+pyaudio>=0.2.14
+
+# Standard library (included with Python)
+# - threading, queue, subprocess, os, webbrowser, time, datetime, json, re
+# - tkinter (included with Python)

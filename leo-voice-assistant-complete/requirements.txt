@@ -1,0 +1,28 @@
+# Leo Voice Assistant - Requirements
+
+## Core Voice Components
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+pyaudio>=0.2.14
+sounddevice>=0.4.0
+
+## LLM and AI
+requests>=2.28.0
+
+## System Control
+psutil>=5.9.0
+pycaw>=20220416
+
+## Web Automation
+selenium>=4.0.0
+playwright>=1.40.0
+
+## GUI and Tray
+pystray>=0.19.5
+Pillow>=11.0.0
+
+## Hotkeys
+keyboard>=0.13.5
+
+## Standard Library (included with Python)
+# threading, subprocess, os, json, datetime, pathlib, webbrowser
