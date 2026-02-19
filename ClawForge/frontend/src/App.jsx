@@ -46,7 +46,12 @@ function App() {
     'qwen/qwen3.5-397b-a17b',
     'NVIDIABuild-Autogen-60',
     'deepseek-ai/deepseek-v3.2',
-    'bytedance/seed-oss-36b-instruct'
+    'bytedance/seed-oss-36b-instruct',
+    '--- Local Models (requires Ollama) ---',
+    'ollama/qwen3:8b (10GB RAM)',
+    'ollama/qwen3:1.5b (4GB RAM)',
+    'ollama/llama3.2:3b (4GB RAM)',
+    'ollama/phi3:3.8b (5GB RAM)',
   ]);
   const [selectedModel, setSelectedModel] = useState('qwen/qwen3.5-397b-a17b');
   const [apiStatus, setApiStatus] = useState({ provider: 'Checking...', status: 'checking' });
@@ -54,6 +59,7 @@ function App() {
   const messagesEndRef = useRef(null);
   const heartbeatRef = useRef(null);
   const reconnectAttempts = useRef(0);
+  const consecutiveFailures = useRef(0); // Track failures before showing disconnect
 
   // Initial load
   useEffect(() => {
@@ -77,12 +83,18 @@ function App() {
           method: 'GET',
           cache: 'no-cache'
         });
+        consecutiveFailures.current = 0; // Reset on success
         if (!isConnected) {
           setIsConnected(true);
           reconnectAttempts.current = 0;
         }
       } catch (e) {
-        handleDisconnect();
+        consecutiveFailures.current += 1;
+        console.log(`Heartbeat failure #${consecutiveFailures.current}`);
+        // Grace period: Allow 2 consecutive failures before showing disconnect
+        if (consecutiveFailures.current >= 2) {
+          handleDisconnect();
+        }
       }
     }, 30000);
   };
@@ -111,6 +123,7 @@ function App() {
       });
       setIsConnected(true);
       reconnectAttempts.current = 0;
+      consecutiveFailures.current = 0; // Reset on successful reconnect
     } catch (e) {
       if (reconnectAttempts.current < 5) {
         setTimeout(() => {
@@ -161,6 +174,7 @@ function App() {
       let endpoint = '/api/chat';
       if (selectedModel === 'z-ai/glm5') endpoint = '/api/chat/glm5';
       else if (selectedModel === 'qwen/qwen3.5-397b-a17b') endpoint = '/api/chat/qwen';
+      else if (selectedModel.startsWith('ollama/')) endpoint = '/api/chat/ollama';
       
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',

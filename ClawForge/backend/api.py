@@ -316,6 +316,18 @@ async def root():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint (for frontend heartbeat)."""
+    return {
+        "status": "healthy",
+        "agent": "ClawForge",
+        "version": "4.0",
+        "memory": "active",
+        "web_search": "combined",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 @app.get("/api/status")
 async def get_status():
     """Get system status (dashboard home)."""
@@ -1173,6 +1185,162 @@ async def auto_extract_facts(text: str):
     from features import longterm_memory
     longterm_memory.extract_and_save_facts(text)
     return {"status": "success", "message": "Facts extracted and saved"}
+
+# ============================================================================
+# OLLAMA LOCAL MODEL ENDPOINT (qwen3:8b)
+# ============================================================================
+
+@app.post("/api/chat/ollama")
+async def chat_ollama(request: ChatRequest):
+    """
+    Chat with local Ollama model (qwen3:8b or configured model).
+    This is a LOCAL fallback that doesn't require external API keys.
+    
+    Prerequisites:
+    1. Install Ollama: https://ollama.com
+    2. Run: ollama serve
+    3. Pull model: ollama pull qwen3:8b
+    
+    Note: If you get memory errors, try a smaller model:
+    - ollama pull qwen3:1.5b (requires ~4GB RAM)
+    - ollama pull llama3.2:3b (requires ~4GB RAM)
+    - ollama pull phi3:3.8b (requires ~5GB RAM)
+    """
+    try:
+        from ollama_client import OllamaClient
+        from memory_agent import ChatHistoryManager
+        
+        # Initialize clients
+        ollama = OllamaClient()
+        
+        # Build enhanced system prompt with memory
+        system_prompt = build_enhanced_system_prompt()
+        
+        # Get recent conversation history for context
+        chat_manager = ChatHistoryManager(history_dir="./workspace")
+        recent_messages = chat_manager.get_recent_messages(limit=5)
+        
+        # Prepare messages for Ollama - SIMPLIFIED for low memory
+        messages = []
+        
+        # Add system prompt
+        if system_prompt:
+            messages.append({
+                "role": "system",
+                "content": system_prompt[:500]  # Truncate for memory efficiency
+            })
+        
+        # Add current user message only (skip history to save memory)
+        messages.append({
+            "role": "user",
+            "content": request.message
+        })
+        
+        # Send to Ollama with lower settings for low-memory systems
+        result = ollama.chat(
+            message=request.message,
+            system_prompt=system_prompt[:500] if system_prompt else None,
+            temperature=0.7,
+            max_tokens=1024  # Reduced for memory efficiency
+        )
+        
+        if result["status"] == "success":
+            # Save conversation to memory
+            try:
+                chat_manager.add_message("user", request.message)
+                chat_manager.add_message("assistant", result["response"])
+            except Exception as mem_err:
+                print(f"[Memory] Warning: Could not save conversation: {mem_err}")
+            
+            return {
+                "status": "success",
+                "response": result["response"],
+                "model": result.get("model", "ollama"),
+                "provider": "ollama (local)",
+                "memory_enhanced": True,
+                "usage": result.get("usage", {})
+            }
+        else:
+            error_msg = result.get("error", "")
+            # Provide helpful suggestions based on error
+            if "memory" in error_msg.lower():
+                suggestion = "\n\n💡 Tip: Your system has limited memory. Try a smaller model:\n- ollama pull qwen3:1.5b\n- ollama pull llama3.2:3b\n- ollama pull phi3:3.8b"
+            else:
+                suggestion = ""
+                
+            return {
+                "status": "error",
+                "error": result.get("error", "Unknown error"),
+                "message": f"Ollama chat failed.{suggestion}",
+                "provider": "ollama (local)"
+            }
+            
+    except ImportError as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "message": "Ollama client not found. Make sure ollama_client.py exists in backend directory."
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "message": "Failed to communicate with Ollama"
+        }
+
+@app.get("/api/ollama/status")
+async def ollama_status():
+    """Check Ollama server status."""
+    try:
+        from ollama_client import OllamaClient
+        client = OllamaClient()
+        health = client.health_check()
+        return {
+            "status": health.get("status", "unknown"),
+            "model": client.model,
+            "model_available": health.get("model_available", False),
+            "available": health.get("available", False),
+            "base_url": client.base_url,
+            "message": health.get("message", "")
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+# ============================================================================
+# OLLAMA MODEL MANAGEMENT
+# ============================================================================
+
+@app.get("/api/ollama/models")
+async def list_ollama_models():
+    """List all models available in Ollama."""
+    try:
+        from ollama_client import OllamaClient
+        client = OllamaClient()
+        models = client.list_models()
+        return {
+            "status": "success",
+            "models": [
+                {"name": m.get("name", ""), "size": m.get("size", 0)} 
+                for m in models
+            ],
+            "active_model": client.model
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.post("/api/ollama/pull")
+async def pull_ollama_model(model_name: str = "qwen3:8b"):
+    """Pull a model from Ollama registry."""
+    try:
+        from ollama_client import OllamaClient
+        client = OllamaClient(model=model_name)
+        result = client.pull_model(model_name)
+        return result
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 # ============================================================================
 # SECURITY ENDPOINTS
