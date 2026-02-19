@@ -689,6 +689,25 @@ async def chat(request: ChatRequest):
         model = request.model or DEFAULT_MODEL
         response = client.chat(messages, model)
         
+        # Log conversation to Elasticsearch (in background)
+        try:
+            import uuid
+            from conversation_logger import get_logger
+            logger = get_logger()
+            if logger._connected:
+                import time
+                start_time = time.time()
+                logger.log_conversation(
+                    conversation_id=str(uuid.uuid4()),
+                    user_message=request.message,
+                    assistant_response=response,
+                    model=model,
+                    workload_id="general_chat",
+                    client_id="clawforge"
+                )
+        except Exception as log_err:
+            print(f"[Chat] Conversation logging failed: {log_err}")
+        
         return {
             "status": "success",
             "response": response,
@@ -1413,6 +1432,84 @@ async def search_memory_endpoint(request: Dict):
     query = request.get("query", "")
     results = search_memory(query)
     return {"results": results}
+
+# ============================================================================
+# CONVERSATION LOGGING ENDPOINTS (NVIDIA Data Flywheel Pattern)
+# ============================================================================
+
+class LogConversationRequest(BaseModel):
+    user_message: str
+    assistant_response: str
+    model: str = "qwen2.5:3b"
+    workload_id: str = "general_chat"
+    client_id: str = "clawforge"
+    session_id: str = None
+    user_id: str = "default"
+    tokens: int = None
+    duration_ms: int = None
+
+@app.post("/api/conversations/log")
+async def log_conversation(request: LogConversationRequest):
+    """
+    Log a complete conversation to Elasticsearch.
+    Based on NVIDIA Data Flywheel logging schema.
+    """
+    try:
+        from conversation_logger import get_logger
+        import uuid
+        
+        logger = get_logger()
+        conversation_id = str(uuid.uuid4())
+        
+        doc_id = logger.log_conversation(
+            conversation_id=conversation_id,
+            user_message=request.user_message,
+            assistant_response=request.assistant_response,
+            model=request.model,
+            workload_id=request.workload_id,
+            client_id=request.client_id,
+            session_id=request.session_id,
+            user_id=request.user_id,
+            tokens=request.tokens,
+            duration_ms=request.duration_ms
+        )
+        
+        return {
+            "status": "success" if doc_id else "stored_locally",
+            "conversation_id": conversation_id,
+            "elasticsearch": bool(doc_id)
+        }
+    except ImportError:
+        return {
+            "status": "error",
+            "message": "Conversation logger not available"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.get("/api/conversations/stats")
+async def get_conversation_stats():
+    """Get conversation statistics."""
+    try:
+        from conversation_logger import get_logger
+        logger = get_logger()
+        stats = logger.get_conversation_stats()
+        return {"status": "success", "stats": stats}
+    except ImportError:
+        return {"status": "error", "message": "Conversation logger not available"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/conversations/workloads")
+async def get_workload_types():
+    """Get available workload types."""
+    return {
+        "status": "success",
+        "workloads": ["general_chat", "coding", "writing", "analysis", "qa", "creative"]
+    }
 
 # Web Search Endpoints
 class SearchRequest(BaseModel):
