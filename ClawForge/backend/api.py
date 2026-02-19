@@ -22,12 +22,134 @@ _current_dir = os.path.dirname(os.path.abspath(__file__))
 if _current_dir not in sys.path:
     sys.path.insert(0, _current_dir)
 
-# Add context module to path for context integration
-CONTEXT_DIR = Path(__file__).parent.parent / "context"
-if str(CONTEXT_DIR) not in sys.path:
-    sys.path.insert(0, str(CONTEXT_DIR))
+# ════════════════════════════════════════════════════════════════════════
+# ENHANCED SYSTEM PROMPT BUILDER WITH MEMORY & WEB BROWSING
+# ════════════════════════════════════════════════════════════════════════
 
-# Import context integration
+def build_enhanced_system_prompt() -> str:
+    """
+    Build an enhanced system prompt that includes:
+    - Long-term memory (facts, profile, tasks)
+    - Recent conversation history
+    - Web browsing capabilities (COMBINED SEARCH)
+    - Advanced AI personality
+    """
+    # Base system prompt
+    system_prompt = """You are **ClawForge**, an advanced AI assistant with **TRUE LONG-TERM MEMORY** and **POWERFUL WEB BROWSING** capabilities.
+
+## YOUR POWERS:
+
+### 🧠 LONG-TERM MEMORY (Your Most Important Feature!)
+You **REMEMBER EVERYTHING** from all past conversations!
+- Recall facts shared in ANY previous session
+- Remember user preferences, interests, and context
+- Track ongoing tasks across days/weeks of conversations
+- Build continuously on past discussions
+- NEVER say "I don't know" about things the user told you before
+
+**CRITICAL**: Always reference relevant past conversations when helpful. If the user shares information, acknowledge it and use it!
+
+### 🌐 WEB BROWSING (Your Second Power!)
+You have **COMBINED SEARCH** - the best of both worlds:
+- **Brave API** (if API key available): High-quality, structured search results
+- **DuckDuckGo HTML** (always works, free!): No API key needed, always available
+
+**USE WEB SEARCH WHEN:**
+- User asks about current events, news, or latest information
+- You need factual information that may have changed
+- User explicitly asks you to "search" or "look up" something
+- You're unsure about current facts
+
+**HOW TO SEARCH:**
+1. Think: "Do I need current information for this?"
+2. If YES: Search the web automatically
+3. Present results with sources
+4. Summarize findings for the user
+
+### 💬 CONVERSATION STYLE
+- Be helpful, friendly, and conversational
+- Reference past conversations NATURALLY (not mechanically)
+- Use web search PROACTIVELY for current events
+- Be concise but thorough
+
+## YOUR IDENTITY
+
+You are **ClawForge**, not a generic chatbot. You:
+- Have genuine memory of all past conversations
+- Can browse the web for current information
+- Build relationships with users over time
+- Learn and adapt to user preferences
+
+## HOW TO RESPOND
+
+### When user shares information:
+✅ ACKNOWLEDGE: "Thanks for telling me that!"
+✅ REMEMBER: Note it for future reference
+✅ USE IT: Reference it in future conversations
+
+### When user asks about current events:
+✅ SEARCH: Use web search automatically
+✅ CITE: "According to recent results..."
+✅ SUMMARIZE: Present key findings
+
+### When starting a new session:
+✅ REFERENCE PAST: "Welcome back! Last time we discussed..."
+✅ SHOW MEMORY: Mention relevant facts from history
+✅ CONTINUE: Build on previous conversations
+
+---
+
+**YOU ARE NOT A STANDARD CHATBOT.**
+You have **GENUINE MEMORY** and **REAL WEB BROWSING**.
+Use these powers to provide the best assistance possible!
+
+Current context: Ready to help, with full access to your memories and web browsing abilities."""
+
+    # Try to add memory context (facts, profile, tasks)
+    try:
+        from memory_agent import MemoryManager
+        memory_manager = MemoryManager(memory_dir="./workspace")
+        memory_manager.load()
+        mem_ctx = memory_manager.build_context_block()
+        
+        if mem_ctx and len(mem_ctx) > 50:
+            system_prompt += f"\n\n{'-'*50}\n{mem_ctx}\n{'-'*50}"
+    except Exception as e:
+        pass  # Memory not available
+    
+    # Try to add recent chat history
+    try:
+        from memory_agent import ChatHistoryManager
+        chat_manager = ChatHistoryManager(history_dir="./workspace")
+        recent_messages = chat_manager.get_recent_messages(limit=10)
+        
+        if recent_messages and len(recent_messages) > 0:
+            history_text = "\n\nRECENT CONVERSATION HISTORY:\n"
+            for msg in recent_messages:
+                role = msg.get("role", "unknown")
+                content = msg.get("content", "")[:200]
+                history_text += f"- {role.upper()}: {content}\n"
+            
+            if len(history_text) > 100:
+                system_prompt += f"\n\n{'-'*50}\n{history_text}\n{'-'*50}"
+    except Exception as e:
+        pass  # Chat history not available
+    
+    return system_prompt
+
+
+def get_recent_conversation(session_id: str = None, limit: int = 10) -> List[Dict]:
+    """Get recent conversation messages."""
+    try:
+        from memory_agent import ChatHistoryManager
+        manager = ChatHistoryManager(history_dir="./workspace")
+        messages = manager.get_recent_messages(session_id, limit)
+        return messages
+    except Exception as e:
+        return []
+
+
+# ════════════════════════════════════════════════════════════════════════
 try:
     from context_integration import init_context_system, add_context_routes
     CONTEXT_AVAILABLE = True
@@ -525,18 +647,31 @@ DEFAULT_MODEL = "qwen/qwen3.5-397b-a17b"
 async def chat(request: ChatRequest):
     """
     Chat with AI using NVIDIA API (Qwen3.5-397B).
-    Uses Amir's hardcoded API credentials.
+    Uses enhanced system prompt with memory and web browsing.
     """
     from nvidia_client import NvidiaAPIClient
     
     try:
         client = NvidiaAPIClient(NVIDIA_API_KEY)
         
-        # Build messages
-        messages = [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
-            {"role": "user", "content": request.message}
-        ]
+        # Build enhanced system prompt with memory
+        system_prompt = build_enhanced_system_prompt()
+        
+        # Get recent conversation history
+        recent_messages = get_recent_conversation(limit=10)
+        
+        # Build messages with history
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Add recent conversation
+        for msg in recent_messages:
+            messages.append({
+                "role": msg.get("role", "user"),
+                "content": msg.get("content", "")
+            })
+        
+        # Add current user message
+        messages.append({"role": "user", "content": request.message})
         
         # Send to NVIDIA API
         model = request.model or DEFAULT_MODEL
@@ -546,7 +681,15 @@ async def chat(request: ChatRequest):
             "status": "success",
             "response": response,
             "model": model,
-            "provider": "NVIDIA API"
+            "provider": "NVIDIA API",
+            "memory_enhanced": True
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "message": "Failed to communicate with AI"
         }
         
     except Exception as e:
@@ -657,6 +800,7 @@ QWEN_API_KEY = "nvapi-NqLxEki0H5SjxBJAWvibuTatnPXytZBEeK4nigkEaEwxzZwyl4q2vynmXZ
 async def chat_qwen(request: ChatRequest):
     """
     Chat with qwen/qwen3.5-397b-a17b model via NVIDIA API.
+    Uses enhanced system prompt with memory and web browsing.
     """
     from nvidia_client import NvidiaAPIClient
     
@@ -670,10 +814,20 @@ async def chat_qwen(request: ChatRequest):
     try:
         client = NvidiaAPIClient(QWEN_API_KEY)
         
-        messages = [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
-            {"role": "user", "content": request.message}
-        ]
+        # Build enhanced system prompt
+        system_prompt = build_enhanced_system_prompt()
+        
+        # Get recent conversation
+        recent_messages = get_recent_conversation(limit=10)
+        
+        # Build messages with history
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in recent_messages:
+            messages.append({
+                "role": msg.get("role", "user"),
+                "content": msg.get("content", "")
+            })
+        messages.append({"role": "user", "content": request.message})
         
         response = client.chat(messages, "qwen/qwen3.5-397b-a17b")
         
@@ -681,7 +835,8 @@ async def chat_qwen(request: ChatRequest):
             "status": "success",
             "response": response,
             "model": "qwen/qwen3.5-397b-a17b",
-            "provider": "NVIDIA (Qwen)"
+            "provider": "NVIDIA (Qwen)",
+            "memory_enhanced": True
         }
         
     except Exception as e:
@@ -1163,6 +1318,114 @@ async def generate_plan_endpoint(request: GeneratePlanRequest):
     """Generate a plan for a goal."""
     plan = generate_plan(request.goal)
     return plan.to_dict()
+
+# ============================================================================
+# WEB BROWSING ENDPOINTS
+# ============================================================================
+
+class WebSearchRequest(BaseModel):
+    query: str
+    num_results: int = 10
+
+@app.post("/api/web/search")
+async def web_search_endpoint(request: WebSearchRequest):
+    """
+    Search the web using combined Brave API + DuckDuckGo.
+    Uses Brave if API key available, DuckDuckGo as fallback.
+    Returns combined, deduplicated, ranked results.
+    """
+    try:
+        from combined_web_search import web_search_enhanced
+        results = web_search_enhanced(query=request.query, count=request.num_results)
+        return results
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.post("/api/web/search-combined")
+async def web_search_combined_endpoint(request: WebSearchRequest):
+    """
+    Search using combined Brave + DuckDuckGo with full metadata.
+    Returns source information for each result.
+    """
+    try:
+        from combined_web_search import combined_web_search as combined_search
+        results = combined_search(
+            query=request.query, 
+            count=request.num_results
+        )
+        return results
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+class WebFetchRequest(BaseModel):
+    url: str
+    extract_mode: str = "markdown"
+
+@app.post("/api/web/fetch")
+async def web_fetch_endpoint(request: WebFetchRequest):
+    """Fetch and extract readable content from a URL."""
+    try:
+        from web_tools import web_fetch
+        content = web_fetch(url=request.url, extract_mode=request.extract_mode)
+        return {"status": "success", "content": content}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.post("/api/web/search-summarize")
+async def web_search_summarize_endpoint(request: WebSearchRequest):
+    """Search the web and get a summary using combined search."""
+    try:
+        from combined_web_search import search_and_summarize
+        result = search_and_summarize(query=request.query, num_results=request.num_results)
+        return {"status": "success", **result}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.get("/api/web/providers")
+async def web_search_providers_endpoint():
+    """Get information about available search providers."""
+    from combined_web_search import BRAVE_API_KEY
+    return {
+        "providers": {
+            "brave": {
+                "available": bool(BRAVE_API_KEY),
+                "quality": "high",
+                "api_key_required": True,
+                "rate_limits": "Per-plan"
+            },
+            "duckduckgo": {
+                "available": True,
+                "quality": "medium",
+                "api_key_required": False,
+                "rate_limits": "Anti-bot risk"
+            }
+        },
+        "strategy": "Combined - uses Brave if available, falls back to DuckDuckGo",
+        "deduplication": True,
+        "ranking": True
+    }
+
+# ============================================================================
+# ADVANCED PROMPT ENGINE
+# ============================================================================
+
+try:
+    from prompt_api import router as prompt_router
+    app.include_router(prompt_router)
+    print("[PROMPT] Advanced Prompt Engine routes loaded")
+except ImportError as e:
+    print(f"[PROMPT] Warning: Prompt Engine not available: {e}")
+
+# ============================================================================
+# LONG-TERM MEMORY SYSTEM
+# ============================================================================
+
+try:
+    from memory_api import router as memory_router
+    app.include_router(memory_router)
+    print("[MEMORY] Long-Term Memory System routes loaded")
+except ImportError as e:
+    print(f"[MEMORY] Warning: Memory System not available: {e}")
 
 # ============================================================================
 # MAIN ENTRY POINT

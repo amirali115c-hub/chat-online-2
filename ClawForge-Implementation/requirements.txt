@@ -1,0 +1,74 @@
+# ClawForge - FREE Dependencies (No Paid APIs)
+
+# Core AI - Local (Ollama)
+ollama>=0.1.0
+
+# Web Search - FREE (DuckDuckGo)
+duckduckgo-search>=7.0.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+lxml>=4.9.0
+
+# Database - FREE (SQLite comes with Python)
+# No additional package needed
+
+# Code Execution - FREE
+# subprocess comes with Python
+
+# Browser Automation - FREE (Selenium)
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# UI Framework - FREE (Gradio)
+gradio>=4.0.0
+
+# API Framework - FREE (FastAPI)
+fastapi>=0.109.0
+uvicorn>=0.27.0
+python-multipart>=0.0.6
+
+# Configuration - FREE
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# Utilities - FREE
+rich>=13.7.0
+tqdm>=4.66.0
+colorama>=0.4.6
+
+# Date/Time - FREE
+# datetime comes with Python
+
+# File Operations - FREE
+# os/pathlib comes with Python
+
+# JSON/YAML - FREE
+# json/yaml comes with Python
+
+# Optional: For enhanced features
+# Install only if needed
+
+# Local LLM Enhancements
+sentence-transformers>=2.2.0  # For embeddings (free)
+faiss-cpu>=1.7.0  # For vector search (free)
+
+# Text Processing
+nltk>=3.8.0  # For NLP (free)
+spacy>=3.7.0  # For NLP (free, with en_core_web_sm)
+
+# PDF/Document Processing
+pypdf>=3.17.0
+python-docx>=1.1.0
+pdfminer.six>=20221105
+
+# For N8N Integration (optional)
+requests>=2.31.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+
+# Development
+black>=23.0.0
+flake8>=6.1.0
+mypy>=1.8.0

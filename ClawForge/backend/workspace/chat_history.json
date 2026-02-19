@@ -1,0 +1,109 @@
+{
+  "sessions": [
+    {
+      "id": "session_1",
+      "date": "2026-02-20T00:33:12.839466",
+      "messages": [],
+      "message_count": 0
+    },
+    {
+      "id": "session_2",
+      "date": "2026-02-20T00:33:12.844012",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hello, my name is Amir!",
+          "timestamp": "2026-02-20T00:33:12.844018"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_3",
+      "date": "2026-02-20T00:33:12.847766",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Hi Amir! Nice to meet you. How can I help you today?",
+          "timestamp": "2026-02-20T00:33:12.847772"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_4",
+      "date": "2026-02-20T00:49:27.175566",
+      "messages": [
+        {
+          "role": "user",
+          "content": "My name is Amir and I am a Python developer from Pakistan",
+          "timestamp": "2026-02-20T00:49:27.175880"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_5",
+      "date": "2026-02-20T00:56:22.147937",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hi, my name is Amir and I am a Python developer from Pakistan",
+          "timestamp": "2026-02-20T00:56:22.148433"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_6",
+      "date": "2026-02-20T00:56:22.159259",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "Nice to meet you Amir! Python is a great language for development.",
+          "timestamp": "2026-02-20T00:56:22.159268"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_7",
+      "date": "2026-02-20T00:56:22.164514",
+      "messages": [
+        {
+          "role": "user",
+          "content": "I am also working on an AI project called ClawForge",
+          "timestamp": "2026-02-20T00:56:22.164522"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_8",
+      "date": "2026-02-20T00:56:22.169487",
+      "messages": [
+        {
+          "role": "assistant",
+          "content": "That sounds amazing! ClawForge is a great name for an AI project.",
+          "timestamp": "2026-02-20T00:56:22.169495"
+        }
+      ],
+      "message_count": 1
+    },
+    {
+      "id": "session_9",
+      "date": "2026-02-20T01:13:47.420564",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Task completed: Made ClawForge fully aware of its web browsing powers. Updated system prompt to emphasize combined web search (Brave API + DuckDuckGo) and proactive use of web search for current events.",
+          "timestamp": "2026-02-20T01:13:47.420727"
+        }
+      ],
+      "message_count": 1
+    }
+  ],
+  "total_messages": 8,
+  "created_at": "2026-02-20T00:33:04.032284",
+  "last_updated": "2026-02-20T01:13:47.420735"
+}

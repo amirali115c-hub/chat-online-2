@@ -8,6 +8,26 @@
 
 ---
 
+## Amir's Copywriting Checklist
+
+**CRITICAL:** Before writing ANY blog post for Amir, read:
+- `memory/amir-copywriting-blog-checklist.md` (MANDATORY)
+- `memory/amir-complete-writing-checklist.md`
+- `memory/amir-writing-soul-strict.md`
+- `memory/ultimate-seo-content-mastery-prompt.md`
+
+**Key Rules:**
+- ❌ NEVER use em dash (—)
+- ✅ Word count: 2000-3000 words minimum
+- ✅ Include: Meta title, Meta description, URL slug
+- ✅ Include: Introduction, FAQ section, Conclusion, About the Author
+- ✅ 95%+ contractions
+- ✅ Personal experience ("I have seen", "I have talked to")
+- ✅ Honest frustration, simple contrasts, fragments for impact
+- ❌ No formal connectors ("Despite", "Nevertheless", "Furthermore", "Moreover")
+
+---
+
 ## Admin Panel Credentials
 
 ### Local Development

@@ -1,0 +1,238 @@
+# ClawForge Configuration - FREE Options Only
+# ===========================================
+
+# AI Configuration (FREE Local - Ollama)
+ai:
+  provider: "ollama"  # FREE local AI
+  models:
+    primary: "llama3"
+    coding: "codellama"
+    fast: "mistral"
+  settings:
+    temperature: 0.7
+    max_tokens: 4000
+    context_window: 8000
+  ollama_url: "http://localhost:11434"
+
+# Web Configuration (FREE - DuckDuckGo)
+web:
+  search_engine: "duckduckgo"
+  max_results: 10
+  timeout: 30
+  user_agent: "ClawForge/1.0"
+  rate_limit:
+    requests_per_minute: 30
+    delay_between: 2
+
+# Database Configuration (FREE - SQLite)
+database:
+  type: "sqlite"
+  path: "./data/clawforge.db"
+  backup:
+    enabled: true
+    interval: 24  # hours
+    path: "./data/backups/"
+
+# Browser Automation (FREE - Selenium)
+automation:
+  browser: "chrome"  # or firefox
+  headless: true
+  timeout: 60
+  extensions: []
+
+# N8N Configuration (FREE - Self-hosted)
+n8n:
+  url: "http://localhost:5678"
+  api_key: ""  # Set your N8N API key
+  workflows:
+    - "job_aggregator"
+    - "application_tracker"
+    - "content_distribution"
+    - "email_marketing"
+    - "social_scheduling"
+
+# Email Configuration (FREE Tiers)
+email:
+  provider: "gmail"  # or outlook, imap
+  smtp:
+    host: "smtp.gmail.com"
+    port: 587
+    username: ""  # Your email
+    password: ""  # Your app password
+  imap:
+    host: "imap.gmail.com"
+    username: ""  # Your email
+  limits:
+    daily_limit: 500
+    per_hour: 50
+
+# Calendar Configuration (FREE)
+calendar:
+  providers:
+    - "google"
+    - "outlook"
+  sync_interval: 15  # minutes
+  default_reminder: 15  # minutes before
+
+# File Storage (FREE Local)
+storage:
+  type: "local"
+  base_path: "./data/files/"
+  max_file_size: 50  # MB
+  allowed_extensions:
+    - ".pdf"
+    - ".docx"
+    - ".txt"
+    - ".md"
+    - ".json"
+    - ".csv"
+    - ".jpg"
+    - ".png"
+
+# Dashboard Configuration (FREE - Gradio)
+dashboard:
+  host: "0.0.0.0"
+  port: 7860
+  debug: false
+  theme: "default"  # or dark
+  auth:
+    enabled: false
+    username: "admin"
+    password: ""  # Set password
+
+# API Configuration (FREE - FastAPI)
+api:
+  host: "0.0.0.0"
+  port: 8000
+  docs: true
+  cors:
+    enabled: true
+    origins:
+      - "http://localhost:7860"
+
+# Memory Configuration (FREE - SQLite)
+memory:
+  type: "sqlite"
+  max_context_turns: 20
+  summary_trigger: 15
+  vector_search:
+    enabled: true
+    provider: "sentence-transformers"
+
+# Safety Configuration
+safety:
+  block_harmful: true
+  block_illegal: true
+  block_malware: true
+  block_weapons: true
+  log_violations: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "./logs/clawforge.log"
+  max_size: 10  # MB
+  backup_count: 5
+
+# Job Hunting Tools Configuration
+job_hunting:
+  boards:
+    - "linkedin"
+    - "indeed"
+    - "glassdoor"
+    - "remoteok"
+    - "weworkremotely"
+  daily_applications_limit: 20
+  auto_followup:
+    enabled: true
+    days: 7
+
+# SEO Tools Configuration
+seo:
+  keyword_research:
+    max_keywords: 100
+    difficulty_threshold: 50
+  competitor_analysis:
+    max_competitors: 10
+  technical_audit:
+    check_speed: true
+    check_mobile: true
+    check_security: true
+
+# Copywriting Configuration
+copywriting:
+  frameworks:
+    - "aida"
+    - "pas"
+    - "bab"
+    - "fab"
+    - "pastor"
+    - "pppp"
+    - "sss"
+    - "bab_luxury"
+    - "4us"
+    - "quest"
+  tone_presets:
+    luxury: "exclusive, aspirational, sophisticated"
+    casual: "friendly, conversational, direct"
+    professional: "formal, authoritative, clear"
+
+# Blog Engine Configuration
+blog:
+  min_words: 1500
+  max_words: 3000
+  seo_requirements:
+    h1_required: true
+    meta_description: true
+    keywords_density: 0.02
+    headings_structure: true
+  human_writing:
+    contractions_target: 0.95
+    fragments_target: 10
+    casual_starters_target: 0.50
+
+# Email Templates
+email_templates:
+  application:
+    subject: "Application for {role} at {company}"
+    body: "Dear {hiring_manager},..."
+  followup:
+    subject: "Following up on {role} application"
+    body: "Dear {hiring_manager},..."
+  outreach:
+    subject: "{mutual_connection} suggested I reach out"
+    body: "Hi {name},..."
+
+# Rate Limiting
+rate_limit:
+  enabled: true
+  ai_requests:
+    per_minute: 10
+    per_hour: 100
+  web_requests:
+    per_minute: 30
+    per_hour: 1000
+
+# Backup Configuration
+backup:
+  enabled: true
+  interval: 24  # hours
+  retention: 7  # days
+  paths:
+    - "./data/"
+    - "./config.yaml"
+
+# Development Mode
+dev:
+  debug: true
+  log_level: "DEBUG"
+  mock_ai: false
+  sample_data: true
+
+# ===========================================
+# END OF CONFIGURATION
+# ===========================================
+
+# To customize: copy this file to config_user.yaml
+# and edit the values there.
