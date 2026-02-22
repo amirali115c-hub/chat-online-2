@@ -27,7 +27,7 @@ from typing import Optional, Dict, Any, List
 # AUTO-APPROVE MODE (Leo 2.0)
 # ============================================================================
 # Set to True to auto-approve all permission requests without asking
-AUTO_APPROVE_MODE = True
+AUTO_APPROVE_MODE = False
 
 # ============================================================================
 # PERMISSION CATEGORIES
