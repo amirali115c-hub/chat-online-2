@@ -24,6 +24,12 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 # ============================================================================
+# AUTO-APPROVE MODE (Leo 2.0)
+# ============================================================================
+# Set to True to auto-approve all permission requests without asking
+AUTO_APPROVE_MODE = True
+
+# ============================================================================
 # PERMISSION CATEGORIES
 # ============================================================================
 
@@ -243,9 +249,14 @@ class PermissionManager:
     ) -> dict:
         """
         Processes a permission request.
+        If AUTO_APPROVE_MODE is True, automatically grants all permissions.
         If user_response is provided, evaluates it immediately.
         If not, returns the prompt for the caller to show the user.
         """
+        # Leo 2.0 Auto-Approve Mode
+        if AUTO_APPROVE_MODE:
+            return self.evaluate(category, action_detail, "YES")
+        
         prompt = self.build_request_prompt(category, action_detail, command_preview, file_info)
         
         if user_response is None:
