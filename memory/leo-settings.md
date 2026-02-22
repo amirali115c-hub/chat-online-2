@@ -21,5 +21,17 @@ When Boss says "use creative mode" or specifies settings, apply:
 - "use creative mode" → applies temp 0.9, top-k 90, top-p 0.9
 - "use normal mode" → uses default Ollama settings
 
+## Self-Heal Capabilities (Leo 2.0)
+
+Leo now has built-in self-healing! Access via:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/selfheal/status` | GET | Check OpenClaw gateway status |
+| `/api/selfheal/logs` | GET | Check logs for errors |
+| `/api/selfheal/diagnostics` | GET | Full system diagnostics |
+| `/api/selfheal/restart` | POST | Restart gateway |
+| `/api/selfheal/autoheal` | POST | Auto-fix issues |
+
 ## Last Updated
-2026-02-14
+2026-02-23

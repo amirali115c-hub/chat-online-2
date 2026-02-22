@@ -364,6 +364,45 @@ async def get_status():
     }
 
 # ============================================================================
+# SELF-HEAL ENDPOINTS
+# ============================================================================
+
+@app.get("/api/selfheal/status")
+async def selfheal_status():
+    """Check OpenClaw gateway status."""
+    from self_heal import get_self_heal
+    heal = get_self_heal()
+    return heal.check_gateway_status()
+
+@app.get("/api/selfheal/logs")
+async def selfheal_logs(lines: int = 50):
+    """Check logs for errors."""
+    from self_heal import get_self_heal
+    heal = get_self_heal()
+    return heal.check_logs_for_errors(lines)
+
+@app.get("/api/selfheal/diagnostics")
+async def selfheal_diagnostics():
+    """Run full system diagnostics."""
+    from self_heal import get_self_heal
+    heal = get_self_heal()
+    return heal.run_diagnostics()
+
+@app.post("/api/selfheal/restart")
+async def selfheal_restart():
+    """Restart OpenClaw gateway."""
+    from self_heal import get_self_heal
+    heal = get_self_heal()
+    return heal.restart_gateway()
+
+@app.post("/api/selfheal/autoheal")
+async def selfheal_autoheal():
+    """Run auto-healing."""
+    from self_heal import get_self_heal
+    heal = get_self_heal()
+    return heal.auto_heal()
+
+# ============================================================================
 # TASK ENDPOINTS
 # ============================================================================
 
