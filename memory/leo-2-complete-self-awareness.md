@@ -152,52 +152,168 @@ openclaw webchat
 
 ## HOW TO ADD NEW CAPABILITIES
 
-### Adding New Skills
+### Option 1: Create Helper Scripts (IN WORKSPACE)
 
-1. Create a new skill file at:
-   ```
-   ~/AppData/Roaming/npm/node_modules/openclaw/skills/
-   ```
+Leo creates Python/PowerShell scripts in the workspace that extend functionality:
 
-2. Format (SKILL.md):
-   ```markdown
-   # Skill Name
-   
-   ## Description
-   What it does
-   
-   ## Tools Used
-   - tool1
-   - tool2
-   
-   ## How to Use
-   Step-by-step instructions
-   ```
+**Location:** `C:\Users\HP\.openclaw\workspace\`
 
-3. The skill becomes available automatically
+**What Leo can build:**
+- Automation scripts (backup, cleanup, monitoring)
+- Data processors (CSV, JSON transformers)
+- API wrappers (call external services)
+- Custom workflows
 
-### Adding New Models
+**Example Helper Scripts Leo Can Create:**
+```python
+# backup.py - Automated backup
+import shutil, os, datetime
+from pathlib import Path
 
-1. Pull model via Ollama:
-   ```powershell
-   ollama pull <model-name>
-   ```
+def backup_workspace():
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = Path(f"backups/backup_{timestamp}")
+    # ... backup logic
+    return str(backup_dir)
+```
 
-2. Or use remote models (configure in OpenClaw)
+```python
+# api_wrapper.py - Call external APIs
+import requests
 
-3. Test with: `ollama list`
+def call_weather_api(city):
+    response = requests.get(f"https://api.weather.com/{city}")
+    return response.json()
+```
 
-### Adding API Endpoints
+### Option 2: Add New Skills (OPENCLAW SKILLS FOLDER)
 
-1. Edit the Flask/OpenClaw app source
-2. Add route:
-   ```python
-   @app.route('/api/new-endpoint', methods=['GET'])
-   def new_endpoint():
-       return jsonify({"status": "ok"})
-   ```
+Skills extend Leo's capabilities within OpenClaw framework:
 
-3. Deploy/restart
+**Location:** `~/AppData/Roaming/npm/node_modules/openclaw/skills/`
+
+**Skill Format (SKILL.md):**
+```markdown
+# Skill Name
+
+## Description
+What this skill does
+
+## Tools Used
+- exec (run commands)
+- read (read files)
+- write (write files)
+
+## When to Use
+When user asks for...
+
+## How It Works
+1. Step one
+2. Step two
+3. Return result
+```
+
+**Example Skill: Weather**
+```markdown
+# Weather Skill
+
+## Description
+Get current weather and forecasts
+
+## Tools Used
+- web_fetch (fetch wttr.in)
+- read (parse response)
+
+## When to Use
+When user asks about weather
+
+## How It Works
+1. Use web_fetch to get wttr.in/{city}
+2. Parse and format the response
+3. Return weather info
+```
+
+### Option 3: Build Workflows with Existing Tools
+
+Leo can orchestrate complex workflows by combining tools:
+
+**N8N Integration Example:**
+```python
+# Trigger N8N workflow via webhook
+import requests
+
+def trigger_n8n_workflow(webhook_url, payload):
+    response = requests.post(webhook_url, json=payload)
+    return response.json()
+```
+
+**Multi-Step Workflow:**
+```python
+# Example: Research + Write + Publish
+def research_topic(topic):
+    # 1. Search web for topic
+    # 2. Fetch top 3 articles
+    # 3. Summarize findings
+    return summary
+
+def write_blog(topic, summary):
+    # Use writing skills to create blog
+    return blog_post
+
+def publish_blog(blog_post):
+    # Write to workspace
+    # Commit to Git
+    return "published"
+```
+
+### Option 4: Use File-Based Memory Mechanisms
+
+Leo uses files for persistent memory:
+
+**How it works:**
+- `MEMORY.md` - Long-term curated memory
+- `memory/YYYY-MM-DD.md` - Daily notes
+- `conversation_continuity.md` - Session continuity
+
+**To enhance memory:**
+1. Add more structured memory files
+2. Create databases (SQLite) for structured data
+3. Build search indexes
+
+### Option 5: Modify OpenClaw Code (EXTERNAL)
+
+To add native tools, modify OpenClaw source:
+
+**Location:** `C:\Users\HP\AppData\Roaming\npm\node_modules\openclaw\`
+
+**Add new tool:**
+1. Edit the tool definition file
+2. Register the tool with its function
+3. Restart OpenClaw
+
+### Option 6: Create External Services (APIs)
+
+Build APIs that Leo calls via exec/fetch:
+
+**Example: Custom API Service**
+```python
+# Flask app that Leo can call
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/extended capability')
+def extended_capability():
+    # Custom logic here
+    return jsonify({"result": "..."})
+
+if __name__ == '__main__':
+    app.run(port=5001)
+```
+
+**Leo calls it via:**
+- `web_fetch(url="http://localhost:5001/api/...")`
+- `exec(python "api_service.py")`
 
 ---
 

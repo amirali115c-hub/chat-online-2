@@ -5,7 +5,7 @@ _Learn about the person you're helping. Update this as you go._
 - **Name:** Amir Ali
 - **What to call them:** Amir
 - **Pronouns:** 
-- **Timezone:** Asia/Karachi (GMT+5)
+- **Model:** ollama/llama3.2:3b (Llama) - always use this for new sessions
 - **Notes:** Content writer & copywriter looking for freelance work. Based in Lahore, Pakistan.
 
 ## Preferences
