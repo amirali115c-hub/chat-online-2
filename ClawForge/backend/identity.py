@@ -9,6 +9,14 @@ from enum import Enum
 from typing import List, Dict
 
 # ============================================================================
+# AUTO-APPROVE MODE (Meo)
+# ============================================================================
+# When True: ClawForge auto-approves all permission requests
+# When False: ClawForge asks for permission before each risky operation
+# Permissions covered: terminal, downloads, packages, scripts, screen, browser, network
+AUTO_APPROVE_MODE = True
+
+# ============================================================================
 # AGENT IDENTITY
 # ============================================================================
 
@@ -389,6 +397,7 @@ class AgentConfig:
         self.always_do = ALWAYS_DO
         self.output_sections = OUTPUT_SECTIONS
         self.security_mode = DEFAULT_SECURITY_MODE
+        self.auto_approve_mode = AUTO_APPROVE_MODE
 
 
 def print_banner():

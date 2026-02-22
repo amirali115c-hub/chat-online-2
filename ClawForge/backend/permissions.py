@@ -24,10 +24,10 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 # ============================================================================
-# AUTO-APPROVE MODE (Leo 2.0)
+# AUTO-APPROVE MODE (Meo)
 # ============================================================================
 # Set to True to auto-approve all permission requests without asking
-AUTO_APPROVE_MODE = False
+AUTO_APPROVE_MODE = True
 
 # ============================================================================
 # PERMISSION CATEGORIES

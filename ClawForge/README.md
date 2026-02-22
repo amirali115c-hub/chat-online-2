@@ -53,6 +53,7 @@ cd frontend && npm run dev
 - **Text-to-Speech**: pyttsx3 voice synthesis
 - **Task Planner**: Multi-step task planning
 - **File Editor**: Search/replace file editing
+- **Auto-Approve Mode**: All permission requests auto-approved (terminal, downloads, packages, scripts, screen, browser, network)
 
 ---
 
