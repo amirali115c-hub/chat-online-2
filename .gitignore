@@ -58,3 +58,6 @@ htmlcov/
 # Temporary files
 *.tmp
 *.bak
+
+# OpenClaw config (contains API keys)
+.openclaw/
