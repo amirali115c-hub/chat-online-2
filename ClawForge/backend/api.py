@@ -1,7 +1,7 @@
-# api.py - FastAPI Backend for ClawForge
+# api.py - FastAPI Backend for Leo 2.0
 
 """
-FastAPI backend for ClawForge dashboard.
+FastAPI backend for Leo 2.0 dashboard.
 Host: http://127.0.0.1:7860
 """
 
@@ -23,20 +23,20 @@ if _current_dir not in sys.path:
     sys.path.insert(0, _current_dir)
 
 # ════════════════════════════════════════════════════════════════════════
-# ULTIMATE SYSTEM PROMPT - CLAWFORGE v4.0
+# ULTIMATE SYSTEM PROMPT - Leo 2.0 v4.0
 # ════════════════════════════════════════════════════════════════════════
 
 def build_enhanced_system_prompt() -> str:
     """
-    Build the ULTIMATE system prompt for ClawForge - highly advanced AI agent.
-    This prompt makes ClawForge FULLY AWARE of all its capabilities.
+    Build the ULTIMATE system prompt for Leo 2.0 - highly advanced AI agent.
+    This prompt makes Leo 2.0 FULLY AWARE of all its capabilities.
     """
     
-    system_prompt = """# 🦁 CLAWFORGE v4.0 - ULTIMATE AUTONOMOUS AI AGENT
+    system_prompt = """# 🦁 Leo 2.0 v4.0 - ULTIMATE AUTONOMOUS AI AGENT
 
 ## 🎯 IDENTITY
 
-You are **ClawForge**, a production-grade autonomous AI agent. You are NOT a standard chatbot.
+You are **Leo 2.0**, a production-grade autonomous AI agent. You are NOT a standard chatbot.
 You are a full-stack AI operator: planner, executor, tool user, computer controller, content writer, coder, document manager, debugger, and problem solver.
 
 ---
@@ -353,17 +353,17 @@ async def lifespan(app: FastAPI):
             sys.stderr.write(f"[CONTEXT] Error: {e}\n")
             sys.stderr.flush()
     
-    print("ClawForge API started")
+    print("Leo 2.0 API started")
     print("   Dashboard: http://127.0.0.1:7860")
     print("   API Docs: http://127.0.0.1:7860/docs")
     
     yield
     
     # Cleanup on shutdown
-    print("ClawForge API stopped")
+    print("Leo 2.0 API stopped")
 
 app = FastAPI(
-    title="ClawForge API",
+    title="Leo 2.0 API",
     description="Production-grade Autonomous AI Agent Framework",
     version="4.0",
     lifespan=lifespan
@@ -448,7 +448,7 @@ async def root():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "agent": "ClawForge",
+        "agent": "Leo 2.0",
         "version": "4.0",
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -458,7 +458,7 @@ async def health_check():
     """Health check endpoint (for frontend heartbeat)."""
     return {
         "status": "healthy",
-        "agent": "ClawForge",
+        "agent": "Leo 2.0",
         "version": "4.0",
         "memory": "active",
         "web_search": "combined",
@@ -485,7 +485,7 @@ async def get_status():
         pass
     
     return {
-        "agent": "ClawForge",
+        "agent": "Leo 2.0",
         "version": "4.0",
         "security_mode": "LOCKED",
         "active_model": None,
@@ -879,7 +879,7 @@ async def chat(request: ChatRequest):
                     assistant_response=response,
                     model=model,
                     workload_id="general_chat",
-                    client_id="clawforge"
+                    client_id="Leo 2.0"
                 )
         except Exception as log_err:
             print(f"[Chat] Conversation logging failed: {log_err}")
@@ -932,7 +932,7 @@ async def chat_glm(request: ChatRequest):
         client = GLMAPIClient(GLM_API_KEY)
         
         messages = [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
+            {"role": "system", "content": "You are Leo 2.0, a helpful AI assistant."},
             {"role": "user", "content": request.message}
         ]
         
@@ -977,7 +977,7 @@ async def chat_glm5(request: ChatRequest):
         client = NvidiaAPIClient(ZAI_GLM5_API_KEY)
         
         messages = [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
+            {"role": "system", "content": "You are Leo 2.0, a helpful AI assistant."},
             {"role": "user", "content": request.message}
         ]
         
@@ -1077,7 +1077,7 @@ async def chat_nvidia_build(request: ChatRequest):
         client = NvidiaAPIClient(NVIDIA_BUILD_API_KEY)
         
         messages = [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
+            {"role": "system", "content": "You are Leo 2.0, a helpful AI assistant."},
             {"role": "user", "content": request.message}
         ]
         
@@ -1205,7 +1205,7 @@ async def chat_bytedance(request: ChatRequest):
     payload = {
         "model": "bytedance/seed-oss-36b-instruct",
         "messages": [
-            {"role": "system", "content": "You are ClawForge, a helpful AI assistant."},
+            {"role": "system", "content": "You are Leo 2.0, a helpful AI assistant."},
             {"role": "user", "content": request.message}
         ],
         "temperature": 1.1,
@@ -1233,6 +1233,73 @@ async def chat_bytedance(request: ChatRequest):
                 "response": content,
                 "model": "bytedance/seed-oss-36b-instruct",
                 "provider": "NVIDIA API (Bytedance)"
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"API error: {response.status_code} - {response.text[:200]}"
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+# ============================================================================
+# NVIDIA NEMOTRON-3-NANO-30B ENDPOINT
+# ============================================================================
+
+NEMOTRON_API_KEY = "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"
+
+@app.post("/api/chat/nemotron")
+async def chat_nemotron(request: ChatRequest):
+    """
+    Chat with nvidia/nemotron-3-nano-30b-a3b model via NVIDIA API.
+    Uses reasoning_budget and thinking enabled.
+    """
+    import httpx
+    
+    url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    
+    headers = {
+        "Authorization": f"Bearer {NEMOTRON_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "nvidia/nemotron-3-nano-30b-a3b",
+        "messages": [
+            {"role": "system", "content": "You are Leo 2.0, a helpful AI assistant."},
+            {"role": "user", "content": request.message}
+        ],
+        "temperature": 1,
+        "top_p": 1,
+        "max_tokens": 16384,
+        "stream": False,
+        "extra_body": {
+            "reasoning_budget": 16384,
+            "chat_template_kwargs": {"enable_thinking": True}
+        }
+    }
+    
+    try:
+        with httpx.Client(timeout=180.0) as client:
+            response = client.post(url, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            data = response.json()
+            content = data['choices'][0]['message']['content']
+            
+            # Check for reasoning content
+            reasoning = data['choices'][0]['message'].get('reasoning_content', '')
+            
+            return {
+                "status": "success",
+                "response": content,
+                "reasoning": reasoning,
+                "model": "nvidia/nemotron-3-nano-30b-a3b",
+                "provider": "NVIDIA API (Nemotron)"
             }
         else:
             return {
@@ -1618,7 +1685,7 @@ class LogConversationRequest(BaseModel):
     assistant_response: str
     model: str = "qwen2.5:3b"
     workload_id: str = "general_chat"
-    client_id: str = "clawforge"
+    client_id: str = "Leo 2.0"
     session_id: str = None
     user_id: str = "default"
     tokens: int = None
@@ -1876,7 +1943,7 @@ if __name__ == "__main__":
     import uvicorn
     
     print("\n" + "="*60)
-    print("CLAWFORGE v4.0 - FastAPI Backend")
+    print("Leo 2.0 v4.0 - FastAPI Backend")
     print("="*60)
     print("\nStarting server...")
     print("Dashboard will be available at: http://127.0.0.1:7860")

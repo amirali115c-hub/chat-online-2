@@ -1,8 +1,8 @@
-// ClawForge v4.0 - Full-Screen React Dashboard with Markdown Support
+// Leo 2.0 - Full-Screen React Dashboard with Markdown Support
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-const API_BASE = 'http://127.0.0.1:7860';
+const API_BASE = 'http://127.0.0.1:8000';
 
 // Simple Markdown Parser
 function parseMarkdown(text) {
@@ -36,12 +36,13 @@ function App() {
   const [security, setSecurity] = useState({ mode: 'LOCKED', riskScore: 0 });
   const [loading, setLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { role: 'system', content: "Hello! I'm ClawForge, an advanced AI assistant.\n\nWhat I Can Do:\n- Deep Understanding - complex questions, context retention\n- Reasoning & Analysis - step-by-step problem solving\n- Web Search - Get current information\n- Memory - Remember important things\n- Code - Write and run Python\n- Files - Read and edit files\n- Planning - Create multi-step plans\n\nJust tell me what you need - I'll understand and help!" }
+    { role: 'system', content: "Hello! I'm Leo 2.0, an advanced AI assistant.\n\nWhat I Can Do:\n- Deep Understanding - complex questions, context retention\n- Reasoning & Analysis - step-by-step problem solving\n- Web Search - Get current information\n- Memory - Remember important things\n- Code - Write and run Python\n- Files - Read and edit files\n- Planning - Create multi-step plans\n\nJust tell me what you need - I'll understand and help!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const [models, setModels] = useState([
+    'nvidia/nemotron-3-nano-30b-a3b',
     'z-ai/glm5',
     'qwen/qwen3.5-397b-a17b',
     'NVIDIABuild-Autogen-60',
@@ -172,7 +173,8 @@ function App() {
 
     try {
       let endpoint = '/api/chat';
-      if (selectedModel === 'z-ai/glm5') endpoint = '/api/chat/glm5';
+      if (selectedModel === 'nvidia/nemotron-3-nano-30b-a3b') endpoint = '/api/chat/nemotron';
+      else if (selectedModel === 'z-ai/glm5') endpoint = '/api/chat/glm5';
       else if (selectedModel === 'qwen/qwen3.5-397b-a17b') endpoint = '/api/chat/qwen';
       else if (selectedModel.startsWith('ollama/')) endpoint = '/api/chat/ollama';
       
@@ -223,7 +225,7 @@ function App() {
         </div>
       )}
       <div className="chat-header">
-        <h2>Chat with ClawForge</h2>
+        <h2>Chat with Leo 2.0</h2>
         <p>Powered by {selectedModel.split('/')[1] || selectedModel} via NVIDIA API</p>
       </div>
       
@@ -239,7 +241,7 @@ function App() {
         ))}
         {chatLoading && (
           <div className="chat-message assistant">
-            <div className="message-role">ClawForge</div>
+            <div className="message-role">Leo 2.0</div>
             <div className="typing">
               <span></span><span></span><span></span>
             </div>
@@ -274,7 +276,7 @@ function App() {
     <div className="dashboard-view">
       <div className="dashboard-header">
         <h2>Dashboard</h2>
-        <p>Your ClawForge overview</p>
+        <p>Your Leo 2.0 overview</p>
       </div>
       <div className="dashboard-grid">
         <div className="dashboard-card">
@@ -339,7 +341,7 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>ClawForge v4.0</h1>
+        <h1>Leo 2.0</h1>
         <div className="header-status">
           <select 
             value={selectedModel} 

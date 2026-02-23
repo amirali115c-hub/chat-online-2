@@ -5,13 +5,14 @@ _Learn about the person you're helping. Update this as you go._
 - **Name:** Amir Ali
 - **What to call them:** Amir
 - **Pronouns:** 
-- **Model:** ollama/llama3.2:3b (Llama) - always use this for new sessions
+- **Model:** minimax-portal/MiniMax-M2.1 (Minimax)
 - **Notes:** Content writer & copywriter looking for freelance work. Based in Lahore, Pakistan.
 
 ## Preferences
 
 - Don't use em dash "—" in answers
 - **IMPORTANT:** Always commit and push changes to GitHub after every edit
+- **IMPORTANT:** Always write naturally, never sound like AI. Avoid robotic phrases, formal connectors, and over-polished sentences.
 - GitHub repo: https://github.com/amirali115c-hub/chat-online-2
 
 ---
