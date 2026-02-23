@@ -4,13 +4,50 @@
 **Date:** 2026-02-23
 
 ### What We Did
-- Switched to Qwen model (ollama/qwen2.5:3b)
-- Started fresh session
-- Investigated dashboard webchat issue:
-  - Found pending device pairing request
-  - Approved device c3f15ac7-4840-4b88-95c8-83ee6f5f3954
-  - Restarted gateway multiple times
-  - User to test webchat at http://127.0.0.1:18789/
+- Searched for ClawForge and Leo2-NEURON GitHub repos
+- Cloned repos to workspace
+- Started original systems
+- Created unified **LEO 2.0** dashboard at http://127.0.0.1:3000
+- Pushed to GitHub: https://github.com/amirali115c-hub/LEO-2.0
+
+### Updated Core (SOUL.md)
+- Added all AI models available (minimax, ollama, etc.)
+- Added repository understanding
+- Added task execution capabilities
+- Added NEURON learning system
+- Added tool reference
+- Added services I can run
+- Added content creation prompts
+
+### Created Memory Files
+- `memory/leo-2-capabilities.md` - Complete reference
+
+### Updated Identity
+- `IDENTITY.md` - Agent selection feature added
+- Listed all available Ollama models
+
+---
+
+## Available AI Models
+
+| Model | Type | Command |
+|-------|------|---------|
+| minimax-m2.1 | Cloud | "use minimax-m2.1" |
+| minimax-m2.5 | Cloud | "use minimax-m2.5" |
+| ollama-qwen | Local | "use ollama-qwen" |
+| ollama-llama | Local | "use ollama-llama" |
+| ollama-gemma | Local | "use ollama-gemma" |
+| ollama-phi3 | Local | "use ollama-phi3" |
+
+---
+
+## Running Services
+
+| Service | URL |
+|---------|-----|
+| **LEO 2.0 Dashboard** | http://127.0.0.1:3000 |
+| Chat Online | http://127.0.0.1:5000 |
+| ClawForge | http://127.0.0.1:7860 |
 
 ---
 
@@ -21,7 +58,7 @@
 ---
 
 ## Reminders
-- "Chat Online" → Flask + Socket.IO chat app on Replit
+- "Chat Online" → Flask + Socket.IO chat app
 - "copywriting" or "write" → Read COPYWRITING_REMINDER.md
 - "SEO" → Read ultimate-seo-content-mastery-prompt.md
 - Always commit/push to GitHub after code changes
