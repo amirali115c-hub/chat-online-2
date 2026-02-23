@@ -1250,7 +1250,10 @@ async def chat_bytedance(request: ChatRequest):
 # NVIDIA NEMOTRON-3-NANO-30B ENDPOINT
 # ============================================================================
 
-NEMOTRON_API_KEY = "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"
+# Set your NVIDIA API key via environment variable: NEMOTRON_API_KEY
+# Get your free key at: https://build.nvidia.com/
+import os
+NEMOTRON_API_KEY = os.environ.get("NEMOTRON_API_KEY", "")
 
 @app.post("/api/chat/nemotron")
 async def chat_nemotron(request: ChatRequest):
