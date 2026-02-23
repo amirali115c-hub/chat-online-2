@@ -17,6 +17,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
+# Load .env file from parent directory
+from pathlib import Path
+env_path = Path(__file__).parent.parent / ".env"
+if env_path.exists():
+    from dotenv import load_dotenv
+    load_dotenv(env_path)
+
 # Add current directory to path for imports
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 if _current_dir not in sys.path:
