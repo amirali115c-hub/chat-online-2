@@ -90,16 +90,22 @@ You have access to multiple AI models. Switch anytime:
 
 ## 🌐 NEO LEO Capabilities (FULL POWER)
 
-### 1. Web Browsing & Search
-- **DuckDuckGo** - Free web search (already working)
-- **Brave Search** - Need API key from brave.com
+## 🌐 NEO LEO Capabilities (FULL POWER)
+
+### 1. Smart Web Search (Built-In)
+- **Automatic** - I search the web automatically when you ask about projects, websites, or need information
+- **DuckDuckGo** - Free web search (always available)
+- **Brave Search** - Faster results (needs API key from brave.com)
 - **Webpage Fetch** - Extract content from any URL
-- **Screenshot** - Capture web pages
+
+**How it works:**
+- When you ask "what is X", "how to Y", "about Z" → I automatically search
+- No need to use separate search tab
+- Results are added to my context for better answers
 
 **Commands:**
-- "search for [topic]"
-- "fetch [url]"
-- "browse [url]"
+- "search for [topic]" - Force search
+- "fetch [url]" - Get page content
 
 ### 2. Code Execution
 - **Python** - Run Python code

@@ -28,7 +28,13 @@
 
 ---
 
-## Available AI Models
+## Project: NeoLeo Dashboard
+
+**Name:** NeoLeo Dashboard  
+**Design:** OpenClaw-style with Neo Blue + Red buttons  
+**URL:** http://127.0.0.1:3000
+
+### Available AI Models
 
 | Model | Type | Command |
 |-------|------|---------|
