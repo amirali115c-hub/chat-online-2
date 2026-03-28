@@ -78,6 +78,83 @@
         display: none !important;
     }
 }
+
+<style>
+/* Tab Active States */
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+}
+
+/* Action Icon Active States */
+.action-icon-btn.active {
+    background: #8B5CF6;
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+.action-icon-btn.active:hover {
+    background: #7c3aed;
+}
+
+/* Send Button Disabled State */
+.send-btn:disabled {
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.send-btn:not(:disabled) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Chat Menu Button Hover */
+.menu-dots:hover {
+    background: #f3f4f6;
+    transform: scale(1.1);
+}
+
+/* Header Action Button Hover */
+.header-action-btn:hover {
+    background: #8B5CF6;
+    color: white;
+}
+
+/* Start Random Button Loading */
+#start-random-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+#start-random-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+}
+
+/* Back Arrow Tooltip */
+.back-arrow[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+}
+</style>
+
 </style>
 {% endblock %}
 
@@ -100,31 +177,31 @@
 
         <!-- Action Icons Row -->
         <div class="action-icons-row">
-            <button class="action-icon-btn active" data-filter="online" title="Online">
+            <button class="action-icon-btn active" data-filter="online" title="Online (1)" data-tooltip="Filter online users (press 1)">
                 <i class="fas fa-circle"></i>
             </button>
-            <button class="action-icon-btn" data-filter="gender" title="Gender">
+            <button class="action-icon-btn" data-filter="gender" title="Gender Filter (2)" data-tooltip="Filter by gender (press 2)">
                 <i class="fas fa-venus-mars"></i>
             </button>
-            <button class="action-icon-btn" data-filter="history" title="History">
+            <button class="action-icon-btn" data-filter="history" title="Chat History (3)" data-tooltip="View history (press 3)">
                 <i class="fas fa-history"></i>
             </button>
-            <button class="action-icon-btn" data-filter="inbox" title="Inbox">
+            <button class="action-icon-btn" data-filter="inbox" title="Inbox (4)" data-tooltip="View messages (press 4)">
                 <i class="fas fa-envelope"></i>
             </button>
-            <button class="action-icon-btn" data-filter="friends" title="Friends">
+            <button class="action-icon-btn" data-filter="friends" title="Friends (5)" data-tooltip="View friends (press 5)">
                 <i class="fas fa-heart"></i>
             </button>
-            <button class="action-icon-btn" data-filter="random" title="Random Chat">
+            <button class="action-icon-btn" data-filter="random" title="Random (N)" data-tooltip="Start random chat (press N)">
                 <i class="fas fa-dice"></i>
             </button>
         </div>
 
         <!-- Gender Filter -->
         <div class="gender-filter-row" id="gender-filter" style="display: none;">
-            <button class="filter-btn active" data-gender="all">All</button>
-            <button class="filter-btn" data-gender="male"><i class="fas fa-male"></i></button>
-            <button class="filter-btn" data-gender="female"><i class="fas fa-female"></i></button>
+            <button class="filter-btn active" data-gender="all" title="Show all users">All</button>
+            <button class="filter-btn" data-gender="male" title="Show male only"><i class="fas fa-male"></i></button>
+            <button class="filter-btn" data-gender="female" title="Show female only"><i class="fas fa-female"></i></button>
         </div>
 
         <!-- User List -->
@@ -193,7 +270,7 @@
 
             <!-- Mobile Chat Header -->
             <div class="chat-header mobile-only">
-                <div class="back-arrow" onclick="endChat()">
+                <div class="back-arrow" onclick="endChat()" data-tooltip="End chat (Esc)" title="End current chat">
                     <i class="fas fa-arrow-left"></i>
                 </div>
                 <div class="chat-user-info" onclick="showPartnerProfile()" style="flex:1;display:flex;align-items:center;cursor:pointer;">
@@ -213,7 +290,7 @@
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
-                <div class="menu-dots" onclick="showChatMenu()" title="More Options">
+                <div class="menu-dots" onclick="showChatMenu()" title="More options" data-tooltip="Chat options (press O)" title="More Options">
                     <i class="fas fa-ellipsis-v"></i>
                 </div>
             </div>
@@ -249,7 +326,7 @@
         <div id="room-chat-mode" class="right-panel-content hidden">
             <!-- Mobile Chat Header -->
             <div class="chat-header mobile-only">
-                <div class="back-arrow" onclick="leaveRoom()">
+                <div class="back-arrow" onclick="leaveRoom()" data-tooltip="Leave room (Esc)" title="Leave this room">
                     <i class="fas fa-arrow-left"></i>
                 </div>
                 <div class="chat-avatar">

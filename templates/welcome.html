@@ -348,6 +348,81 @@
 .gender-filter-row .filter-btn i {
     font-size: 16px;
 }
+
+<style>
+/* Gender Filter Active States */
+.gender-filter-row .filter-btn.active {
+    background: #8B5CF6 !important;
+    color: white !important;
+    border-color: #8B5CF6 !important;
+}
+.gender-filter-row .filter-btn.active i {
+    color: white !important;
+}
+
+/* User Card Hover Effects */
+.user-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+}
+.user-card:active {
+    transform: scale(0.98);
+}
+
+/* Loading Button State */
+button[data-loading] {
+    position: relative;
+}
+button[data-loading]::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 8px;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+button[data-loading].loading::after {
+    display: inline-block;
+}
+
+/* Button Tooltip */
+button[data-tooltip] {
+    position: relative;
+}
+button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    z-index: 100;
+}
+button[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: calc(100% + 5px);
+}
+</style>
+
 </style>
 {% endblock %}
 
@@ -363,7 +438,7 @@
         </div>
 
         <!-- Random Chat Button -->
-        <button class="random-chat-btn" onclick="startRandomChat()">
+        <button class="random-chat-btn" onclick="startRandomChat()" data-loading>
             <i class="fas fa-dice"></i>
             Random Chat
         </button>
@@ -376,43 +451,43 @@
 
         <!-- Action Icons -->
         <div class="action-icons-grid">
-            <button class="action-icon-btn active" title="Online">
+            <button class="action-icon-btn active" title="Online Users" data-tooltip="View online users (1)">
                 <i class="fas fa-circle"></i>
                 <span>Online</span>
             </button>
-            <button class="action-icon-btn" title="Gender Filter">
+            <button class="action-icon-btn" title="Filter by Gender" data-tooltip="Filter by gender (2)">
                 <i class="fas fa-venus-mars"></i>
                 <span>Gender</span>
             </button>
-            <button class="action-icon-btn" title="History">
+            <button class="action-icon-btn" title="Chat History" data-tooltip="View chat history (3)">
                 <i class="fas fa-history"></i>
                 <span>History</span>
             </button>
-            <button class="action-icon-btn" title="Search">
+            <button class="action-icon-btn" title="Search Users" data-tooltip="Search users (Ctrl+K)">
                 <i class="fas fa-search"></i>
                 <span>Search</span>
             </button>
-            <button class="action-icon-btn" title="Inbox">
+            <button class="action-icon-btn" title="Messages" data-tooltip="View messages (4)">
                 <i class="fas fa-envelope"></i>
                 <span>Inbox</span>
                 <span class="badge">7</span>
             </button>
-            <button class="action-icon-btn" title="Friends">
+            <button class="action-icon-btn" title="Friends List" data-tooltip="View friends (5)">
                 <i class="fas fa-heart"></i>
                 <span>Friends</span>
             </button>
-            <button class="action-icon-btn" title="Random">
+            <button class="action-icon-btn" title="Random Chat" data-tooltip="Start random chat (N)">
                 <i class="fas fa-random"></i>
                 <span>Random</span>
             </button>
-            <button class="action-icon-btn" title="Settings">
+            <button class="action-icon-btn" title="Settings" data-tooltip="Open settings (Esc)">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </button>
         </div>
 
         <!-- Gender Filter -->
-        <div class="refresh-btn" onclick="loadUsers()" title="Refresh user list">
+        <div class="refresh-btn" onclick="loadUsers()" title="Refresh (Ctrl+R)" data-tooltip="Refresh user list (Ctrl+R)">
             <i class="fas fa-sync-alt"></i>
         </div>
         <div class="gender-filter-row">
