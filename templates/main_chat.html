@@ -318,12 +318,14 @@ Chat - Chat Online{% endblock %}
             <!-- Mobile Chat Input -->
             <div class="chat-input-area">
                 <div class="input-wrapper">
-                    <input type="text" id="message-input" placeholder="Type a message..." maxlength="500">
+                    <input type="text" id="message-input" placeholder="Type a message..." placeholder="Type a message..." maxlength="500">
                     <div class="input-icons">
                         <i class="fas fa-smile"></i>
                     </div>
                 </div>
-                <button class="send-btn" id="send-btn">
+                <button type="button" class="emoji-picker-btn" onclick="toggleEmojiPicker(this)" title="Add emoji">😊</button>
+                <button class="send-btn" onclick="toggleEmojiPicker(this)" title="Add emoji">😊</button>
+                <button type="button" id="send-btn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
