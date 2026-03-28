@@ -172,11 +172,11 @@ Chat - Chat Online{% endblock %}
     <aside class="left-panel">
         <!-- Tab Bar -->
         <div class="tab-bar">
-            <button class="tab-btn active" data-tab="1on1">
+            <button class="tab-btn active" data-tab="1on1" role="tab" aria-selected="true">
                 <i class="fas fa-user"></i>
                 <span>1on1</span>
             </button>
-            <button class="tab-btn" data-tab="rooms">
+            <button class="tab-btn" data-tab="rooms" role="tab" aria-selected="false">
                 <i class="fas fa-users"></i>
                 <span>Rooms</span>
             </button>
@@ -318,14 +318,14 @@ Chat - Chat Online{% endblock %}
             <!-- Mobile Chat Input -->
             <div class="chat-input-area">
                 <div class="input-wrapper">
-                    <input type="text" id="message-input" placeholder="Type a message..." placeholder="Type a message..." maxlength="500">
+                    <input type="text" id="message-input" aria-label="Type your message" placeholder="Type a message..." placeholder="Type a message..." maxlength="500">
                     <div class="input-icons">
                         <i class="fas fa-smile"></i>
                     </div>
                 </div>
                 <button type="button" class="emoji-picker-btn" onclick="toggleEmojiPicker(this)" title="Add emoji">😊</button>
                 <button class="send-btn" onclick="toggleEmojiPicker(this)" title="Add emoji">😊</button>
-                <button type="button" id="send-btn">
+                <button type="button" id="send-btn" aria-label="Send message">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>

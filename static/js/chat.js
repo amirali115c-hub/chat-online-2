@@ -1,3 +1,17 @@
+'use strict';
+
+
+// Global error handler for better debugging
+window.addEventListener('error', function(e) {
+    console.error('ChatOnline Error:', e.message, 'at', e.filename, 'line', e.lineno);
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled Promise Rejection:', e.reason);
+});
+
+
 // Chat Online - Client-side JavaScript
 
 let socket;

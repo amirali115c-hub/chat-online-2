@@ -652,7 +652,7 @@ Chat Rooms - Chat Online{% endblock %}
             </div>
 
             <div class="room-input-area">
-                <input type="text" id="room-message-input" placeholder="Type a message..." onkeypress="handleRoomMessage(event)">
+                <input type="text" id="room-message-input" aria-label="Type message in room" placeholder="Type a message..." onkeypress="handleRoomMessage(event)">
                 <button onclick="sendRoomMessage()">Send</button>
             </div>
         </div>

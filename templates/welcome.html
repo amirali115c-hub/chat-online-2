@@ -445,19 +445,19 @@ button[data-tooltip]:hover::after {
         </div>
 
         <!-- Random Chat Button -->
-        <button class="random-chat-btn" onclick="startRandomChat()" data-loading>
+        <button class="random-chat-btn" onclick="startRandomChat()" aria-label="Start random chat with a stranger" data-loading>
             <i class="fas fa-dice"></i>
             Random Chat
         </button>
 
         <!-- Main Chat Button -->
-        <button class="main-chat-btn" onclick="goToMainChat()">
+        <button class="main-chat-btn" onclick="goToMainChat()" aria-label="Go to main chat page">
             <i class="fas fa-comment-dots"></i>
             Go to Chat
         </button>
 
         <!-- Action Icons -->
-        <div class="action-icons-grid">
+        <div class="action-icons-grid" role="navigation" aria-label="Quick actions">
             <button class="action-icon-btn active" title="Online Users" data-tooltip="View online users (1)">
                 <i class="fas fa-circle"></i>
                 <span>Online</span>
@@ -494,13 +494,13 @@ button[data-tooltip]:hover::after {
         </div>
 
         <!-- Gender Filter -->
-        <div class="refresh-btn" onclick="loadUsers()" title="Refresh (Ctrl+R)" data-tooltip="Refresh user list (Ctrl+R)">
+        <div class="refresh-btn" onclick="loadUsers()" aria-label="Refresh user list" title="Refresh (Ctrl+R)" data-tooltip="Refresh user list (Ctrl+R)">
             <i class="fas fa-sync-alt"></i>
         </div>
         <div class="gender-filter-row">
-            <button class="filter-btn active">All</button>
-            <button class="filter-btn"><i class="fas fa-male"></i></button>
-            <button class="filter-btn"><i class="fas fa-female"></i></button>
+            <button class="filter-btn active" role="tab" aria-pressed="true" aria-label="Show all users">All</button>
+            <button class="filter-btn" role="tab" aria-pressed="false" aria-label="Filter male users"><i class="fas fa-male" aria-hidden="true"></i></button>
+            <button class="filter-btn" role="tab" aria-pressed="false" aria-label="Filter female users"><i class="fas fa-female" aria-hidden="true"></i></button>
         </div>
 
         <!-- User List -->

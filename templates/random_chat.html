@@ -372,7 +372,7 @@ Random Chat - Chat Online{% endblock %}
             </div>
         </div>
 
-        <button class="start-random-btn" onclick="findNewPartner()">
+        <button class="start-random-btn" onclick="findNewPartner()" aria-label="Find a new chat partner">
             <i class="fas fa-dice"></i> Start Random Chat
         </button>
     </div>
@@ -400,7 +400,7 @@ Random Chat - Chat Online{% endblock %}
                 <button class="chat-action-btn" title="Next Partner" onclick="nextPartner()">
                     <i class="fas fa-forward"></i>
                 </button>
-                <button class="chat-action-btn stop" title="Stop Chat" onclick="stopChat()">
+                <button class="chat-action-btn stop" title="Stop Chat" onclick="stopChat()" aria-label="Stop current chat">
                     <i class="fas fa-stop"></i>
                 </button>
             </div>
