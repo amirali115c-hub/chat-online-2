@@ -25,13 +25,13 @@ Login - Chat Online{% endblock %}
             <form id="login-email-form" class="auth-form-full">
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                    <input type="email" id="login-email" aria-describedby="login-email-error" placeholder="Enter your email" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
                     Continue <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
-            <div class="error-message" id="login-email-error"></div>
+            <div class="error-message" id="login-email-error" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- Step 2: Password -->
@@ -39,7 +39,7 @@ Login - Chat Online{% endblock %}
             <form id="login-password-form" class="auth-form-full">
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                    <input type="password" id="login-password" aria-describedby="login-password-error" placeholder="Enter your password" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-sign-in-alt"></i> Login
@@ -49,7 +49,7 @@ Login - Chat Online{% endblock %}
                 </button>
                 <a href="#" class="forgot-password">Forgot Password?</a>
             </form>
-            <div class="error-message" id="login-password-error"></div>
+            <div class="error-message" id="login-password-error" role="alert" aria-live="polite"></div>
         </div>
 
         <div class="auth-footer">

@@ -939,6 +939,39 @@ label {
 }
 </style>
 
+
+    <!-- WebSite Schema for Google Rich Results -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ChatOnline",
+        "alternateName": "Chat Online",
+        "url": "https://chatonline.app",
+        "description": "Free platform for random chat with strangers worldwide. Chat online instantly with no registration required.",
+        "keywords": "chat online, random chat, stranger chat, anonymous chat, free chat",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://chatonline.app/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        },
+        "sameAs": [
+            "https://twitter.com/chatonline",
+            "https://facebook.com/chatonline"
+        ]
+    }
+    </script>
+    
+    <!-- Speakable Schema for Google Assistant -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["h1", "h2", ".hero-text"],
+        "xpath": ["//title", "//h1"]
+    }
+    </script>
+
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
