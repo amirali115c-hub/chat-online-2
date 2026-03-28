@@ -817,5 +817,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
+
+    // Typing indicator handlers
+    socket.on('typing', function(data) {
+        const indicator = document.getElementById('typing-indicator');
+        if (data.typing && data.user !== username) {
+            indicator.classList.add('show');
+        } else {
+            indicator.classList.remove('show');
+        }
+    });
+
+    // Auto-scroll to bottom when new message arrives
+    socket.on('new_message', function(data) {
+        scrollToBottom();
+    });
+
+    // Function to scroll to bottom
+    function scrollToBottom() {
+        const container = document.getElementById('messages-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    // Disable send button when message is empty
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.querySelector('.send-btn');
+    if (messageInput && sendBtn) {
+        messageInput.addEventListener('input', function() {
+            sendBtn.disabled = !this.value.trim();
+        });
+        sendBtn.disabled = true; // Initially disabled
+    }
+
+    // Emit typing event when user types
+    if (messageInput) {
+        let typingTimeout;
+        messageInput.addEventListener('input', function() {
+            socket.emit('typing', { typing: true });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('typing', { typing: false });
+            }, 1000);
+        });
+    }
+
 </script>
 {% endblock %}
