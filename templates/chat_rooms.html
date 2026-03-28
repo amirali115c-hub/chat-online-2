@@ -558,6 +558,8 @@
 {% endblock %}
 
 {% block content %}
+<a href="/" class="logo-link"><i class="fas fa-comment-dots"></i><span>ChatOnline</span></a>
+
 <!-- Create Room Modal -->
 <div id="create-room-modal" class="modal" style="display: none;">
     <div class="modal-content" style="max-width: 500px; padding: 30px; background: white; border-radius: 20px; margin: auto;">
@@ -592,7 +594,7 @@
     <!-- Sidebar with Room List -->
     <aside class="rooms-sidebar">
         <div class="rooms-sidebar-header">
-            <h2><i class="fas fa-comments"></i> Chat Rooms</h2>
+            <h2><i class="fas fa-comment-dots"></i> Chat Rooms</h2>
             <button class="btn btn-primary btn-sm" onclick="showCreateRoomModal()" style="margin-top: 10px;">
                 <i class="fas fa-plus"></i> Create Room
             </button>
@@ -615,7 +617,7 @@
     <main class="rooms-main">
         <!-- Welcome Screen -->
         <div class="welcome-to-room" id="welcome-screen">
-            <i class="fas fa-comments"></i>
+            <i class="fas fa-comment-dots"></i>
             <h2>Welcome to Chat Rooms!</h2>
             <p>Select a room from the left to start chatting with others</p>
         </div>
@@ -625,7 +627,7 @@
             <div class="room-header">
                 <div class="room-header-info">
                     <div class="room-icon" id="active-room-icon">
-                        <i class="fas fa-comments"></i>
+                        <i class="fas fa-comment-dots"></i>
                     </div>
                     <div class="room-header-title">
                         <h3 id="active-room-name">Room Name</h3>
@@ -761,7 +763,7 @@ function renderRooms(category) {
     if (filteredRooms.length === 0) {
         roomsList.innerHTML = `
             <div style="text-align: center; padding: 40px 20px; color: var(--bg-500);">
-                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <i class="fas fa-comment-dots" style="font-size: 48px; margin-bottom: 16px;"></i>
                 <p>Loading rooms...</p>
             </div>
         `;

@@ -352,6 +352,8 @@
 {% endblock %}
 
 {% block content %}
+<a href="/" class="logo-link"><i class="fas fa-comment-dots"></i><span>ChatOnline</span></a>
+
 <div class="welcome-page">
     <!-- Left Sidebar -->
     <aside class="welcome-sidebar">
@@ -368,7 +370,7 @@
 
         <!-- Main Chat Button -->
         <button class="main-chat-btn" onclick="goToMainChat()">
-            <i class="fas fa-comments"></i>
+            <i class="fas fa-comment-dots"></i>
             Go to Chat
         </button>
 
@@ -428,7 +430,7 @@
     <!-- Main Welcome Panel -->
     <main class="welcome-main">
         <div class="welcome-icon-large">
-            <i class="fas fa-comments"></i>
+            <i class="fas fa-comment-dots"></i>
         </div>
 
         <h1 class="welcome-title">
@@ -679,7 +681,7 @@ function setupMobileBottomNav() {
                 <span>Home</span>
             </a>
             <a href="/chat" class="mobile-nav-item">
-                <i class="fas fa-comments"></i>
+                <i class="fas fa-comment-dots"></i>
                 <span>Chat</span>
             </a>
             <a href="/random-chat" class="mobile-nav-item">
