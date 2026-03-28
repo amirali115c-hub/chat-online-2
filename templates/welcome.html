@@ -57,6 +57,29 @@
     box-shadow: var(--shadow-lg);
 }
 
+.main-chat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-4);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: var(--space-3);
+}
+
+.main-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
 .action-icons-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -295,6 +318,12 @@
             Random Chat
         </button>
 
+        <!-- Main Chat Button -->
+        <button class="main-chat-btn" onclick="goToMainChat()">
+            <i class="fas fa-comments"></i>
+            Go to Chat
+        </button>
+
         <!-- Action Icons -->
         <div class="action-icons-grid">
             <button class="action-icon-btn active" title="Online">
@@ -450,6 +479,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function startRandomChat() {
     window.location.href = '{{ url_for("random_chat") }}';
+}
+
+function goToMainChat() {
+    window.location.href = '{{ url_for("main_chat") }}';
 }
 
 function loadUsers() {

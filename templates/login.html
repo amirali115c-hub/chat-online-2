@@ -88,6 +88,9 @@ document.getElementById('login-password-form').addEventListener('submit', async 
             localStorage.setItem('auth_token', data.data.token);
             localStorage.setItem('user_data', JSON.stringify(data.data.user));
             localStorage.setItem('username', data.data.user.username);
+            
+            // Also set for Socket.IO auth
+            localStorage.setItem('socket_connected', 'false');
 
             // Show success message then redirect
             document.getElementById('login-password-error').textContent = 'Login successful! Redirecting...';

@@ -296,6 +296,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Socket event handlers
     socket.on('connect', function() {
         console.log('Connected to server');
+        
+        // Emit login event to register this connection with the server
+        const storedUsername = localStorage.getItem('username') || username;
+        const storedGender = localStorage.getItem('gender') || gender;
+        
+        // Try to login via socket if we have stored credentials
+        if (localStorage.getItem('auth_token')) {
+            socket.emit('login', {
+                username: storedUsername,
+                password: localStorage.getItem('auth_token') // Use token as "password" for API auth
+            });
+        } else if (isGuest === 'true') {
+            socket.emit('guest_login', {
+                username: storedUsername,
+                gender: storedGender
+            });
+        }
     });
     
     socket.on('disconnect', function() {
