@@ -9,6 +9,72 @@
     height: calc(100vh - 70px - 60px);
     overflow: hidden;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .main-page-container {
+        flex-direction: column;
+        height: calc(100vh - 60px);
+    }
+    
+    .left-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        height: 40%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        transition: transform 0.3s ease;
+    }
+    
+    .left-panel.closed {
+        transform: translateX(-100%);
+    }
+    
+    .right-panel {
+        width: 100% !important;
+        height: 60%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+    }
+    
+    .main-header {
+        height: 60px !important;
+    }
+    
+    .tab-bar {
+        padding: 8px !important;
+    }
+    
+    .tab-btn span {
+        display: none;
+    }
+    
+    .user-card {
+        padding: 8px !important;
+    }
+    
+    .user-card-avatar {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    /* Show mobile toggle button */
+    .mobile-menu-toggle {
+        display: flex !important;
+    }
+}
+
+/* Desktop - hide mobile toggle */
+@media (min-width: 769px) {
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+}
 </style>
 {% endblock %}
 

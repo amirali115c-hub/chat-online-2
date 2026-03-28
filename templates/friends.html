@@ -225,3 +225,26 @@ function escapeHtml(t) {
 window.switchTab = switchTab;
 </script>
 {% endblock %}
+<style>
+@media (max-width: 768px) {
+    .friends-container {
+        flex-direction: column !important;
+        padding: 10px !important;
+    }
+    .friends-list {
+        width: 100% !important;
+    }
+    .friend-card {
+        flex-direction: row !important;
+        padding: 12px !important;
+    }
+    .friend-avatar {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    .btn-add-friend {
+        width: 100%;
+        font-size: 14px;
+    }
+}
+</style>

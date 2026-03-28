@@ -297,3 +297,22 @@ function showError(msg) {
 window.switchTab = switchTab;
 </script>
 {% endblock %}
+<style>
+@media (max-width: 768px) {
+    .inbox-container {
+        flex-direction: column !important;
+        padding: 10px !important;
+    }
+    .conversations-list {
+        width: 100% !important;
+        height: 40vh !important;
+    }
+    .chat-window {
+        width: 100% !important;
+        height: 60vh !important;
+    }
+    .message-bubble {
+        max-width: 80% !important;
+    }
+}
+</style>

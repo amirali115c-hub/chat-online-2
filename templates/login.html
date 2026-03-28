@@ -115,3 +115,31 @@ document.getElementById('login-back-btn').addEventListener('click', function() {
 });
 </script>
 {% endblock %}
+<style>
+@media (max-width: 768px) {
+    .login-container {
+        width: 95% !important;
+        padding: 20px !important;
+        margin: 10px !important;
+    }
+    .login-header h1 {
+        font-size: 24px !important;
+    }
+    .form-group input {
+        padding: 12px !important;
+        font-size: 16px !important;
+    }
+    .btn-login {
+        width: 100%;
+        padding: 14px !important;
+        font-size: 16px !important;
+    }
+    .login-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .logo-text {
+        display: none;
+    }
+}
+</style>

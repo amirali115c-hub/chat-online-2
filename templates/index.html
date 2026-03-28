@@ -336,3 +336,35 @@ document.getElementById('entry-form').addEventListener('submit', function(e) {
 });
 </script>
 {% endblock %}
+<style>
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 28px !important;
+    }
+    .hero-content p {
+        font-size: 16px !important;
+    }
+    .gender-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .gender-btn {
+        width: 100%;
+        padding: 20px !important;
+    }
+    .options-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .option-field {
+        width: 100% !important;
+    }
+    .btn-continue {
+        width: 100%;
+        padding: 16px !important;
+    }
+    .logo-text {
+        display: none;
+    }
+}
+</style>
