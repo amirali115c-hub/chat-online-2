@@ -1,77 +1,231 @@
 {% extends "base.html" %}
 
-{% block title %}FAQ - Chat Online{% endblock %}
+{% block title %}FAQ - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
-        <p>Find answers to common questions</p>
-    </div>
-    <div class="accordion">
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span><i class="fas fa-question-circle"></i> Is Chat Online free?</span>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>Yes! Chat Online is completely free to use. No registration required for guest users. Simply enter a username, select your details, and start chatting instantly.</p>
-                </div>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span><i class="fas fa-comment"></i> How do I start chatting?</span>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>Simply enter a username, select your gender and age, choose your country, and click "Start Chatting" to begin. No registration required - you can start chatting immediately as a guest user.</p>
-                </div>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span><i class="fas fa-shield-alt"></i> Is this site safe?</span>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>We take safety seriously with content moderation and anti-bot protection to ensure a safe environment. However, always practice safe chatting habits and never share personal information with strangers.</p>
-                </div>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span><i class="fas fa-venus-mars"></i> Can I chat with specific gender?</span>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>Yes! Use the gender filter in random chat settings to find users of a specific gender. This helps you have conversations with the type of people you're interested in meeting.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+<style>
+.faq-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+.faq-header { text-align: center; margin-bottom: 40px; }
+.faq-header h1 { color: #1f2937; margin-bottom: 10px; }
+.faq-header p { color: #6b7280; }
 
-{% block extra_js %}
+.faq-search {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    margin-bottom: 30px;
+    transition: border-color 0.3s;
+}
+.faq-search:focus { outline: none; border-color: #8B5CF6; }
+
+.faq-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+.faq-question {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #1f2937;
+    background: #f9fafb;
+}
+.faq-question:hover { background: #f3f4f6; }
+.faq-question i { transition: transform 0.3s; color: #8B5CF6; }
+.faq-item.open .faq-question i { transform: rotate(180deg); }
+
+.faq-answer {
+    display: none;
+    padding: 0 20px 20px;
+    color: #4b5563;
+    line-height: 1.7;
+}
+.faq-item.open .faq-answer { display: block; }
+
+.faq-category {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #8B5CF6;
+    color: #1f2937;
+    font-size: 1.3rem;
+}
+</style>
+
 <script>
-document.querySelectorAll('.accordion-header').forEach(header => {
-    header.addEventListener('click', function() {
-        const item = this.parentElement;
-        const isActive = item.classList.contains('active');
+function toggleFaq(element) {
+    const item = element.parentElement;
+    item.classList.toggle('open');
+}
 
-        document.querySelectorAll('.accordion-item').forEach(otherItem => {
-            otherItem.classList.remove('active');
+document.addEventListener('DOMContentLoaded', function() {
+    const search = document.getElementById('faq-search');
+    search.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.faq-item').forEach(item => {
+            const question = item.querySelector('.faq-question').textContent.toLowerCase();
+            const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+            if (question.includes(query) || answer.includes(query)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
         });
-
-        if (!isActive) {
-            item.classList.add('active');
-        }
     });
 });
 </script>
+
+<div class="faq-container">
+    <div class="faq-header">
+        <h1>Frequently Asked Questions</h1>
+        <p>Find answers to common questions about ChatOnline</p>
+    </div>
+    
+    <input type="text" id="faq-search" class="faq-search" placeholder="Search for answers...">
+
+    <h2 class="faq-category">Getting Started</h2>
+    
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            How does ChatOnline work?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            ChatOnline connects you with strangers from around the world. You can use random chat to be matched with random people, join chat rooms on specific topics, or explore dating channels. No registration is required - just enter your basic info and start chatting!
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            Is ChatOnline free?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Yes! ChatOnline is 100% free. There are no hidden fees, premium tiers, or paid features. Everyone gets full access to all features including random chat, chat rooms, friends, messaging, and more.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            Do I need to register?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            No registration is required! You can start chatting immediately as a guest. However, creating an account lets you save your profile, add friends, and access your chat history across devices.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            How old do I need to be?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            ChatOnline is available for users aged 13 and older. If you're under 18, you'll need to get verified through a parent or guardian. We take safety seriously, especially for younger users.
+        </div>
+    </div>
+
+    <h2 class="faq-category">Chat Features</h2>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            How does random chat work?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Random chat instantly connects you with a stranger. You can set your gender preference (male, female, or everyone) and our system will find someone for you. If you don't like the person, just click "Next" to find someone new. It's that simple!
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            What are chat rooms?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Chat rooms are public spaces where multiple users can chat together on specific topics. We have rooms for different interests like gaming, music, movies, dating, and more. Anyone can join and participate in the conversation.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            Can I use ChatOnline on my phone?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Absolutely! ChatOnline works great on mobile devices. Our website is fully responsive and adapts to any screen size. You can chat on your phone, tablet, or desktop - your conversation syncs across all devices.
+        </div>
+    </div>
+
+    <h2 class="faq-category">Safety & Privacy</h2>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            Is my chat private?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Your conversations are private between you and the person you're chatting with. We don't monitor or record your private chats. However, please remember that strangers are... strangers. Don't share personal information like your address, phone number, or financial details.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            How do I report someone?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            If someone behaves inappropriately, you can report them by clicking the report button in the chat interface. Our moderation team reviews all reports and takes action against users who violate our community guidelines. You can also block users to prevent further contact.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            What are the community rules?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            We expect all users to be respectful. Don't harass, bully, or spam others. Don't share explicit content or engage in illegal activities. Don't impersonate others or collect personal information. Violating rules can result in your account being banned.
+        </div>
+    </div>
+
+    <h2 class="faq-category">Account & Technical</h2>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            How do I create an account?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Click "Sign Up" on the homepage. You'll need to provide a username, email, password, and basic info. That's it! You can also continue as a guest without creating an account.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            What if I'm not matched with anyone?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            If random chat takes too long, try changing your gender preference or checking back during peak hours (typically evenings and weekends). You can also try chat rooms or dating channels for more immediate connections.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            The page isn't loading properly. What should I do?
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            Try these steps: 1) Refresh the page, 2) Clear your browser cache, 3) Disable browser extensions temporarily, 4) Try a different browser. If the problem persists, it might be a temporary server issue - try again in a few minutes.
+        </div>
+    </div>
+</div>
 {% endblock %}

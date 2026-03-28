@@ -284,6 +284,54 @@
 .looking-state p {
     color: rgba(255,255,255,0.7);
 }
+
+<style>
+.partner-area.loading .partner-avatar {
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 0.5; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0.5; transform: scale(0.95); }
+}
+.looking-status {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+}
+.looking-status i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+    animation: bounce 1s infinite;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.report-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 1000;
+    text-align: center;
+}
+.report-confirm h4 { margin: 0 0 15px 0; }
+.report-confirm .btn-group { display: flex; gap: 10px; justify-content: center; }
+.report-confirm button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.report-confirm .btn-yes { background: #ef4444; color: white; }
+.report-confirm .btn-no { background: #e5e7eb; color: #374151; }
+</style>
 </style>
 {% endblock %}
 
@@ -312,7 +360,7 @@
             </div>
         </div>
 
-        <button class="start-random-btn" onclick="startRandomChat()">
+        <button class="start-random-btn" onclick="findNewPartner()">
             <i class="fas fa-dice"></i> Start Random Chat
         </button>
     </div>

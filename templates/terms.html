@@ -1,37 +1,121 @@
 {% extends "base.html" %}
 
-{% block title %}Terms of Service - Chat Online{% endblock %}
+{% block title %}Terms of Service - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-file-contract"></i> Terms of Service</h1>
-        <p>Please read our terms carefully</p>
+<style>
+.terms-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.terms-header { text-align: center; margin-bottom: 50px; }
+.terms-header h1 { color: #1f2937; margin-bottom: 15px; }
+.terms-header p { color: #6b7280; }
+
+.terms-section {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.terms-section h2 { color: #8B5CF6; margin-bottom: 15px; font-size: 1.2rem; }
+.terms-section p, .terms-section li { color: #4b5563; line-height: 1.7; }
+.terms-section ul { padding-left: 25px; margin-top: 10px; }
+.terms-section li { margin-bottom: 8px; }
+
+.warning-box {
+    background: #fee2e2;
+    border-left: 4px solid #dc2626;
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+}
+.warning-box p { margin: 0; color: #991b1b; }
+</style>
+
+<div class="terms-container">
+    <div class="terms-header">
+        <h1>Terms of Service</h1>
+        <p>By using ChatOnline, you agree to these terms. Please read them carefully.</p>
     </div>
-    <div class="content-page-content">
+
+    <div class="terms-section">
         <h2>1. Acceptance of Terms</h2>
-        <p>By accessing and using Chat Online, you accept and agree to be bound by the terms and provision of this agreement.</p>
+        <p>By accessing or using ChatOnline, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not use our service.</p>
+    </div>
 
-        <h2>2. Use License</h2>
-        <p>You are granted a limited, non-exclusive, revocable license to use Chat Online for personal, non-commercial use only.</p>
+    <div class="terms-section">
+        <h2>2. Age Requirements</h2>
+        <ul>
+            <li>You must be at least 13 years old to use ChatOnline</li>
+            <li>Users under 18 need parental verification</li>
+            <li>We may require age verification at any time</li>
+        </ul>
+    </div>
 
+    <div class="terms-section">
         <h2>3. User Conduct</h2>
         <p>You agree NOT to:</p>
         <ul>
-            <li>Post or transmit obscene, defamatory, or unlawful material</li>
-            <li>Harass, threaten, or intimidate other users</li>
-            <li>Attempt to gain unauthorized access to the service</li>
-            <li>Engage in any activity that could harm the service</li>
+            <li>Harass, bully, or threaten other users</li>
+            <li>Share explicit or inappropriate content</li>
+            <li>Impersonate someone else</li>
+            <li>Spam or flood the chat</li>
+            <li>Share personal information of others</li>
+            <li>Promote illegal activities</li>
+            <li>Attempt to hack or disrupt our service</li>
         </ul>
+    </div>
 
-        <h2>4. Age Restriction</h2>
-        <p>You must be 18 years or older to use this service. No exceptions.</p>
+    <div class="terms-section">
+        <h2>4. Prohibited Behavior</h2>
+        <div class="warning-box">
+            <p>The following behaviors will result in immediate account suspension or ban:</p>
+        </div>
+        <ul>
+            <li>Sending or requesting sexual content involving minors</li>
+            <li>Distribution of malware or viruses</li>
+            <li>Scamming or phishing attempts</li>
+            <li>Creating multiple fake accounts</li>
+            <li>Using bots or automated scripts</li>
+        </ul>
+    </div>
 
-        <h2>5. Disclaimer</h2>
-        <p>The service is provided "as is" without warranties of any kind.</p>
+    <div class="terms-section">
+        <h2>5. Content Guidelines</h2>
+        <ul>
+            <li>You are responsible for content you share</li>
+            <li>Don't share copyrighted material without permission</li>
+            <li>Don't share links to malware or harmful websites</li>
+            <li>Keep conversations appropriate for all ages</li>
+        </ul>
+    </div>
 
-        <h2>6. Contact</h2>
-        <p>If you have questions about these terms, please <a href="{{ url_for('contact_page') }}">contact us</a>.</p>
+    <div class="terms-section">
+        <h2>6. Privacy</h2>
+        <p>Your use of ChatOnline is also governed by our Privacy Policy. By using our service, you consent to how we collect and use your data as described in that policy.</p>
+    </div>
+
+    <div class="terms-section">
+        <h2>7. Account Termination</h2>
+        <ul>
+            <li>We can terminate your account at any time for violating these terms</li>
+            <li>You can delete your account anytime from settings</li>
+            <li>Termination doesn't delete your obligation to follow these rules</li>
+        </ul>
+    </div>
+
+    <div class="terms-section">
+        <h2>8. Disclaimer</h2>
+        <p>ChatOnline is provided "as is" without any warranties. We don't guarantee the service will always be safe, secure, or error-free. Use at your own risk.</p>
+    </div>
+
+    <div class="terms-section">
+        <h2>9. Changes to Terms</h2>
+        <p>We may update these terms from time to time. We'll notify users of significant changes by posting on our website. Your continued use of ChatOnline means you accept the new terms.</p>
+    </div>
+
+    <div class="terms-section">
+        <h2>10. Contact</h2>
+        <p>Questions about these terms? <a href="/contact">Contact us</a></p>
     </div>
 </div>
 {% endblock %}

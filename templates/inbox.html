@@ -295,7 +295,11 @@ function showError(msg) {
 }
 
 window.switchTab = switchTab;
-</script>
+function scrollToBottom() {
+            const container = document.getElementById('messages-container');
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+        </script>
 {% endblock %}
 <style>
 @media (max-width: 768px) {

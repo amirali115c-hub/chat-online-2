@@ -1,56 +1,226 @@
 {% extends "base.html" %}
 
-{% block title %}Safety Tips - Chat Online{% endblock %}
+{% block title %}Safety Tips - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-shield-alt"></i> Safety Tips</h1>
-        <p>Stay safe while chatting online</p>
+<style>
+.safety-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.safety-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.safety-header h1 { color: #1f2937; margin-bottom: 15px; }
+.safety-header p { color: #6b7280; font-size: 1.1rem; }
+
+.safety-section {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.safety-section h2 {
+    color: #8B5CF6;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.safety-section h2 i { font-size: 1.5rem; }
+
+.safety-tip {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border-left: 4px solid #8B5CF6;
+}
+.safety-tip-icon {
+    width: 40px;
+    height: 40px;
+    background: #ede9fe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.safety-tip-icon i { color: #8B5CF6; }
+.safety-tip-content h4 { color: #1f2937; margin-bottom: 5px; }
+.safety-tip-content p { color: #6b7280; font-size: 0.95rem; line-height: 1.5; }
+
+.warning-box {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+.warning-box h4 { color: #92400e; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.warning-box ul { color: #92400e; padding-left: 20px; }
+.warning-box li { margin-bottom: 8px; }
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.action-btn-report {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.action-btn-report:hover { background: #fecaca; }
+.action-btn-block {
+    background: #fef3c7;
+    color: #d97706;
+}
+.action-btn-block:hover { background: #fde68a; }
+.action-btn-help {
+    background: #dbeafe;
+    color: #2563eb;
+}
+.action-btn-help:hover { background: #bfdbfe; }
+
+@media (max-width: 768px) {
+    .safety-section { padding: 20px; }
+    .action-buttons { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="safety-container">
+    <div class="safety-header">
+        <h1>🛡️ Stay Safe While Chatting</h1>
+        <p>Your safety is our priority. Learn how to protect yourself online</p>
     </div>
-    <div class="content-page-content">
+
+    <div class="safety-section">
+        <h2><i class="fas fa-shield-alt"></i> Basic Safety Guidelines</h2>
+        
         <div class="safety-tip">
-            <i class="fas fa-user-secret"></i>
-            <div>
-                <h3>Never Share Personal Information</h3>
-                <p>Don't share your real name, address, phone number, email, or social media with strangers.</p>
+            <div class="safety-tip-icon"><i class="fas fa-user-secret"></i></div>
+            <div class="safety-tip-content">
+                <h4>Never Share Personal Information</h4>
+                <p>Don't give out your real name, address, phone number, email, school, or workplace to strangers. Scammers often ask for these details early in conversations.</p>
             </div>
         </div>
+
         <div class="safety-tip">
-            <i class="fas fa-video-slash"></i>
-            <div>
-                <h3>Be Careful with Video</h3>
-                <p>Think twice before enabling your webcam. Once recorded, you can't control what happens to the footage.</p>
+            <div class="safety-tip-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="safety-tip-content">
+                <h4>Never Send Money or Gifts</h4>
+                <p>Never send money, gift cards, or valuable items to people you meet online. Scammers often build trust before asking for money.</p>
             </div>
         </div>
+
         <div class="safety-tip">
-            <i class="fas fa-exclamation-triangle"></i>
-            <div>
-                <h3>Watch for Scams</h3>
-                <p>Be wary of users who ask for money, gift cards, or try to move conversations off the platform.</p>
+            <div class="safety-tip-icon"><i class="fas fa-image"></i></div>
+            <div class="safety-tip-content">
+                <h4>Be Careful with Photos & Video</h4>
+                <p>Think twice before sharing photos or enabling webcam. Your images can be saved, screenshots, or used against you. Keep your face private until you trust someone.</p>
             </div>
         </div>
+
         <div class="safety-tip">
-            <i class="fas fa-flag"></i>
-            <div>
-                <h3>Report Bad Behavior</h3>
-                <p>If someone makes you uncomfortable or violates rules, use the report button immediately.</p>
+            <div class="safety-tip-icon"><i class="fas fa-id-card"></i></div>
+            <div class="safety-tip-content">
+                <h4>Don't Believe Everything You Hear</h4>
+                <p>People can lie about who they are. Be cautious of people who seem too perfect, ask personal questions early, or make excuses not to video chat.</p>
             </div>
         </div>
+    </div>
+
+    <div class="safety-section">
+        <h2><i class="fas fa-exclamation-triangle"></i> Warning Signs</h2>
+        
+        <div class="warning-box">
+            <h4><i class="fas fa-exclamation-circle"></i> Watch out for these red flags:</h4>
+            <ul>
+                <li>Asks for your personal info (name, address, phone, school)</li>
+                <li>Claims to be from another country but asks for money</li>
+                <li>Says they can't video chat despite having a camera</li>
+                <li>Asks you to move to another platform (WhatsApp, Telegram, etc.)</li>
+                <li>Talks about "investment opportunities" or "easy money"</li>
+                <li>Asks you to click suspicious links or download files</li>
+                <li>Gives you a sad story to get your sympathy and money</li>
+                <li>Asks for gift cards or cryptocurrency</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="safety-section">
+        <h2><i class="fas fa-hand-paper"></i> How to Protect Yourself</h2>
+        
         <div class="safety-tip">
-            <i class="fas fa-check-circle"></i>
-            <div>
-                <h3>Trust Your Instincts</h3>
-                <p>If something feels wrong, end the conversation. Your safety is more important than being polite.</p>
+            <div class="safety-tip-icon"><i class="fas fa-ban"></i></div>
+            <div class="safety-tip-content">
+                <h4>Block Bad Users</h4>
+                <p>If someone makes you uncomfortable, immediately click the Block button. You don't owe them an explanation. Your peace of mind matters more.</p>
             </div>
         </div>
+
         <div class="safety-tip">
-            <i class="fas fa-user-shield"></i>
-            <div>
-                <h3>Meet in Safe Space</h3>
-                <p>Never agree to meet in person without proper safety measures and trusted friends knowing.</p>
+            <div class="safety-tip-icon"><i class="fas fa-flag"></i></div>
+            <div class="safety-tip-content">
+                <h4>Report Problem Users</h4>
+                <p>Use the Report button to tell us about bad behavior. Our moderation team reviews every report. Help us keep the community safe!</p>
             </div>
         </div>
+
+        <div class="safety-tip">
+            <div class="safety-tip-icon"><i class="fas fa-video-slash"></i></div>
+            <div class="safety-tip-content">
+                <h4>Verify with Video</h4>
+                <p>If someone claims to be who they say, ask to video chat. Real people will verify. Refusal to video is a major red flag.</p>
+            </div>
+        </div>
+
+        <div class="safety-tip">
+            <div class="safety-tip-icon"><i class="fas fa-clock"></i></div>
+            <div class="safety-tip-content">
+                <h4>Take Your Time</h4>
+                <p>Don't rush into sharing anything. Real connections build over time. Anyone pressuring you for personal info or photos is suspicious.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="safety-section">
+        <h2><i class="fas fa-info-circle"></i> For Younger Users</h2>
+        
+        <div class="warning-box">
+            <h4><i class="fas fa-user-shield"></i> Important for ages 13-17:</h4>
+            <ul>
+                <li><strong>Never meet someone from online in person</strong> - People can pretend to be your age</li>
+                <li><strong>Tell a parent if someone makes you uncomfortable</strong> - No matter what they say</li>
+                <li><strong>Don't share your school name or location</strong> - Even your city can be too much</li>
+                <li><strong>If something feels wrong, it probably is</strong> - Trust your instincts!</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="/report" class="action-btn action-btn-report">
+            <i class="fas fa-flag"></i> How to Report
+        </a>
+        <a href="/block" class="action-btn action-btn-block">
+            <i class="fas fa-user-times"></i> How to Block
+        </a>
+        <a href="/faq" class="action-btn action-btn-help">
+            <i class="fas fa-question-circle"></i> More Questions
+        </a>
     </div>
 </div>
 {% endblock %}

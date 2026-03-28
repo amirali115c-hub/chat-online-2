@@ -794,7 +794,13 @@ function filterRooms(category) {
     renderRooms(category);
 }
 
-function joinRoom(roomId) {
+function confirmJoin(roomId, roomName) {
+            if (confirm("Join room: " + roomName + "?")) {
+                joinRoom(roomId);
+            }
+        }
+        
+        function joinRoom(roomId) {
     // Check if logged in
     if (!sessionStorage.getItem('is_guest')) {
         alert('Please login first!');

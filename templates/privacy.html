@@ -1,35 +1,140 @@
 {% extends "base.html" %}
 
-{% block title %}Privacy Policy - Chat Online{% endblock %}
+{% block title %}Privacy Policy - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-lock"></i> Privacy Policy</h1>
-        <p>How we protect your privacy</p>
+<style>
+.privacy-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.privacy-header { text-align: center; margin-bottom: 50px; }
+.privacy-header h1 { color: #1f2937; margin-bottom: 15px; }
+.privacy-header p { color: #6b7280; }
+
+.last-updated {
+    background: #f3f4f6;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 30px;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.privacy-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.privacy-section h2 { color: #8B5CF6; margin-bottom: 15px; font-size: 1.3rem; }
+.privacy-section p, .privacy-section li { color: #4b5563; line-height: 1.7; }
+.privacy-section ul { padding-left: 25px; margin-top: 10px; }
+.privacy-section li { margin-bottom: 10px; }
+
+.highlight-box {
+    background: #ede9fe;
+    border-left: 4px solid #8B5CF6;
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 0 8px 8px 0;
+}
+.highlight-box p { margin: 0; color: #1f2937; }
+</style>
+
+<div class="privacy-container">
+    <div class="privacy-header">
+        <h1>Privacy Policy</h1>
+        <p>Your privacy matters to us. Learn how we protect and handle your data.</p>
     </div>
-    <div class="content-page-content">
-        <h2>Information We Collect</h2>
-        <p>We collect minimal information needed to provide our service - username, gender, age, and country. No personal email or phone required for basic use.</p>
+    
+    <div class="last-updated">Last Updated: March 2026</div>
 
-        <h2>How We Use Your Information</h2>
+    <div class="privacy-section">
+        <h2>1. Information We Collect</h2>
+        <p>We collect minimal information to provide our services:</p>
         <ul>
-            <li>To provide chat services</li>
-            <li>To improve user experience</li>
-            <li>To enforce our terms and policies</li>
+            <li><strong>Account Data:</strong> Username, email, password (encrypted), gender, country when you register</li>
+            <li><strong>Usage Data:</strong> Chat activity, login times, pages visited (anonymous)</li>
+            <li><strong>Device Data:</strong> Browser type, device info, IP address (for security)</li>
+            <li><strong>Messages:</strong> Content of your chats (stored temporarily, not monitored)</li>
         </ul>
+    </div>
 
-        <h2>Data Protection</h2>
-        <p>We implement industry-standard security measures to protect your data. However, no method of transmission over the internet is 100% secure.</p>
+    <div class="privacy-section">
+        <h2>2. How We Use Your Information</h2>
+        <p>Your data helps us provide and improve our services:</p>
+        <ul>
+            <li>Connect you with other users for chatting</li>
+            <li>Authenticate your identity and maintain your account</li>
+            <li>Improve our platform based on usage patterns</li>
+            <li>Protect against fraud and abuse</li>
+            <li>Send important account updates (opt-out available)</li>
+        </ul>
+    </div>
 
-        <h2>Third Parties</h2>
-        <p>We do not sell, trade, or otherwise transfer your information to outside parties.</p>
+    <div class="privacy-section">
+        <h2>3. Data Storage & Security</h2>
+        <p>We take security seriously:</p>
+        <ul>
+            <li>Passwords are encrypted using industry-standard methods</li>
+            <li>Chat messages are not stored permanently (except with friends)</li>
+            <li>We use HTTPS to encrypt all data in transit</li>
+            <li>Regular security audits help keep our systems safe</li>
+        </ul>
+    </div>
 
-        <h2>Cookies</h2>
-        <p>We use cookies to enhance your experience. You can disable cookies in your browser settings.</p>
+    <div class="privacy-section">
+        <h2>4. Cookies & Tracking</h2>
+        <p>We use cookies for essential functionality:</p>
+        <ul>
+            <li><strong>Essential Cookies:</strong> Keep you logged in, remember preferences</li>
+            <li><strong>Analytics:</strong> Help us understand how people use our site (anonymous)</li>
+            <li>You can disable cookies in your browser settings</li>
+        </ul>
+    </div>
 
-        <h2>Contact Us</h2>
-        <p>If you have questions about this policy, please <a href="{{ url_for('contact_page') }}">contact us</a>.</p>
+    <div class="privacy-section">
+        <h2>5. Sharing Your Data</h2>
+        <div class="highlight-box">
+            <p><strong>We NEVER sell your personal data to third parties.</strong></p>
+        </div>
+        <p>We may share data only in these cases:</p>
+        <ul>
+            <li><strong>Service Providers:</strong> Companies that help run our platform (hosting, etc.)</li>
+            <li><strong>Legal Requirements:</strong> When required by law or to protect safety</li>
+            <li><strong>With Your Consent:</strong> When you explicitly agree</li>
+        </ul>
+    </div>
+
+    <div class="privacy-section">
+        <h2>6. Your Rights</h2>
+        <p>You have control over your data:</p>
+        <ul>
+            <li><strong>Access:</strong> View your account data anytime</li>
+            <li><strong>Edit:</strong> Update your profile information</li>
+            <li><strong>Delete:</strong> Request account deletion (contact support)</li>
+            <li><strong>Export:</strong> Download your data</li>
+            <li><strong>Opt-out:</strong> Unsubscribe from promotional emails</li>
+        </ul>
+    </div>
+
+    <div class="privacy-section">
+        <h2>7. Children's Privacy</h2>
+        <p>ChatOnline is designed for users 13+:</p>
+        <ul>
+            <li>We restrict use to ages 13 and older</li>
+            <li>We don't knowingly collect data from under-13 users</li>
+            <li>Parents can contact us to review or delete their child's data</li>
+        </ul>
+    </div>
+
+    <div class="privacy-section">
+        <h2>8. Contact Us</h2>
+        <p>Questions about this policy? Reach out:</p>
+        <ul>
+            <li>Email: privacy@chatonline.app</li>
+            <li>Through our <a href="/contact">Contact Form</a></li>
+        </ul>
     </div>
 </div>
 {% endblock %}

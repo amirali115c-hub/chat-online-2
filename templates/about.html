@@ -1,51 +1,196 @@
 {% extends "base.html" %}
 
-{% block title %}About Us - Chat Online{% endblock %}
+{% block title %}About - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-info-circle"></i> About Us</h1>
-        <p>Learn more about Chat Online</p>
-    </div>
-    <div class="content-page-content">
-        <div class="about-section">
-            <h2>Welcome to Chat Online</h2>
-            <p>Chat Online is a free platform for adults to meet new people and make friends from around the world. Our mission is to provide a safe, fun, and anonymous environment for people to connect and chat.</p>
-            <p>Founded in 2026, we aim to bring people together through instant messaging, random chat, and community chat rooms.</p>
-        </div>
-        <div class="about-features">
-            <div class="about-feature">
-                <i class="fas fa-globe-americas"></i>
-                <h3>Global Community</h3>
-                <p>Join millions of active users from 150+ countries worldwide</p>
-            </div>
-            <div class="about-feature">
-                <i class="fas fa-shield-alt"></i>
-                <h3>Safe & Moderated</h3>
-                <p>Active moderation and reporting tools keep our community safe</p>
-            </div>
-            <div class="about-feature">
-                <i class="fas fa-bolt"></i>
-                <h3>Instant Chat</h3>
-                <p>No registration required - start chatting instantly</p>
-            </div>
-            <div class="about-feature">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>Mobile Friendly</h3>
-                <p>Chat seamlessly across desktop, tablet, and smartphone</p>
-            </div>
-            <div class="about-feature">
-                <i class="fas fa-clock"></i>
-                <h3>24/7 Available</h3>
-                <p>Our platform never sleeps - chat anytime, day or night</p>
-            </div>
-            <div class="about-feature">
-                <i class="fas fa-ban"></i>
-                <h3>100% Free</h3>
-                <p>No hidden fees, no premium tiers - everyone gets full access</p>
-            </div>
-        </div>
-    </div>
+<style>
+.about-hero {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+.about-hero h1 { font-size: 3rem; margin-bottom: 20px; }
+.about-hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.feature-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.feature-card i {
+    font-size: 40px;
+    color: #8B5CF6;
+    margin-bottom: 15px;
+}
+.feature-card h3 { margin-bottom: 10px; color: #1f2937; }
+.feature-card p { color: #6b7280; line-height: 1.6; }
+
+.stats-section {
+    background: #f9fafb;
+    padding: 60px 20px;
+    text-align: center;
+}
+.stats-grid {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.stat-item { text-align: center; }
+.stat-number { font-size: 3rem; font-weight: bold; color: #8B5CF6; }
+.stat-label { color: #6b7280; font-size: 1rem; }
+
+.how-it-works {
+    padding: 60px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.how-it-works h2 { text-align: center; margin-bottom: 40px; color: #1f2937; }
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: #8B5CF6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+.step-content h3 { margin-bottom: 8px; color: #1f2937; }
+.step-content p { color: #6b7280; line-height: 1.6; }
+
+.age-notice {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 40px auto;
+    max-width: 600px;
+}
+.age-notice h3 { color: #92400e; margin-bottom: 10px; }
+.age-notice p { color: #92400e; }
+
+@media (max-width: 768px) {
+    .about-hero h1 { font-size: 2rem; }
+    .stats-grid { gap: 30px; }
+    .stat-number { font-size: 2rem; }
+}
+</style>
+
+<div class="about-hero">
+    <h1>Welcome to ChatOnline</h1>
+    <p>Connect with strangers from around the world. Make new friends, have fun conversations, and enjoy anonymous chatting - completely free!</p>
 </div>
+
+<section class="features-grid">
+    <div class="feature-card">
+        <i class="fas fa-random"></i>
+        <h3>Random Chat</h3>
+        <p>Connect instantly with random strangers. Our matching system pairs you with people who share your interests.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fas fa-users"></i>
+        <h3>Chat Rooms</h3>
+        <p>Join public chat rooms on various topics. Find communities that match your interests and hobbies.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fas fa-heart"></i>
+        <h3>Dating Channels</h3>
+        <p>Meet like-minded people in dating-focused channels. Find connections with people who share your preferences.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fas fa-user-friends"></i>
+        <h3>Friends System</h3>
+        <p>Add friends you meet in chats. Stay connected and chat anytime with people you click with.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fas fa-shield-alt"></i>
+        <h3>Safety First</h3>
+        <p>Built-in reporting and blocking tools keep the community safe. We take user safety seriously.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fas fa-mobile-alt"></i>
+        <h3>Mobile Friendly</h3>
+        <p>Chat anywhere, anytime. Our responsive design works perfectly on desktop and mobile devices.</p>
+    </div>
+</section>
+
+<section class="stats-section">
+    <h2>Our Community</h2>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Daily Active Users</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">150+</div>
+            <div class="stat-label">Countries</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">1M+</div>
+            <div class="stat-label">Chats Every Day</div>
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h3>Choose Your Way</h3>
+            <p>Start with random chat, join a room, or explore dating channels. Pick whatever fits your mood!</p>
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h3>Connect Instantly</h3>
+            <p>No registration needed. Enter your basic info and start chatting immediately with strangers worldwide.</p>
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <h3>Make Connections</h3>
+            <p>Hit it off? Add them as friends! Want someone new? Skip to the next person. The choice is yours!</p>
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+            <h3>Stay Safe</h3>
+            <p>Use our reporting and blocking tools anytime. Your safety is our priority - chat with peace of mind.</p>
+        </div>
+    </div>
+</section>
+
+<div class="age-notice">
+    <h3>⚠️ Age Requirement</h3>
+    <p>ChatOnline is available for users aged 13 and older. We take safety seriously, especially for younger users.</p>
+</div>
+
 {% endblock %}

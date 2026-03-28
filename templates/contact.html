@@ -1,57 +1,248 @@
 {% extends "base.html" %}
 
-{% block title %}Contact Us - Chat Online{% endblock %}
+{% block title %}Contact Us - ChatOnline{% endblock %}
 
 {% block content %}
-<div class="content-page-container">
-    <div class="content-page-header">
-        <h1><i class="fas fa-envelope"></i> Contact Us</h1>
-        <p>Get in touch with our team</p>
+<style>
+.contact-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.contact-header { text-align: center; margin-bottom: 50px; }
+.contact-header h1 { color: #1f2937; margin-bottom: 15px; }
+.contact-header p { color: #6b7280; font-size: 1.1rem; }
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+@media (max-width: 768px) {
+    .contact-grid { grid-template-columns: 1fr; }
+}
+
+.contact-form-wrapper {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.contact-form-wrapper h2 { margin-bottom: 20px; color: #1f2937; }
+
+.contact-form .form-group { margin-bottom: 20px; }
+.contact-form label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; }
+.contact-form input, .contact-form textarea, .contact-form select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+.contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus {
+    outline: none;
+    border-color: #8B5CF6;
+}
+.contact-form textarea { min-height: 150px; resize: vertical; }
+
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+
+.contact-info { padding: 20px 0; }
+.contact-info h2 { margin-bottom: 25px; color: #1f2937; }
+
+.info-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.info-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.info-icon i { color: white; font-size: 1.3rem; }
+.info-content h4 { color: #1f2937; margin-bottom: 5px; }
+.info-content p { color: #6b7280; line-height: 1.5; }
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+.social-link {
+    width: 45px;
+    height: 45px;
+    background: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+.social-link:hover { background: #8B5CF6; color: white; transform: translateY(-3px); }
+
+.faq-link {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    text-align: center;
+}
+.faq-link p { color: #6b7280; margin-bottom: 15px; }
+.faq-link a {
+    display: inline-block;
+    padding: 12px 25px;
+    background: #8B5CF6;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+.faq-link a:hover { background: #7c3aed; }
+
+.response-time {
+    margin-top: 20px;
+    padding: 15px;
+    background: #dbeafe;
+    border-radius: 10px;
+    color: #1e40af;
+    font-size: 0.95rem;
+}
+.response-time i { margin-right: 8px; }
+</style>
+
+<script>
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+    
+    // Simulate sending (would connect to backend in production)
+    setTimeout(() => {
+        alert('Thank you for your message! We typically respond within 24-48 hours.');
+        this.reset();
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }, 1500);
+});
+</script>
+
+<div class="contact-container">
+    <div class="contact-header">
+        <h1>Get In Touch</h1>
+        <p>We'd love to hear from you! Send us a message and we'll respond as soon as possible.</p>
     </div>
-    <div class="contact-content">
+
+    <div class="contact-grid">
         <div class="contact-form-wrapper">
+            <h2>Send us a Message</h2>
             <form id="contact-form" class="contact-form">
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> Your Name</label>
-                    <input type="text" placeholder="Enter your name" required>
+                    <label for="name">Your Name *</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
                 </div>
+                
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" placeholder="Enter your email" required>
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
                 </div>
+                
                 <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Subject</label>
-                    <select>
-                        <option>General Inquiry</option>
-                        <option>Report Abuse</option>
-                        <option>Technical Support</option>
-                        <option>Partnership</option>
-                        <option>Other</option>
+                    <label for="subject">Subject *</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a topic</option>
+                        <option value="general">General Question</option>
+                        <option value="bug">Report a Bug</option>
+                        <option value="suggestion">Feature Suggestion</option>
+                        <option value="account">Account Issue</option>
+                        <option value="safety">Safety Concern</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label><i class="fas fa-comment"></i> Message</label>
-                    <textarea placeholder="Write your message..." rows="5" required></textarea>
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">
+                
+                <button type="submit" class="submit-btn">
                     <i class="fas fa-paper-plane"></i> Send Message
                 </button>
             </form>
-        </div>
-        <div class="contact-info">
-            <h3>Other Ways to Reach Us</h3>
-            <div class="contact-method">
-                <i class="fas fa-envelope"></i>
-                <span>support@chatonline.com</span>
-            </div>
-            <div class="contact-method">
+            
+            <div class="response-time">
                 <i class="fas fa-clock"></i>
-                <span>Response time: 24-48 hours</span>
-            </div>
-            <div class="contact-note">
-                <p><strong>Note:</strong> We typically respond within 24-48 business hours. For urgent matters, please use the "Report Abuse" subject option.</p>
+                <strong>Response Time:</strong> We typically reply within 24-48 hours
             </div>
         </div>
+
+        <div class="contact-info">
+            <h2>Contact Information</h2>
+            
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                <div class="info-content">
+                    <h4>Email Us</h4>
+                    <p>For general inquiries: support@chatonline.app<br>For safety issues: safety@chatonline.app</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="info-content">
+                    <h4>Our Location</h4>
+                    <p>ChatOnline is based online. Our team is distributed worldwide to provide 24/7 support.</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-headset"></i></div>
+                <div class="info-content">
+                    <h4>Support Hours</h4>
+                    <p>We're here to help! Our support team is available Monday through Friday, 9 AM - 6 PM (UTC).</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; color: #1f2937;">Follow Us</h3>
+            <div class="social-links">
+                <a href="#" class="social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-link" title="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-link">
+        <p>Have a quick question?</p>
+        <a href="/faq">Check Our FAQ</a>
     </div>
 </div>
 {% endblock %}
