@@ -300,6 +300,51 @@
     color: #78350F;
     font-size: var(--text-sm);
 }
+
+.retry-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.retry-btn:hover {
+    opacity: 0.9;
+}
+.gender-filter-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding: 12px;
+    flex-wrap: wrap;
+}
+.gender-filter-row .filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.gender-filter-row .filter-btn:hover {
+    border-color: var(--primary);
+    background: #f3f4f6;
+}
+.gender-filter-row .filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.gender-filter-row .filter-btn i {
+    font-size: 16px;
+}
 </style>
 {% endblock %}
 
@@ -362,6 +407,9 @@
         </div>
 
         <!-- Gender Filter -->
+        <div class="refresh-btn" onclick="loadUsers()" title="Refresh user list">
+            <i class="fas fa-sync-alt"></i>
+        </div>
         <div class="gender-filter-row">
             <button class="filter-btn active">All</button>
             <button class="filter-btn"><i class="fas fa-male"></i></button>
