@@ -12,7 +12,13 @@ from database import (
     get_pending_friend_requests, accept_friend_request, reject_friend_request,
     create_room, get_rooms, get_room_by_id, join_room, leave_room,
     get_room_messages, create_room_message, create_notification,
-    get_notifications, mark_notification_read, get_stats
+    get_notifications, mark_notification_read, get_stats, execute_query, USE_POSTGRES
+)
+from auth import (
+    validate_email, is_valid_email,
+    generate_verification_code, verify_code, mark_user_verified,
+    generate_password_reset_token, verify_password_reset_token,
+    send_verification_email, send_password_reset_email
 )
 
 # Create API blueprint
@@ -246,6 +252,166 @@ def logout():
     return jsonify({
         'success': True,
         'message': 'Logged out successfully'
+    })
+
+
+@api.route('/auth/verify-email', methods=['POST'])
+def verify_email():
+    """Verify email with a 6-digit code."""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    code = data.get('code', '').strip()
+
+    if not user_id or not code:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_REQUEST', 'message': 'user_id and code required'}
+        }), 400
+
+    success, message = verify_code(user_id, code, 'email_verify')
+
+    if not success:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'VERIFICATION_FAILED', 'message': message}
+        }), 400
+
+    try:
+        mark_user_verified(user_id)
+    except Exception:
+        pass  # User might already be verified
+
+    return jsonify({
+        'success': True,
+        'message': 'Email verified successfully!'
+    })
+
+
+@api.route('/auth/resend-code', methods=['POST'])
+def resend_verification_code():
+    """Resend a new verification code to the user's email."""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    email = data.get('email')
+
+    if not user_id or not email:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_REQUEST', 'message': 'user_id and email required'}
+        }), 400
+
+    # Validate email
+    if not validate_email(email):
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_EMAIL', 'message': 'Invalid email format'}
+        }), 400
+
+    user = get_user_by_id(user_id)
+    if not user:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'USER_NOT_FOUND', 'message': 'User not found'}
+        }), 404
+
+    # Generate new code
+    new_code = generate_verification_code(user_id, email, 'email_verify')
+    sent = send_verification_email(email, new_code, user.get('username', ''))
+
+    return jsonify({
+        'success': True,
+        'message': 'Verification code sent.' if sent else 'Email service not configured. Check server logs for the code.',
+        'email_sent': sent
+    })
+
+
+@api.route('/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    """Send a password reset email."""
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+
+    if not email:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_REQUEST', 'message': 'Email required'}
+        }), 400
+
+    token, user_id = generate_password_reset_token(email)
+
+    if token:
+        sent = send_password_reset_email(email, token)
+        if sent:
+            return jsonify({
+                'success': True,
+                'message': 'Password reset email sent.'
+            })
+
+    # Always return success to prevent email enumeration
+    return jsonify({
+        'success': True,
+        'message': 'If that email is registered, a reset link has been sent.'
+    })
+
+
+@api.route('/auth/reset-password', methods=['POST'])
+def reset_password():
+    """Reset password using a token."""
+    data = request.get_json()
+    token = data.get('token', '').strip()
+    new_password = data.get('new_password', '')
+
+    if not token or not new_password:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_REQUEST', 'message': 'token and new_password required'}
+        }), 400
+
+    valid, message, user_id = verify_password_reset_token(token)
+
+    if not valid:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'INVALID_TOKEN', 'message': message}
+        }), 400
+
+    # Validate password strength
+    errors = []
+    if len(new_password) < 8:
+        errors.append('Password must be at least 8 characters')
+    if not re.search(r'[A-Z]', new_password):
+        errors.append('Password must contain at least one uppercase letter')
+    if not re.search(r'[a-z]', new_password):
+        errors.append('Password must contain at least one lowercase letter')
+    if not re.search(r'[0-9]', new_password):
+        errors.append('Password must contain at least one number')
+
+    if errors:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'VALIDATION_ERROR', 'message': '; '.join(errors)}
+        }), 400
+
+    # Update password
+    from werkzeug.security import generate_password_hash
+    password_hash = generate_password_hash(new_password)
+
+    try:
+        execute_query(
+            'UPDATE users SET password_hash = %s WHERE id = %s'
+            if USE_POSTGRES else
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            (password_hash, user_id)
+        )
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': {'code': 'DB_ERROR', 'message': 'Could not update password.'}
+        }), 500
+
+    return jsonify({
+        'success': True,
+        'message': 'Password reset successfully. You can now log in.'
     })
 
 

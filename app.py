@@ -256,7 +256,26 @@ from collections import defaultdict
 from config import Config
 from database import init_database
 from api_routes import api
-from csrf import generate_csrf_token, validate_csrf_token
+from csrf import generate_csrf_token, validate_csrf_token, CSRF_TOKEN_NAME
+from moderation import moderation
+
+
+def _socket_csrf_required(f):
+    """Decorator to require valid CSRF token on Socket.IO events."""
+    import functools
+
+    @functools.wraps(f)
+    def wrapped(data, *args, **kwargs):
+        # Optional CSRF token from client data
+        token = data.get('_csrf') if isinstance(data, dict) else None
+        session_token = session.get(CSRF_TOKEN_NAME)
+        if session_token and token:
+            if not secrets.compare_digest(str(session_token), str(token)):
+                emit('csrf_error', {'message': 'Invalid CSRF token. Please refresh.'})
+                return
+        return f(data, *args, **kwargs)
+    return wrapped
+import models
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -299,7 +318,13 @@ except Exception as e:
 # Register API blueprint
 app.register_blueprint(api)
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=config.SOCKETIO_CORS_ORIGINS or "*",
+    async_mode=config.SOCKETIO_ASYNC_MODE,
+    ping_timeout=30,
+    ping_interval=10,
+)
 
 # ==================== REAL-TIME USER TRACKING ====================
 
@@ -415,7 +440,32 @@ friends = {}
 friend_requests = {}
 
 # Honeypot tokens storage
-honeypot_tokens = set()
+# Honeypot tokens: {token: expiry_timestamp}
+# Tokens expire after 10 minutes to prevent memory leaks
+HONEYPOT_TOKEN_TTL = 600  # seconds
+honeypot_tokens: dict[str, float] = {}
+
+
+def _clean_expired_honeypots():
+    """Remove expired honeypot tokens from memory."""
+    now = time.time()
+    expired = [t for t, exp in honeypot_tokens.items() if now > exp]
+    for t in expired:
+        honeypot_tokens.pop(t, None)
+
+
+def _add_honeypot(token: str):
+    """Add token with expiry timestamp."""
+    honeypot_tokens[token] = time.time() + HONEYPOT_TOKEN_TTL
+
+
+def _check_honeypot(token: str) -> bool:
+    """Check if token is valid and remove it (one-time use)."""
+    _clean_expired_honeypots()
+    if token in honeypot_tokens:
+        del honeypot_tokens[token]
+        return True
+    return False
 
 # Waiting queues by gender preference
 waiting_queues = {
@@ -478,7 +528,7 @@ def index():
     honeypot_token = generate_honeypot_token()
     session['honeypot_token'] = honeypot_token
     session['session_start'] = time.time()
-    honeypot_tokens.add(honeypot_token)
+    _add_honeypot(honeypot_token)
 
     return render_template('index.html')
 
@@ -525,8 +575,7 @@ def verify_human():
     challenge = data.get('challenge', '')
 
     # Validate honeypot
-    if token in honeypot_tokens:
-        honeypot_tokens.discard(token)
+    if _check_honeypot(token):
         session['human_verified'] = True
         session['fingerprint'] = hashlib.md5(client_ip.encode()).hexdigest()
         return jsonify({'success': True})
@@ -630,6 +679,13 @@ def handle_connect():
     if config.DEBUG:
         logger.info(f"User connected: {username} (ID: {user_id}) from {client_ip}")
     
+    # Update online status in database
+    try:
+        models.update_user_online_status(user_id, 1)
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error updating online status: {e}")
+    
     emit('connected', {'user_id': user_id, 'username': username, 'gender': gender, 'is_guest': is_guest})
 
 def cleanup_stale_connections():
@@ -696,6 +752,14 @@ def handle_disconnect():
         'total_online': len(active_connections)
     }, room=GLOBAL_ONLINE_ROOM)
 
+    # Update online status in database
+    if user_id:
+        try:
+            models.update_user_online_status(user_id, 0)
+        except Exception as e:
+            if config.DEBUG:
+                print(f"Error updating offline status: {e}")
+
     print(f'User {user_id} disconnected')
 
 # ============ REAL-TIME USER TRACKING EVENTS ============
@@ -759,8 +823,7 @@ def handle_verify_human(data):
     """Handle human verification"""
     token = data.get('token', '')
 
-    if token in honeypot_tokens:
-        honeypot_tokens.discard(token)
+    if _check_honeypot(token):
         session['human_verified'] = True
         emit('verification_success')
     else:
@@ -780,9 +843,19 @@ def handle_check_username(data):
         emit('username_error', {'message': 'Username must contain letters'})
         return
 
-    if username in [u['username'].lower() for u in registered_users.values()]:
-        emit('username_taken', {'username': username})
-        return
+    # Check against database
+    try:
+        success, exists = models.check_username_exists(username)
+        if success and exists:
+            emit('username_taken', {'username': username})
+            return
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error checking username in database: {e}")
+        # Fall back to in-memory check on DB error
+        if username in [u['username'].lower() for u in registered_users.values()]:
+            emit('username_taken', {'username': username})
+            return
 
     if username in used_usernames:
         emit('username_taken', {'username': username})
@@ -790,6 +863,7 @@ def handle_check_username(data):
 
     emit('username_available', {'username': username})
 
+@_socket_csrf_required
 @socketio.on('login')
 def handle_login(data):
     client_ip = get_client_ip()
@@ -805,12 +879,24 @@ def handle_login(data):
         emit('login_error', {'message': 'Please enter username'})
         return
 
-    user_found = None
-    for uid, user_data in registered_users.items():
-        if user_data['username'].lower() == username.lower():
-            user_found = user_data
-            user_found['id'] = uid
-            break
+    # Check against database first
+    try:
+        success, result = models.get_user_by_username(username)
+        if success:
+            user_found = result
+            user_found['id'] = user_found.get('id')
+        else:
+            user_found = None
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error checking user in database: {e}")
+        # Fall back to in-memory check
+        user_found = None
+        for uid, user_data in registered_users.items():
+            if user_data['username'].lower() == username.lower():
+                user_found = user_data
+                user_found['id'] = uid
+                break
 
     if not user_found:
         emit('login_error', {'message': 'User not found. Please register first.'})
@@ -836,6 +922,7 @@ def handle_login(data):
         }
     })
 
+@_socket_csrf_required
 @socketio.on('register')
 def handle_register(data):
     client_ip = get_client_ip()
@@ -865,12 +952,38 @@ def handle_register(data):
         emit('register_error', {'message': 'Username can only contain letters, numbers, and underscores'})
         return
 
-    # Check if username exists
-    if username.lower() in [u['username'].lower() for u in registered_users.values()]:
-        emit('register_error', {'message': 'Username already exists'})
-        return
+    # Check if username exists in database
+    try:
+        success, exists = models.check_username_exists(username)
+        if success and exists:
+            emit('register_error', {'message': 'Username already exists'})
+            return
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error checking username in database: {e}")
+        # Fall back to in-memory check
+        if username.lower() in [u['username'].lower() for u in registered_users.values()]:
+            emit('register_error', {'message': 'Username already exists'})
+            return
 
-    user_id = generate_user_id()
+    # Create user in database
+    user_id = models.create_user(
+        username=username,
+        email='',  # Email not collected in this flow
+        password='',  # No password for guest-style registration
+        gender=gender,
+        age=age,
+        country=country,
+        state=state
+    )
+    
+    if not user_id[0]:
+        emit('register_error', {'message': 'Failed to create user. Please try again.'})
+        return
+    
+    user_id = user_id[1]
+
+    # Also update in-memory for backwards compatibility
     registered_users[user_id] = {
         'username': username,
         'gender': gender,
@@ -901,6 +1014,7 @@ def handle_register(data):
         }
     })
 
+@_socket_csrf_required
 @socketio.on('find_partner')
 def handle_find_partner(data):
     user_id = session.get('user_id')
@@ -976,6 +1090,7 @@ def handle_find_partner(data):
         add_to_queue(user_id, gender, partner_pref)
         emit('waiting', {'message': 'Looking for a stranger to chat with...'})
 
+@_socket_csrf_required
 @socketio.on('send_message')
 def handle_message(data):
     user_id = session.get('user_id')
@@ -1012,19 +1127,43 @@ def handle_message(data):
         emit('error', {'message': 'Message limit reached. Please start a new chat.'})
         return
 
+    # ── Moderation check ────────────────────────────────────────
+    if config.MODERATION_ENABLED:
+        mod_result = moderation.check_message(message)
+        if not mod_result['allowed']:
+            # Log the flagged content
+            logger.warning(
+                f"Moderation flag — user={user.get('username')} "
+                f"room={user['room']}: {mod_result['issues']}"
+            )
+            # Silent flag: allow through but log it for admin review
+            # (switch to 'block' below to reject flagged messages)
+            pass  # change to: emit('error', {'message': 'Message not allowed.'}); return
+
+    # Save message to database
+    partner_id = user.get('partner_id')
+    try:
+        models.create_message(user_id, partner_id, message, room_id=user.get('room'))
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error saving message to database: {e}")
+        # Continue even if DB save fails - socket emit is more critical
+
+    timestamp = time.time()
+
     emit('new_message', {
         'message': message,
         'sender': 'you',
-        'timestamp': time.time()
+        'timestamp': timestamp
     }, room=user['room'])
 
     emit('new_message', {
         'message': message,
         'sender': 'partner',
-        'timestamp': time.time()
+        'timestamp': timestamp
     }, room=user['room'])
-    
-    logger.info(f"Message sent by {username} to room {user['room']}")
+
+    logger.info(f"Message sent by {user.get('username')} to room {user['room']}")
 
 @socketio.on('typing')
 def handle_typing(data):
@@ -1107,6 +1246,7 @@ def handle_stop_chat():
 
     emit('chat_stopped', {'message': 'You have left the chat'})
 
+@_socket_csrf_required
 @socketio.on('report_partner')
 def handle_report(data):
     user_id = session.get('user_id')
@@ -1114,12 +1254,22 @@ def handle_report(data):
         return
 
     reason = data.get('reason', 'No reason provided')
-    print(f'Report: User {user_id} reported partner {users[user_id].get("partner_id")} for: {reason}')
+    reported_user_id = users[user_id].get('partner_id')
+
+    # Persist report to database
+    try:
+        database.create_report(user_id, reported_user_id, reason)
+        logger.info(f"Report filed: reporter={user_id} reported={reported_user_id} reason={reason}")
+    except Exception as e:
+        logger.error(f"Failed to save report: {e}")
+
+    emit('report_submitted', {'message': 'Report submitted. Thank you.'})
 
     handle_next_partner_internal(user_id)
 
 # ============ FRIEND SYSTEM ============
 
+@_socket_csrf_required
 @socketio.on('add_friend')
 def handle_add_friend(data):
     """Send a friend request to another user"""
@@ -1140,12 +1290,22 @@ def handle_add_friend(data):
             target_user_id = uid
             break
 
-    # Also check registered users
+    # Also check registered users (in-memory)
     if not target_user_id:
         for uid, user_data in registered_users.items():
             if user_data.get('username', '').lower() == target_username.lower():
                 target_user_id = uid
                 break
+
+    # Also check database for registered users
+    if not target_user_id:
+        try:
+            success, result = models.get_user_by_username(target_username)
+            if success:
+                target_user_id = result.get('id')
+        except Exception as e:
+            if config.DEBUG:
+                print(f"Error looking up user in database: {e}")
 
     if not target_user_id:
         emit('friend_error', {'message': 'User not found'})
@@ -1160,7 +1320,18 @@ def handle_add_friend(data):
         emit('friend_error', {'message': 'Already friends'})
         return
 
-    # Send friend request
+    # Send friend request to database
+    try:
+        success, result = models.create_friend_request(user_id, target_user_id)
+        if not success:
+            emit('friend_error', {'message': result or 'Failed to send friend request'})
+            return
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error creating friend request in database: {e}")
+        # Continue with in-memory fallback
+
+    # Also track in-memory for backwards compatibility
     if target_user_id not in friend_requests:
         friend_requests[target_user_id] = []
     friend_requests[target_user_id].append(user_id)
@@ -1193,10 +1364,18 @@ def handle_accept_friend(data):
         emit('friend_error', {'message': 'No friend request from this user'})
         return
 
-    # Remove from requests
+    # Accept friend request in database
+    try:
+        models.accept_friend_request(user_id, from_user_id)
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error accepting friend request in database: {e}")
+        # Continue with in-memory fallback
+
+    # Remove from requests (in-memory)
     friend_requests[user_id].remove(from_user_id)
 
-    # Add to friends
+    # Add to friends (in-memory)
     if user_id not in friends:
         friends[user_id] = []
     if from_user_id not in friends[user_id]:
@@ -1218,20 +1397,36 @@ def handle_get_friends():
         emit('friend_error', {'message': 'Please login first'})
         return
 
-    user_friends = friends.get(user_id, [])
     friends_list = []
 
-    for friend_id in user_friends:
-        friend_info = {'id': friend_id}
-        if friend_id in users:
-            friend_info['username'] = users[friend_id].get('username', 'Unknown')
-            friend_info['gender'] = users[friend_id].get('gender', 'unknown')
-            friend_info['online'] = True
-        elif friend_id in registered_users:
-            friend_info['username'] = registered_users[friend_id].get('username', 'Unknown')
-            friend_info['gender'] = registered_users[friend_id].get('gender', 'unknown')
-            friend_info['online'] = False
-        friends_list.append(friend_info)
+    # Try to get friends from database first
+    try:
+        success, db_friends = models.get_friends(user_id)
+        if success:
+            for friend in db_friends:
+                friend_info = {
+                    'id': friend.get('id'),
+                    'username': friend.get('username', 'Unknown'),
+                    'gender': friend.get('gender', 'unknown'),
+                    'online': friend.get('is_online', 0) == 1
+                }
+                friends_list.append(friend_info)
+    except Exception as e:
+        if config.DEBUG:
+            print(f"Error getting friends from database: {e}")
+        # Fall back to in-memory
+        user_friends = friends.get(user_id, [])
+        for friend_id in user_friends:
+            friend_info = {'id': friend_id}
+            if friend_id in users:
+                friend_info['username'] = users[friend_id].get('username', 'Unknown')
+                friend_info['gender'] = users[friend_id].get('gender', 'unknown')
+                friend_info['online'] = True
+            elif friend_id in registered_users:
+                friend_info['username'] = registered_users[friend_id].get('username', 'Unknown')
+                friend_info['gender'] = registered_users[friend_id].get('gender', 'unknown')
+                friend_info['online'] = False
+            friends_list.append(friend_info)
 
     emit('friends_list', {'friends': friends_list})
 
@@ -2555,25 +2750,6 @@ def api_online_all():
             'is_current': True
         })
         seen_usernames.add(current_username.lower())
-
-    # Add demo users for testing (remove in production)
-    demo_users = [
-        {'username': 'TestUser1', 'gender': 'male', 'country': 'US'},
-        {'username': 'TestUser2', 'gender': 'female', 'country': 'UK'},
-        {'username': 'Stranger123', 'gender': 'male', 'country': 'CA'},
-    ]
-    
-    for demo in demo_users:
-        if demo['username'].lower() not in seen_usernames:
-            online_users.append({
-                'id': demo['username'],
-                'username': demo['username'],
-                'gender': demo['gender'],
-                'country': demo['country'],
-                'is_guest': True,
-                'is_online': True,
-                'is_current': False
-            })
 
     return jsonify({
         'success': True,

@@ -561,6 +561,105 @@ def mark_notification_read(notification_id, user_id):
         WHERE id = ? AND user_id = ?
     ''', (notification_id, user_id))
 
+# ==================== REPORT FUNCTIONS ====================
+
+def create_report(reporter_id, reported_user_id, reason, description=''):
+    """Create a user report."""
+    return execute_query('''
+        INSERT INTO reports (reporter_id, reported_user_id, reason, description)
+        VALUES (%s, %s, %s, %s)
+    ''' if USE_POSTGRES else '''
+        INSERT INTO reports (reporter_id, reported_user_id, reason, description)
+        VALUES (?, ?, ?, ?)
+    ''', (reporter_id, reported_user_id, reason, description))
+
+
+def get_reports(status='pending', limit=50):
+    """Get reports by status."""
+    return fetch_all(
+        'SELECT * FROM reports WHERE status = %s ORDER BY created_at DESC LIMIT %s'
+        if USE_POSTGRES else
+        'SELECT * FROM reports WHERE status = ? ORDER BY created_at DESC LIMIT ?',
+        (status, limit)
+    )
+
+
+def update_report_status(report_id, status):
+    """Update report status (reviewed, dismissed, resolved)."""
+    execute_query('''
+        UPDATE reports SET status = %s, reviewed_at = %s WHERE id = %s
+    ''' if USE_POSTGRES else '''
+        UPDATE reports SET status = ?, reviewed_at = ? WHERE id = ?
+    ''', (status, datetime.utcnow().isoformat(), report_id))
+
+
+# ==================== VERIFICATION FUNCTIONS ====================
+
+def create_verification_code(user_id: str, code: str, code_type: str, expires_at):
+    """Store a verification code for a user."""
+    expires_str = expires_at.isoformat() if hasattr(expires_at, 'isoformat') else str(expires_at)
+    return execute_query('''
+        INSERT INTO verification_codes (user_id, code, type, expires_at)
+        VALUES (%s, %s, %s, %s)
+    ''' if USE_POSTGRES else '''
+        INSERT INTO verification_codes (user_id, code, type, expires_at)
+        VALUES (?, ?, ?, ?)
+    ''', (user_id, code, code_type, expires_str))
+
+
+def get_verification_code(user_id: str, code_type: str):
+    """Get the most recent unexpired verification code for a user and type."""
+    return fetch_one(
+        'SELECT * FROM verification_codes WHERE user_id = %s AND type = %s AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1'
+        if USE_POSTGRES else
+        'SELECT * FROM verification_codes WHERE user_id = ? AND type = ? AND expires_at > datetime("now") ORDER BY created_at DESC LIMIT 1',
+        (user_id, code_type)
+    )
+
+
+def create_verification_token(user_id: str, token: str, token_type: str, expires_at):
+    """Store a verification token for a user."""
+    expires_str = expires_at.isoformat() if hasattr(expires_at, 'isoformat') else str(expires_at)
+    return execute_query('''
+        INSERT INTO verification_tokens (user_id, token, type, expires_at)
+        VALUES (%s, %s, %s, %s)
+    ''' if USE_POSTGRES else '''
+        INSERT INTO verification_tokens (user_id, token, type, expires_at)
+        VALUES (?, ?, ?, ?)
+    ''', (user_id, token, token_type, expires_str))
+
+
+def get_verification_token(token: str, token_type: str):
+    """Get an unexpired verification token."""
+    return fetch_one(
+        'SELECT * FROM verification_tokens WHERE token = %s AND type = %s AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1'
+        if USE_POSTGRES else
+        'SELECT * FROM verification_tokens WHERE token = ? AND type = ? AND expires_at > datetime("now") ORDER BY created_at DESC LIMIT 1',
+        (token, token_type)
+    )
+
+
+def mark_user_verified(user_id: str):
+    """Mark a user as email-verified."""
+    execute_query(
+        'UPDATE users SET is_verified = 1 WHERE id = %s'
+        if USE_POSTGRES else
+        'UPDATE users SET is_verified = 1 WHERE id = ?',
+        (user_id,)
+    )
+
+
+def is_user_verified(user_id: str) -> bool:
+    """Check if user has verified their email."""
+    user = fetch_one(
+        'SELECT is_verified FROM users WHERE id = %s'
+        if USE_POSTGRES else
+        'SELECT is_verified FROM users WHERE id = ?',
+        (user_id,)
+    )
+    return bool(user and user.get('is_verified'))
+
+
 # ==================== STATS FUNCTIONS ====================
 
 def get_stats():
