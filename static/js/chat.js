@@ -522,51 +522,58 @@ function escapeHtml(text) {
 
 // Demo users
 function loadDemoUsers() {
-    const demoUsers = [
-        { id: 1, username: 'Sarah_99', gender: 'female', age: 24, country: 'US', flag: 'us' },
-        { id: 2, username: 'John_Cool', gender: 'male', age: 28, country: 'GB', flag: 'gb' },
-        { id: 3, username: 'Maria_G', gender: 'female', age: 22, country: 'ES', flag: 'es' },
-        { id: 4, username: 'Alex_123', gender: 'male', age: 25, country: 'DE', flag: 'de' },
-        { id: 5, username: 'Emma_W', gender: 'female', age: 26, country: 'FR', flag: 'fr' },
-        { id: 6, username: 'Mike_T', gender: 'male', age: 30, country: 'CA', flag: 'ca' },
-        { id: 7, username: 'Lisa_22', gender: 'female', age: 22, country: 'AU', flag: 'au' },
-        { id: 8, username: 'David_B', gender: 'male', age: 27, country: 'IN', flag: 'in' },
-        { id: 9, username: 'Sophie_L', gender: 'female', age: 25, country: 'NL', flag: 'nl' },
-        { id: 10, username: 'James_K', gender: 'male', age: 29, country: 'JP', flag: 'jp' }
-    ];
+    // Fetch real online users from API instead of using demo data
+    async function loadOnlineUsers() {
+        const userListContainer = document.getElementById('user-list-container');
+        if (!userListContainer) return;
 
-    // Get the user list container
-    const userListContainer = document.getElementById('user-list-container');
-    if (!userListContainer) return;
-
-    userListContainer.innerHTML = '';
-
-    demoUsers.forEach(user => {
-        const item = document.createElement('div');
-        item.className = 'user-card';
-        item.innerHTML = `
-            <div class="user-card-avatar ${user.gender}">
-                <i class="fas fa-user"></i>
-                <span class="online-dot"></span>
-            </div>
-            <div class="user-card-info">
-                <div class="user-card-name">${user.username} <span class="flag-icon flag-icon-${user.flag}"></span></div>
-                <div class="user-card-meta">${user.age} | Online</div>
-            </div>
-        `;
-        item.addEventListener('click', () => {
-            // Show chat view with this user
-            userListContainer.querySelectorAll('.user-card').forEach(i => i.classList.remove('selected'));
-            item.classList.add('selected');
-            showChatView({
-                partner_name: user.username,
-                partner_info: `${user.age} | ${countries[user.country]?.name || user.country}`,
-                partner_gender: user.gender
+        try {
+            const response = await fetch('/api/online/all', {
+                headers: { 'Accept': 'application/json' }
             });
-        });
-        userListContainer.appendChild(item);
-    });
-}
+            const data = await response.json();
+            
+            const users = data?.data?.users || [];
+            
+            if (users.length === 0) {
+                userListContainer.innerHTML = '<div class="no-users-message"><i class="fas fa-users"></i><p>No users online right now</p><p class="sub">Be the first to start chatting!</p></div>';
+                return;
+            }
+
+            userListContainer.innerHTML = '';
+
+            users.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'user-card';
+                item.innerHTML = `
+                    <div class="user-card-avatar ${user.gender || 'unknown'}">
+                        <i class="fas fa-user"></i>
+                        <span class="online-dot"></span>
+                    </div>
+                    <div class="user-card-info">
+                        <div class="user-card-name">${user.username || 'Guest'} ${user.country ? '<span class="flag-icon flag-icon-' + user.country.toLowerCase() + '"></span>' : ''}</div>
+                        <div class="user-card-meta">${user.is_guest ? 'Guest' : 'Online'}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    userListContainer.querySelectorAll('.user-card').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    showChatView({
+                        partner_name: user.username,
+                        partner_info: `${user.country || 'Unknown'} | Online`,
+                        partner_gender: user.gender
+                    });
+                });
+                userListContainer.appendChild(item);
+            });
+        } catch (error) {
+            console.error('Failed to load online users:', error);
+            userListContainer.innerHTML = '<div class="no-users-message"><i class="fas fa-exclamation-triangle"></i><p>Failed to load users</p></div>';
+        }
+    }
+
+    // Load real online users on page load
+    loadOnlineUsers();
 
 window.addEventListener('beforeunload', () => {
     if (socket?.connected) socket.disconnect();

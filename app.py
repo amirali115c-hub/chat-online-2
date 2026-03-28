@@ -544,10 +544,20 @@ def guest_login():
     if not username or not gender or not age or not country:
         return render_template('index.html')
     
+    # ── SERVER-SIDE AGE VERIFICATION ──
+    try:
+        age_int = int(age)
+        if age_int < 18:
+            # Return to index with error
+            return render_template('index.html', error="You must be 18 or older to use this site.")
+    except (ValueError, TypeError):
+        return render_template('index.html', error="Invalid age.")
+    
     # Store minimal session data - only what's needed
     session['guest_username'] = username
     session['guest_gender'] = gender
     session['guest_country'] = country
+    session['guest_age'] = age_int
     session['is_guest'] = True
     session['age_verified'] = True
     
