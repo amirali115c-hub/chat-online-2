@@ -180,4 +180,47 @@ document.getElementById('register-form').addEventListener('submit', async functi
         display: none;
     }
 }
+
+<style>
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+.password-input-wrapper input {
+    width: 100%;
+    padding-right: 45px;
+}
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #9ca3af;
+    transition: color 0.3s;
+}
+.password-toggle:hover {
+    color: #6b7280;
+}
+.error-message {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    display: none;
+}
+.error-message.show {
+    display: block;
+}
+.btn-register:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.btn-loader i {
+    margin-right: 8px;
+}
+</style>
 </style>
