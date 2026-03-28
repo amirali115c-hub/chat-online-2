@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Disallow private/admin areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /inbox/
+Disallow: /friends/
+Disallow: /settings/
+Disallow: /history/
+Disallow: /static/
+Disallow: /uploads/
+
+# Sitemap
+Sitemap: https://chatonline.app/sitemap.xml

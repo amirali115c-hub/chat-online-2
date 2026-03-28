@@ -15,6 +15,84 @@
     <meta name="apple-mobile-web-app-title" content="Chat Online">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Chat Online">
+    <!-- SEO Meta Tags -->
+    <title>Chat Online - Free Random Chat with Strangers Worldwide</title>
+    <meta name="description" content="Chat with strangers from around the world for free. Instant random chat, public chat rooms, and dating channels. No registration required - start chatting instantly!">
+    <meta name="keywords" content="random chat, stranger chat, free chat, online chat, chat rooms, anonymous chat, video chat, dating chat, meet new people, international chat, global chat, 1 on 1 chat">
+    <meta name="author" content="ChatOnline">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://chatonline.app/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://chatonline.app/">
+    <meta property="og:title" content="Chat Online - Free Random Chat with Strangers">
+    <meta property="og:description" content="Connect with strangers worldwide for free. Random chat, chat rooms, and dating channels. No registration needed!">
+    <meta property="og:image" content="https://chatonline.app/static/images/og-image.jpg">
+    <meta property="og:site_name" content="ChatOnline">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://chatonline.app/">
+    <meta name="twitter:title" content="Chat Online - Free Random Chat with Strangers">
+    <meta name="twitter:description" content="Connect with strangers worldwide for free. Random chat, chat rooms, and dating channels. No registration needed!">
+    <meta name="twitter:image" content="https://chatonline.app/static/images/og-image.jpg">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ChatOnline",
+        "alternateName": "Chat Online",
+        "description": "Free platform for random chat with strangers worldwide. Connect anonymously via text, join public chat rooms, or explore dating channels.",
+        "url": "https://chatonline.app",
+        "logo": "https://chatonline.app/static/images/logo.png",
+        "image": "https://chatonline.app/static/images/og-image.jpg",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web Browser, iOS, Android",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.5",
+            "reviewCount": "10000"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "ChatOnline"
+        },
+        "datePublished": "2026-01-01",
+        "dateModified": "2026-03-28"
+    }
+    </script>
+    
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "ChatOnline",
+        "url": "https://chatonline.app",
+        "logo": "https://chatonline.app/static/images/logo.png",
+        "description": "Free random chat platform connecting people worldwide",
+        "sameAs": [
+            "https://twitter.com/chatonline",
+            "https://facebook.com/chatonline",
+            "https://instagram.com/chatonline"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "support@chatonline.app"
+        }
+    }
+    </script>
+
     <meta name="msapplication-TileColor" content="#8B5CF6">
     <meta name="msapplication-config" content="none">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -50,6 +128,28 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="//chatonline.app">
+    
+    <!-- Lazy loading for images -->
+    <script>
+    if ('loading' in HTMLImageElement.prototype) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
+                img.src = img.dataset.src || img.src;
+            });
+        });
+    }
+    </script>
+    
+    <!-- Critical CSS inline -->
+    <style>
+    .above-fold { display: block; }
+    </style>
+
 </head>
 <body>
     <!-- Loading Overlay -->

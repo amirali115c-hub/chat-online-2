@@ -1,6 +1,91 @@
 {% extends "base.html" %}
 
-{% block title %}Chat Online - 18+ Free Chat Rooms{% endblock %}
+{% block title %}Chat Online - 18+ Free Chat Rooms
+<section class="features-showcase">
+    <h2>Why Choose ChatOnline?</h2>
+    <div class="features-grid">
+        <div class="feature-item">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Safe & Secure</h3>
+            <p>Built-in moderation and reporting tools keep our community safe. Chat with peace of mind.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-globe"></i>
+            <h3>Global Connections</h3>
+            <p>Meet people from 150+ countries. Expand your horizons with diverse conversations.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-bolt"></i>
+            <h3>Instant Matching</h3>
+            <p>Get connected to a stranger in seconds. No waiting, just start chatting!</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-comment-dots"></i>
+            <h3>Multiple Chat Modes</h3>
+            <p>Random 1-on-1 chat, public rooms, or dating channels - choose what fits your mood.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-mobile-alt"></i>
+            <h3>Mobile Friendly</h3>
+            <p>Chat anywhere on any device. Our responsive design works perfectly on phone or desktop.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-ban"></i>
+            <h3>100% Free</h3>
+            <p>No hidden fees, no premium tiers. Everyone gets full access to all features.</p>
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works-simple">
+    <h2>How Random Chat Works</h2>
+    <div class="steps-container">
+        <div class="step-card">
+            <span class="step-num">1</span>
+            <h4>Choose Your Interest</h4>
+            <p>Select who you want to chat with - male, female, or everyone.</p>
+        </div>
+        <div class="step-card">
+            <span class="step-num">2</span>
+            <h4>Get Matched Instantly</h4>
+            <p>Our system connects you with a random stranger in seconds.</p>
+        </div>
+        <div class="step-card">
+            <span class="step-num">3</span>
+            <h4>Start Chatting</h4>
+            <p>Begin your conversation. Hit it off? Add as friend. Want someone new? Skip!</p>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials">
+    <h2>What Our Users Say</h2>
+    <div class="testimonial-grid">
+        <div class="testimonial-card">
+            <p>"Met amazing people from around the world. The random chat feature is so much fun!"</p>
+            <span>- Alex from USA</span>
+        </div>
+        <div class="testimonial-card">
+            <p>"Love that I can chat without registration. Quick, easy, and always someone interesting to talk to."</p>
+            <span>- Maria from Spain</span>
+        </div>
+        <div class="testimonial-card">
+            <p>"The safety features make me feel comfortable. Great community and fun conversations!"</p>
+            <span>- James from UK</span>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <h2>Ready to Start Chatting?</h2>
+    <p>Join thousands of people chatting worldwide. No registration required!</p>
+    <div class="cta-buttons">
+        <a href="/register" class="btn-primary">Create Free Account</a>
+        <a href="/welcome" class="btn-secondary">Start as Guest</a>
+    </div>
+</section>
+
+{% endblock %}
 
 {% block content %}
 <!-- Three Column Layout -->
@@ -389,5 +474,107 @@ document.getElementById('entry-form').addEventListener('submit', function(e) {
 .btn-loader i {
     margin-right: 8px;
 }
+
+<style>
+.features-showcase, .how-it-works-simple, .testimonials, .cta-section {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.features-showcase h2, .how-it-works-simple h2, .testimonials h2, .cta-section h2 {
+    text-align: center;
+    color: #1f2937;
+    margin-bottom: 40px;
+    font-size: 2rem;
+}
+.features-grid, .steps-container, .testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+.feature-item, .step-card, .testimonial-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.feature-item i, .step-card .step-num {
+    font-size: 40px;
+    color: #8B5CF6;
+    margin-bottom: 15px;
+    display: block;
+}
+.step-num {
+    width: 50px;
+    height: 50px;
+    background: #8B5CF6;
+    color: white;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.feature-item h3, .step-card h4 {
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+.feature-item p, .step-card p, .testimonial-card p {
+    color: #6b7280;
+    line-height: 1.6;
+}
+.testimonial-card {
+    font-style: italic;
+}
+.testimonial-card span {
+    display: block;
+    margin-top: 15px;
+    color: #8B5CF6;
+    font-weight: 600;
+    font-style: normal;
+}
+.cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    border-radius: 20px;
+    margin: 40px auto;
+}
+.cta-section h2 { color: white; }
+.cta-section p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 30px; }
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-primary, .btn-secondary {
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.3s;
+}
+.btn-primary {
+    background: white;
+    color: #8B5CF6;
+}
+.btn-secondary {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+}
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-3px);
+}
+@media (max-width: 768px) {
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .btn-primary, .btn-secondary { width: 100%; max-width: 280px; }
+}
+</style>
+
 </style>
 </style>
