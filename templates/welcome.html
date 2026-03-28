@@ -463,6 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Setup gender filter
+    setupGenderFilter();
+    
     // Load online users after a short delay to ensure socket is connected
     setTimeout(function() {
         loadUsers();
@@ -485,6 +488,33 @@ function goToMainChat() {
     window.location.href = '{{ url_for("main_chat") }}';
 }
 
+// Gender filter state
+var currentGenderFilter = 'all';
+
+function setupGenderFilter() {
+    const filterBtns = document.querySelectorAll('.gender-filter-row .filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Get gender from button
+            const icon = this.querySelector('i');
+            if (icon && icon.classList.contains('fa-male')) {
+                currentGenderFilter = 'male';
+            } else if (icon && icon.classList.contains('fa-female')) {
+                currentGenderFilter = 'female';
+            } else {
+                currentGenderFilter = 'all';
+            }
+            
+            // Reload users with filter
+            loadUsers();
+        });
+    });
+}
+
 function loadUsers() {
     // Fetch all online users (registered + guests + current user)
     fetch('/api/online/all')
@@ -498,6 +528,11 @@ function loadUsers() {
                 var currentUsername = localStorage.getItem('chat_tab_' + getTabId() + '_username') || '{{ session.get("guest_username", "Guest") }}';
 
                 data.data.users.forEach(user => {
+                    // Apply gender filter
+                    if (currentGenderFilter !== 'all' && user.gender !== currentGenderFilter) {
+                        return; // Skip this user
+                    }
+                    
                     // Check if this is the current user
                     var isCurrentUser = (user.username === currentUsername);
                     

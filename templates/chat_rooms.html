@@ -804,6 +804,11 @@ function joinRoom(roomId) {
 
     currentRoom = rooms.find(r => r.id === roomId);
 
+    // Emit join_room event to server
+    if (typeof socket !== 'undefined' && socket && socket.connected) {
+        socket.emit('join_room_tracking', { room: currentRoom.name });
+    }
+
     // Update UI
     document.querySelectorAll('.room-item').forEach(item => item.classList.remove('active'));
     event.currentTarget.classList.add('active');
