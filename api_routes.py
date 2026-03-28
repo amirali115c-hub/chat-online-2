@@ -15,7 +15,7 @@ from database import (
     get_notifications, mark_notification_read, get_stats, execute_query, USE_POSTGRES
 )
 from auth import (
-    validate_email, is_valid_email,
+    is_valid_email,
     generate_verification_code, verify_code, mark_user_verified,
     generate_password_reset_token, verify_password_reset_token,
     send_verification_email, send_password_reset_email
@@ -163,6 +163,17 @@ def register():
     # Create user
     password_hash = generate_password_hash(password)
     user_id = create_user(username, email, password_hash, gender, age, country, state)
+
+    # ── Email verification ───────────────────────────────
+    if email:
+        try:
+            # Generate and send verification code
+            code = generate_verification_code(user_id, email, 'email_verify')
+            email_sent = send_verification_email(email, code, username)
+            if not email_sent:
+                print(f"[WARN] Email not sent. Code for {email}: {code}")
+        except Exception as e:
+            print(f"[WARN] Failed to send verification code: {e}")
 
     # Generate token
     token = generate_token(user_id, username)

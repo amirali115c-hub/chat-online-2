@@ -7,9 +7,9 @@
     <div class="auth-card login-card">
         <div class="auth-header">
             <div class="logo-section">
-                <i class="fas fa-comment-dots"></i>
+                <i class="fas fa-comment-dots" style="font-size: 48px; color: #8B5CF6;"></i>
             </div>
-            <h1>Welcome Back</h1>
+            <h1><i class="fas fa-comment-dots"></i> Welcome Back</h1>
             <p>Login to your account</p>
         </div>
 
@@ -78,20 +78,26 @@ document.getElementById('login-password-form').addEventListener('submit', async 
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usernameOrEmail: userEmail, password })
+            body: JSON.stringify({ usernameOrEmail: userEmail, password: password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             // Store JWT token and user data in localStorage
             localStorage.setItem('auth_token', data.data.token);
             localStorage.setItem('user_data', JSON.stringify(data.data.user));
-            
-            // Redirect to chat page
-            window.location.href = '/chat/1on1';
+            localStorage.setItem('username', data.data.user.username);
+
+            // Show success message then redirect
+            document.getElementById('login-password-error').textContent = 'Login successful! Redirecting...';
+            document.getElementById('login-password-error').style.color = '#10b981';
+
+            setTimeout(() => {
+                window.location.href = '/welcome';
+            }, 1000);
         } else {
-            document.getElementById('login-password-error').textContent = data.error?.message || 'Login failed';
+            document.getElementById('login-password-error').textContent = data.error?.message || data.message || 'Login failed';
         }
     } catch (error) {
         document.getElementById('login-password-error').textContent = 'An error occurred. Please try again.';

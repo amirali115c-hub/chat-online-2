@@ -321,7 +321,7 @@ app.register_blueprint(api)
 socketio = SocketIO(
     app,
     cors_allowed_origins=config.SOCKETIO_CORS_ORIGINS or "*",
-    async_mode=config.SOCKETIO_ASYNC_MODE,
+    async_mode='threading',
     ping_timeout=30,
     ping_interval=10,
 )
@@ -2768,10 +2768,12 @@ def admin_health_pages():
     })
 
 if __name__ == '__main__':
-    # For production, use eventlet
-    try:
-        import eventlet
-        eventlet.monkey_patch()
-        socketio.run(app, debug=False, port=int(os.environ.get('PORT', 5001)), host='0.0.0.0')
-    except ImportError:
-        socketio.run(app, debug=False, port=int(os.environ.get('PORT', 5001)), host='0.0.0.0')
+    # Use threading mode for development
+    socketio.run(
+        app,
+        debug=False,
+        port=int(os.environ.get('PORT', 5001)),
+        host='0.0.0.0',
+        allow_unsafe_werkzeug=True,
+        use_reloader=False,
+    )
