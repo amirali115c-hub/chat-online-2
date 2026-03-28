@@ -459,36 +459,36 @@ button[data-tooltip]:hover::after {
         <!-- Action Icons -->
         <div class="action-icons-grid" role="navigation" aria-label="Quick actions">
             <button class="action-icon-btn active" title="Online Users" data-tooltip="View online users (1)">
-                <i class="fas fa-circle"></i>
+                <i class="fas fa-circle" style="color: #10b981; font-size: 16px; display: inline-block;"></i>
                 <span>Online</span>
             </button>
             <button class="action-icon-btn" title="Filter by Gender" data-tooltip="Filter by gender (2)">
-                <i class="fas fa-venus-mars"></i>
+                <i class="fas fa-venus-mars" style="color: #8B5CF6; font-size: 16px; display: inline-block;"></i>
                 <span>Gender</span>
             </button>
             <button class="action-icon-btn" title="Chat History" data-tooltip="View chat history (3)">
-                <i class="fas fa-history"></i>
+                <i class="fas fa-history" style="color: #f59e0b; font-size: 16px; display: inline-block;"></i>
                 <span>History</span>
             </button>
             <button class="action-icon-btn" title="Search Users" data-tooltip="Search users (Ctrl+K)">
-                <i class="fas fa-search"></i>
+                <i class="fas fa-search" style="color: #3b82f6; font-size: 16px; display: inline-block;"></i>
                 <span>Search</span>
             </button>
             <button class="action-icon-btn" title="Messages" data-tooltip="View messages (4)">
-                <i class="fas fa-envelope"></i>
+                <i class="fas fa-envelope" style="color: #ec4899; font-size: 16px; display: inline-block;"></i>
                 <span>Inbox</span>
                 <span class="badge">7</span>
             </button>
             <button class="action-icon-btn" title="Friends List" data-tooltip="View friends (5)">
-                <i class="fas fa-heart"></i>
+                <i class="fas fa-heart" style="color: #ef4444; font-size: 16px; display: inline-block;"></i>
                 <span>Friends</span>
             </button>
             <button class="action-icon-btn" title="Random Chat" data-tooltip="Start random chat (N)">
-                <i class="fas fa-random"></i>
+                <i class="fas fa-random" style="color: #06b6d4; font-size: 16px; display: inline-block;"></i>
                 <span>Random</span>
             </button>
-            <button class="action-icon-btn" title="Settings" data-tooltip="Open settings (Esc)">
-                <i class="fas fa-cog"></i>
+            <button class="action-icon-btn" style="color: #8B5CF6;" title="Settings" data-tooltip="Open settings (Esc)">
+                <i class="fas fa-cog" style="color: #6b7280; font-size: 16px; display: inline-block;"></i>
                 <span>Settings</span>
             </button>
         </div>
@@ -623,7 +623,22 @@ function goToMainChat() {
     window.location.href = '{{ url_for("main_chat") }}';
 }
 
-// Gender filter state
+
+    // Auto-connect to Socket.IO to appear in online list
+    if (typeof socket !== 'undefined' && !socket.connected) {
+        socket.connect();
+    }
+    
+    // Ensure we're added to active connections
+    socket.on('connect', function() {
+        socket.emit('login', {
+            username: username || 'Guest',
+            gender: currentGenderFilter || 'all',
+            is_guest: true
+        });
+    });
+
+    // Gender filter state
 var currentGenderFilter = 'all';
 
 function setupGenderFilter() {

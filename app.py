@@ -922,6 +922,28 @@ def handle_login(data):
         'is_registered': True
     })
 
+    # Update active_connections so user appears in online list
+    active_connections[request.sid] = {
+        'user_id': user_found['id'],
+        'session_id': session.sid,
+        'username': user_found['username'],
+        'gender': user_found['gender'],
+        'country': user_found.get('country', ''),
+        'is_guest': False,
+        'is_registered': True,
+        'current_room': 'lobby',
+        'connected_at': time.time(),
+        'last_ping': time.time()
+    }
+    
+    # Join global online room
+    join_room(GLOBAL_ONLINE_ROOM)
+    
+    # Broadcast updated online count
+    socketio.emit('online_count_update', {
+        'total_online': len(active_connections)
+    }, room=GLOBAL_ONLINE_ROOM)
+    
     emit('login_success', {
         'user': {
             'username': user_found['username'],

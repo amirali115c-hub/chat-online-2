@@ -972,6 +972,215 @@ label {
     }
     </script>
 
+
+<style>
+/* FontAwesome Icon Fix */
+.fa, .fas, .far, .fab {
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900;
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+}
+
+/* Fallback for icons that don't load */
+.fa-spinner {
+    animation: fa-spin 2s infinite linear;
+}
+@keyframes fa-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Backup icon display */
+.action-icon-btn i {
+    font-size: 18px !important;
+    display: inline-block;
+    line-height: 1;
+}
+
+/* Ensure icons aren't hidden */
+[class*="fa-"] {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+</style>
+
+
+<style>
+/* Age verification modal - competitor style */
+.vipImageList {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+.vipImageList li {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.vipImageList li:last-child {
+    border-bottom: none;
+}
+.vipImageList .modal_list {
+    color: #8B5CF6;
+    font-size: 18px;
+}
+.vipImageList p {
+    margin: 0;
+    color: #374151;
+    font-size: 15px;
+}
+.vipImageList a {
+    color: #8B5CF6;
+    text-decoration: none;
+}
+.vipImageList a:hover {
+    text-decoration: underline;
+}
+.age_modal_actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+.age_modal_actions .btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.age_modal_actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+.age_modal_actions .btn-secondary {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+</style>
+
+
+<style>
+/* Force icons to display */
+.action-icon-btn i {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-width: 20px;
+    text-align: center;
+}
+.action-icon-btn .fa-circle {
+    color: #10b981 !important;
+}
+.action-icon-btn .fa-venus-mars {
+    color: #8B5CF6 !important;
+}
+.action-icon-btn .fa-history {
+    color: #f59e0b !important;
+}
+.action-icon-btn .fa-search {
+    color: #3b82f6 !important;
+}
+.action-icon-btn .fa-envelope {
+    color: #ec4899 !important;
+}
+.action-icon-btn .fa-heart {
+    color: #ef4444 !important;
+}
+.action-icon-btn .fa-random {
+    color: #06b6d4 !important;
+}
+.action-icon-btn .fa-cog {
+    color: #6b7280 !important;
+}
+</style>
+
+
+<style>
+/* Action Icons - Mobile Responsive */
+@media (max-width: 768px) {
+    .action-icons-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+    
+    .action-icon-btn {
+        padding: 10px 5px !important;
+        min-height: 60px !important;
+        border-radius: 10px !important;
+    }
+    
+    .action-icon-btn i {
+        font-size: 20px !important;
+    }
+    
+    .action-icon-btn span {
+        font-size: 10px !important;
+        margin-top: 4px;
+    }
+}
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+    .action-icons-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5px !important;
+        padding: 8px !important;
+    }
+    
+    .action-icon-btn {
+        padding: 8px 4px !important;
+        min-height: 55px !important;
+    }
+    
+    .action-icon-btn i {
+        font-size: 18px !important;
+    }
+    
+    .action-icon-btn span {
+        font-size: 9px !important;
+    }
+    
+    .action-icon-btn .badge {
+        font-size: 9px !important;
+        padding: 2px 5px !important;
+    }
+}
+
+/* Desktop - ensure icons display well */
+@media (min-width: 769px) {
+    .action-icons-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+    
+    .action-icon-btn {
+        padding: 15px 10px !important;
+        min-height: 70px !important;
+    }
+    
+    .action-icon-btn i {
+        font-size: 24px !important;
+    }
+    
+    .action-icon-btn span {
+        font-size: 12px !important;
+    }
+}
+</style>
+
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -990,31 +1199,31 @@ label {
             <p class="modal-subtitle">By using this website you agree to:</p>
             <div class="agreement-list">
                 <label class="agreement-item">
-                    <input type="checkbox" id="check-age">
+                    <input type="checkbox" id="check-age" checked>
                     <span class="checkmark"><i class="fas fa-check"></i></span>
                     <span class="text">You are over the age of 18</span>
                 </label>
                 <label class="agreement-item">
-                    <input type="checkbox" id="check-terms">
+                    <input type="checkbox" id="check-terms" checked>
                     <span class="checkmark"><i class="fas fa-check"></i></span>
                     <span class="text">You've read & approved our <a href="{{ url_for('terms_page') }}">Terms of use</a></span>
                 </label>
                 <label class="agreement-item">
-                    <input type="checkbox" id="check-privacy">
+                    <input type="checkbox" id="check-privacy" checked>
                     <span class="checkmark"><i class="fas fa-check"></i></span>
                     <span class="text">You've read & approved our <a href="{{ url_for('privacy_page') }}">Privacy policy</a></span>
                 </label>
                 <label class="agreement-item">
-                    <input type="checkbox" id="check-safety">
+                    <input type="checkbox" id="check-safety" checked>
                     <span class="checkmark"><i class="fas fa-check"></i></span>
                     <span class="text">You've read & approved our <a href="{{ url_for('safety_page') }}">Safety Guidelines</a></span>
                 </label>
             </div>
             <div class="modal-buttons">
-                <button id="agree-btn" class="btn btn-agree">
+                <button id="agree-btn" class="btn btn-primary confirm_decline agree" data-value="1">
                     <i class="fas fa-check-circle"></i> I Agree
                 </button>
-                <button id="disagree-btn" class="btn btn-disagree">
+                <button id="disagree-btn" class="btn btn-secondary confirm_decline disagree" data-value="0">
                     <i class="fas fa-times-circle"></i> I Disagree
                 </button>
             </div>
